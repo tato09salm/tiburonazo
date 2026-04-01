@@ -35,7 +35,7 @@ export default function LoginPage() {
           <Link href="/">
             <span className="font-brand text-4xl text-[#11ABC4]">TIBURONAZO</span>
           </Link>
-          <h1 className="font-heading text-2xl font-bold mt-4 text-gray-800">Bienvenido de vueltas</h1>
+          <h1 className="font-heading text-2xl font-bold mt-4 text-gray-800">Bienvenido de vuelta</h1>
           <p className="text-gray-500 text-sm mt-1">Ingresa a tu cuenta para continuar</p>
         </div>
 
