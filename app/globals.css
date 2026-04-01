@@ -1,0 +1,139 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Rajdhani:wght@500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-nunito: "Nunito", sans-serif;
+  --font-rajdhani: "Rajdhani", sans-serif;
+  
+  --color-primary: #11ABC4;
+  --color-secondary: #00D4DD;
+  --color-light: #CCECFB;
+  --color-primary-dark: #0d8fa6;
+  --color-text: #1a1a2e;
+  --color-muted: #6b7280;
+  --color-bg: #f8fbff;
+  --color-card: #ffffff;
+  --color-border: #e2e8f0;
+}
+
+:root {
+  --primary: #11ABC4;
+  --secondary: #00D4DD;
+  --light: #CCECFB;
+  --primary-dark: #0d8fa6;
+  --text: #1a1a2e;
+  --muted: #6b7280;
+  --bg: #f8fbff;
+  --card: #ffffff;
+  --border: #e2e8f0;
+}
+
+body {
+  font-family: var(--font-nunito);
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.font-brand { font-family: var(--font-rajdhani); font-weight: 700; letter-spacing: 0.05em; }
+.font-heading { font-family: var(--font-rajdhani); font-weight: 600; }
+
+@utility btn-primary {
+  background-color: #11ABC4;
+  &:hover { background-color: #0d8fa6; }
+  color: white;
+  font-weight: 600;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.75rem;
+  transition-property: all;
+  transition-duration: 200ms;
+  &:active { transform: scale(0.95); }
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+@utility btn-secondary {
+  background-color: white;
+  border-width: 2px;
+  border-color: #11ABC4;
+  color: #11ABC4;
+  &:hover { background-color: #CCECFB; }
+  font-weight: 600;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.75rem;
+  transition-property: all;
+  transition-duration: 200ms;
+}
+
+@utility btn-danger {
+  background-color: var(--color-red-500);
+  &:hover { background-color: var(--color-red-600); }
+  color: white;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  transition-property: all;
+}
+
+@utility card {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  border-width: 1px;
+  border-color: var(--color-slate-200);
+  overflow: hidden;
+}
+
+@utility input {
+  width: 100%;
+  border-width: 1px;
+  border-color: var(--color-slate-200);
+  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
+  &:focus { outline: 2px solid transparent; outline-offset: 2px; --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color); --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color); box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); --tw-ring-color: #11ABC4; }
+  background-color: white;
+  &::placeholder { color: var(--color-gray-400); }
+  transition-property: all;
+}
+
+@utility badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+@utility price-old {
+  color: var(--color-gray-400);
+  text-decoration-line: line-through;
+  font-size: 0.875rem;
+}
+
+@utility price-current {
+  color: var(--color-red-500);
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+@utility price-normal {
+  color: #11ABC4;
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+@utility skeleton {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background-color: var(--color-gray-200);
+  border-radius: 0.75rem;
+}
+
+@utility section-title {
+  font-family: var(--font-rajdhani);
+  font-size: 1.5rem;
+  @media (min-width: 768px) { font-size: 1.875rem; }
+  font-weight: 700;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #11ABC4; border-radius: 3px; }
