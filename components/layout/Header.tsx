@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, User, Search, Menu, X, Heart } from "lucide-react";
+import { ShoppingCart, User, Search, Menu, X, Heart, Truck, Phone } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
@@ -35,8 +35,16 @@ export function Header() {
   return (
     <header className={cn("sticky top-0 z-50 transition-shadow duration-300", scrolled ? "bg-white shadow-md" : "bg-white")}>
       {/* Top bar */}
-      <div className="bg-[#11ABC4] text-white text-xs py-1.5 text-center font-medium">
-        🏊 Envíos a todo el Perú · WhatsApp: 999-999-999
+      <div className="bg-[#11ABC4] text-white text-xs py-1.5 flex items-center justify-center gap-4 font-medium">
+        <div className="flex items-center gap-1.5">
+          <Truck size={14} />
+          <span>Envíos a todo el Perú</span>
+        </div>
+        <span className="opacity-50">·</span>
+        <div className="flex items-center gap-1.5">
+          <Phone size={14} />
+          <span>943-679-570</span>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
