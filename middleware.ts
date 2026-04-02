@@ -10,7 +10,7 @@ export default auth((req) => {
   // Protect /admin routes
   if (pathname.startsWith("/admin")) {
     if (!session) {
-      return NextResponse.redirect(new URL("/login", req.url));
+      return NextResponse.redirect(new URL("/login?redirect=" + pathname, req.url));
     }
     if (role !== "ADMIN" && role !== "VENDEDOR") {
       return NextResponse.redirect(new URL("/", req.url));

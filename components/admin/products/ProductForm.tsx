@@ -8,7 +8,7 @@ import { Plus, Trash2, Save, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Category { id: string; name: string }
-interface Variant { id?: string; sku: string; color: string; size: string; model: string; price: number; oldPrice: number | null; stock: number }
+interface Variant { id?: string; sku: string; color: string | null; size: string | null; model: string | null; price: number; oldPrice: number | null; stock: number }
 interface ProductData {
   id?: string;
   code?: string; title?: string; description?: string | null; material?: string | null;
@@ -20,7 +20,7 @@ interface ProductData {
 
 interface Props { categories: Category[]; product?: ProductData }
 
-const emptyVariant = (): Variant => ({ sku: "", color: "", size: "", model: "", price: 0, oldPrice: null, stock: 0 });
+const emptyVariant = (): Variant => ({ sku: "", color: null, size: null, model: null, price: 0, oldPrice: null, stock: 0 });
 
 export function ProductForm({ categories, product }: Props) {
   const router = useRouter();
@@ -157,9 +157,9 @@ export function ProductForm({ categories, product }: Props) {
               {variants.map((v, i) => (
                 <div key={i} className="grid grid-cols-2 md:grid-cols-7 gap-2 p-3 bg-gray-50 rounded-xl">
                   <input value={v.sku} onChange={(e) => updateVariant(i, "sku", e.target.value)} placeholder="SKU *" className="input text-xs md:col-span-1" />
-                  <input value={v.color} onChange={(e) => updateVariant(i, "color", e.target.value)} placeholder="Color" className="input text-xs" />
-                  <input value={v.size} onChange={(e) => updateVariant(i, "size", e.target.value)} placeholder="Talla" className="input text-xs" />
-                  <input value={v.model} onChange={(e) => updateVariant(i, "model", e.target.value)} placeholder="Modelo" className="input text-xs" />
+                  <input value={v.color ?? ""} onChange={(e) => updateVariant(i, "color", e.target.value || null)} placeholder="Color" className="input text-xs" />
+                  <input value={v.size ?? ""} onChange={(e) => updateVariant(i, "size", e.target.value || null)} placeholder="Talla" className="input text-xs" />
+                  <input value={v.model ?? ""} onChange={(e) => updateVariant(i, "model", e.target.value || null)} placeholder="Modelo" className="input text-xs" />
                   <input type="number" value={v.price || ""} onChange={(e) => updateVariant(i, "price", e.target.value)} placeholder="Precio *" className="input text-xs" min={0} step={0.01} />
                   <input type="number" value={v.oldPrice ?? ""} onChange={(e) => updateVariant(i, "oldPrice", e.target.value || null)} placeholder="P. anterior" className="input text-xs" min={0} step={0.01} />
                   <div className="flex gap-1">
