@@ -72,7 +72,7 @@ model Product {
   slug        String   @unique
   description String?
   material    String?
-  linea       String?
+  linea       Linea?
   gender      Gender   @default(UNISEX)
   weight      Float?
   isActive    Boolean  @default(true)
@@ -92,11 +92,14 @@ model Product {
   @@map("products")
 }
 
+enum Linea {
+  ENTRENAMIENTO
+  COMPETENCIA
+}
+
 model ProductVariant {
   id         String   @id @default(cuid())
   sku        String   @unique
-  color      String?
-  size       String?   // talla
   model      String?   // modelo (para accesorios)
   price      Float
   oldPrice   Float?    // precio anterior tachado
@@ -108,11 +111,36 @@ model ProductVariant {
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
+  colorId String?
+  color   Color?  @relation(fields: [colorId], references: [id])
+
+  sizeId String?
+  size   Size?   @relation(fields: [sizeId], references: [id])
+
   orderItems     OrderItem[]
   inventoryMoves InventoryMove[]
   saleItems      SaleItem[]
 
   @@map("product_variants")
+}
+
+model Color {
+  id       String           @id @default(cuid())
+  name     String           @unique  // "Rojo", "Azul marino"
+  hex      String?                   // "#FF0000" (opcional, para UI)
+  variants ProductVariant[]
+
+  @@map("colors")
+}
+
+model Size {
+  id        String           @id @default(cuid())
+  label     String           @unique  // "XS", "S", "M", "L", "XL", "4", "6"...
+  category  String?                   // "ropa", "aletas", "único" — para agrupar
+  sortOrder Int              @default(0) // para ordenar correctamente en el frontend
+  variants  ProductVariant[]
+
+  @@map("sizes")
 }
 
 model ProductImage {
