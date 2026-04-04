@@ -69,6 +69,17 @@ const SIZES_BY_CATEGORY: Record<string, string[]> = {
   "default": ["ÚNICO"],
 };
 
+const COLORS = [
+  { name: "Negro", hex: "#000000" },
+  { name: "Azul Marino", hex: "#000080" },
+  { name: "Rojo", hex: "#FF0000" },
+  { name: "Verde", hex: "#008000" },
+  { name: "Amarillo", hex: "#FFFF00" },
+  { name: "Blanco", hex: "#FFFFFF" },
+  { name: "Cyan", hex: "#00FFFF" },
+  { name: "Rosa", hex: "#FFC0CB" },
+];
+
 const PRICES_BY_CATEGORY: Record<string, { price: number; oldPrice?: number }> = {
   "ropa-de-bano": { price: 45, oldPrice: 55 },
   "jammer": { price: 65 },
@@ -138,7 +149,32 @@ async function main() {
     create: { name: "Cliente Demo", email: "cliente@tiburonazo.pe", password: clientePass, role: "CLIENTE" },
   });
 
-  // 4. Productos con variantes (del Excel)
+  // 4. Colores y Tallas
+  console.log("🎨 Creando colores...");
+  const colorMap: Record<string, string> = {};
+  for (const c of COLORS) {
+    const created = await prisma.color.upsert({
+      where: { name: c.name },
+      update: {},
+      create: { name: c.name, hex: c.hex },
+    });
+    colorMap[c.name] = created.id;
+  }
+
+  console.log("📏 Creando tallas...");
+  const sizeMap: Record<string, string> = {};
+  const allSizes = Array.from(new Set(Object.values(SIZES_BY_CATEGORY).flat()));
+  for (const label of allSizes) {
+    if (label === "ÚNICO") continue;
+    const created = await prisma.size.upsert({
+      where: { label },
+      update: {},
+      create: { label, category: "default" },
+    });
+    sizeMap[label] = created.id;
+  }
+
+  // 5. Productos con variantes (del Excel)
   console.log("📦 Creando productos...");
   for (const prod of PRODUCTS_FROM_EXCEL) {
     const catId = categoryMap[prod.categorySlug];
@@ -152,6 +188,8 @@ async function main() {
       const existing = await prisma.product.findUnique({ where: { code: prod.code } });
       if (existing) continue;
 
+      const colors = Object.values(colorMap).slice(0, 3); // Tomar 3 colores para cada producto
+
       await prisma.product.create({
         data: {
           code: prod.code,
@@ -161,13 +199,14 @@ async function main() {
           categoryId: catId,
           isFeatured: ["P001", "P002", "P010", "P012", "P027"].includes(prod.code),
           variants: {
-            create: sizes.map((size, i) => ({
-              sku: `${prod.code}-${size}`,
-              size: size === "ÚNICO" ? null : size,
+            create: sizes.flatMap((size) => colors.map((colorId, i) => ({
+              sku: `${prod.code}-${size}-${i}`,
+              sizeId: size === "ÚNICO" ? null : sizeMap[size],
+              colorId,
               price,
               oldPrice: oldPrice ?? null,
-              stock: Math.floor(Math.random() * 15) + 2, // Stock inicial simulado
-            })),
+              stock: Math.floor(Math.random() * 15) + 2,
+            }))),
           },
         },
       });
@@ -176,7 +215,7 @@ async function main() {
     }
   }
 
-  // 5. Inventario inicial de Sagrado Corazón (del Excel)
+  // 6. Inventario inicial de Sagrado Corazón (del Excel)
   console.log("📊 Cargando inventario inicial de Sagrado Corazón...");
   const variants = await prisma.productVariant.findMany({ take: 20 });
   const sagId = storeMap["SAGRADO CORAZÓN"];

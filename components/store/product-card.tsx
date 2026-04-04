@@ -23,6 +23,12 @@ export function ProductCardComponent({ product }: Props) {
   const hasDiscount = defaultVariant?.oldPrice && defaultVariant.oldPrice > defaultVariant.price;
   const inStock = product.variants.some((v) => v.stock > 0);
 
+  // Obtener colores únicos de las variantes (usando hex de la relación color)
+  const colors = Array.from(new Set(product.variants.map(v => v.color?.hex).filter(Boolean)));
+
+  const firstColorName = defaultVariant?.color?.name || "Único";
+  const firstSizeLabel = defaultVariant?.size?.label || "Único";
+
   function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
     if (!defaultVariant || !inStock) return;
@@ -32,8 +38,8 @@ export function ProductCardComponent({ product }: Props) {
       title: product.title,
       slug: product.slug,
       image: mainImage,
-      color: defaultVariant.color,
-      size: defaultVariant.size,
+      color: firstColorName as string,
+      size: firstSizeLabel as string,
       model: defaultVariant.model,
       price: defaultVariant.price,
       quantity: 1,
@@ -115,6 +121,23 @@ export function ProductCardComponent({ product }: Props) {
         {product.brand && (
           <p className="text-xs text-gray-500">{product.brand.name}</p>
         )}
+
+        {/* Colors preview */}
+        {colors.length > 0 && (
+          <div className="flex gap-1 mt-1">
+            {colors.slice(0, 4).map((hex, i) => (
+              <div 
+                key={i} 
+                className="w-2.5 h-2.5 rounded-full border border-gray-200" 
+                style={{ backgroundColor: hex as string }}
+              />
+            ))}
+            {colors.length > 4 && (
+              <span className="text-[10px] text-gray-400">+{colors.length - 4}</span>
+            )}
+          </div>
+        )}
+
         <div className="mt-auto pt-2">
           {defaultVariant ? (
             <PriceDisplay price={defaultVariant.price} oldPrice={defaultVariant.oldPrice} size="sm" />

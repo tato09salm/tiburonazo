@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { slugify, getMinMaxPrice } from "@/lib/utils";
 import { PRODUCTS_PER_PAGE } from "@/lib/constants";
-import { Gender } from "@prisma/client";
+import { Gender, Linea } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export interface GetProductsParams {
@@ -62,7 +62,13 @@ export async function getProducts(params: GetProductsParams = {}) {
         category: { select: { name: true, slug: true } },
         brand: { select: { name: true } },
         images: { orderBy: { order: "asc" }, take: 2 },
-        variants: { where: { isActive: true }, select: { id: true, sku: true, color: true, size: true, model: true, price: true, oldPrice: true, stock: true, isActive: true } },
+        variants: {
+          where: { isActive: true },
+          include: {
+            color: { select: { name: true, hex: true } },
+            size: { select: { label: true } },
+          },
+        },
       },
     }),
     prisma.product.count({ where }),
@@ -83,7 +89,14 @@ export async function getProductBySlug(slug: string) {
       category: { select: { name: true, slug: true } },
       brand: { select: { name: true } },
       images: { orderBy: { order: "asc" } },
-      variants: { where: { isActive: true }, orderBy: { price: "asc" } },
+      variants: {
+        where: { isActive: true },
+        orderBy: { price: "asc" },
+        include: {
+          color: true,
+          size: true,
+        },
+      },
     },
   });
 
@@ -103,7 +116,7 @@ export async function createProduct(data: {
   title: string;
   description?: string;
   material?: string;
-  linea?: string;
+  linea?: Linea;
   gender: Gender;
   weight?: number;
   categoryId: string;
@@ -121,7 +134,7 @@ export async function createProduct(data: {
       slug,
       description: data.description,
       material: data.material,
-      linea: data.linea,
+      linea: data.linea || null,
       gender: data.gender,
       weight: data.weight,
       categoryId: data.categoryId,
@@ -140,9 +153,69 @@ export async function createProduct(data: {
 
 export async function updateProduct(
   id: string,
-  data: Partial<{ title: string; description: string; material: string; linea: string; gender: Gender; isActive: boolean; isFeatured: boolean; categoryId: string; brandId: string }>
+  data: Partial<{ 
+    title: string; 
+    description: string; 
+    material: string; 
+    linea: Linea | ""; 
+    gender: Gender; 
+    isActive: boolean; 
+    isFeatured: boolean; 
+    categoryId: string; 
+    brandId: string | null;
+    images: Array<{ id?: string; url: string; order: number; colorId?: string }>;
+  }>
 ) {
-  const product = await prisma.product.update({ where: { id }, data });
+  const { linea, images, ...rest } = data;
+  
+  // Usar una transacción para actualizar producto e imágenes
+  const product = await prisma.$transaction(async (tx) => {
+    // 1. Actualizar datos básicos del producto
+    const updatedProduct = await tx.product.update({ 
+      where: { id }, 
+      data: {
+        ...rest,
+        linea: linea === "" ? null : linea
+      } 
+    });
+
+    // 2. Gestionar imágenes si se proporcionan
+    if (images) {
+      // Eliminar imágenes que ya no están en la lista
+      const imageIdsToKeep = images.filter(img => img.id).map(img => img.id!);
+      await tx.productImage.deleteMany({
+        where: {
+          productId: id,
+          id: { notIn: imageIdsToKeep }
+        }
+      });
+
+      // Actualizar o crear nuevas imágenes
+      for (const img of images) {
+        if (img.id) {
+          await tx.productImage.update({
+            where: { id: img.id },
+            data: { 
+              order: img.order,
+              colorId: img.colorId || null
+            }
+          });
+        } else {
+          await tx.productImage.create({
+            data: {
+              url: img.url,
+              order: img.order,
+              colorId: img.colorId || null,
+              productId: id
+            }
+          });
+        }
+      }
+    }
+
+    return updatedProduct;
+  });
+
   revalidatePath("/productos");
   revalidatePath("/admin/products");
   return product;
@@ -153,20 +226,41 @@ export async function deleteProduct(id: string) {
   revalidatePath("/admin/products");
 }
 
+export async function deleteVariant(id: string) {
+  await prisma.productVariant.delete({ where: { id } });
+  revalidatePath("/admin/products");
+}
+
 export async function upsertVariant(productId: string, data: {
   id?: string;
   sku: string;
-  color?: string;
-  size?: string;
+  colorId?: string;
+  sizeId?: string;
   model?: string;
   price: number;
   oldPrice?: number;
   stock: number;
 }) {
-  if (data.id) {
-    return prisma.productVariant.update({ where: { id: data.id }, data });
+  const { id, ...rest } = data;
+  if (id) {
+    return prisma.productVariant.update({ 
+      where: { id }, 
+      data: rest 
+    });
   }
-  return prisma.productVariant.create({ data: { ...data, productId } });
+  return prisma.productVariant.create({ 
+    data: { ...rest, productId } 
+  });
+}
+
+export async function getAdminInitialData() {
+  const [categories, colors, sizes, brands] = await Promise.all([
+    prisma.category.findMany({ orderBy: { name: "asc" } }),
+    prisma.color.findMany({ orderBy: { name: "asc" } }),
+    prisma.size.findMany({ orderBy: { label: "asc" } }),
+    prisma.brand.findMany({ orderBy: { name: "asc" } }),
+  ]);
+  return { categories, colors, sizes, brands };
 }
 
 export async function getAdminProducts(page = 1, search = "") {

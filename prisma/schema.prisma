@@ -129,6 +129,7 @@ model Color {
   name     String           @unique  // "Rojo", "Azul marino"
   hex      String?                   // "#FF0000" (opcional, para UI)
   variants ProductVariant[]
+  images   ProductImage[]
 
   @@map("colors")
 }
@@ -150,6 +151,9 @@ model ProductImage {
   order     Int     @default(0)
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  colorId String?
+  color   Color?  @relation(fields: [colorId], references: [id])
 
   @@map("product_images")
 }

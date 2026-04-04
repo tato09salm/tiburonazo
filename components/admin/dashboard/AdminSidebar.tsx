@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, Package, Tag, BarChart3, ShoppingBag, Users,
-  Warehouse, LogOut, Store, ChevronRight,
+  Warehouse, LogOut, Store, ChevronRight, Bookmark, Palette, Ruler,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,9 @@ const NAV = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "VENDEDOR"] },
   { label: "Productos", href: "/admin/products", icon: Package, roles: ["ADMIN"] },
   { label: "Categorías", href: "/admin/categories", icon: Tag, roles: ["ADMIN"] },
+  { label: "Marcas", href: "/admin/brands", icon: Bookmark, roles: ["ADMIN"] },
+  { label: "Colores", href: "/admin/colors", icon: Palette, roles: ["ADMIN"] },
+  { label: "Tallas", href: "/admin/sizes", icon: Ruler, roles: ["ADMIN"] },
   { label: "Inventario", href: "/admin/inventory", icon: Warehouse, roles: ["ADMIN", "VENDEDOR"] },
   { label: "Ventas", href: "/admin/sales", icon: BarChart3, roles: ["ADMIN", "VENDEDOR"] },
   { label: "Pedidos", href: "/admin/orders", icon: ShoppingBag, roles: ["ADMIN"] },

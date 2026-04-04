@@ -3,6 +3,7 @@ import { formatPrice } from "@/lib/utils";
 import Link from "next/link";
 import { Plus, Pencil, Search } from "lucide-react";
 import type { Metadata } from "next";
+import { ToggleProductStatus } from "@/components/admin/products/ToggleProductStatus";
 
 export const metadata: Metadata = { title: "Productos - Admin" };
 
@@ -41,13 +42,13 @@ export default async function AdminProductsPage({ searchParams }: Props) {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
               <tr>
-                <th className="px-4 py-3 text-left">Producto</th>
-                <th className="px-4 py-3 text-left">Código</th>
-                <th className="px-4 py-3 text-left">Categoría</th>
-                <th className="px-4 py-3 text-left">Precio</th>
-                <th className="px-4 py-3 text-left">Stock total</th>
-                <th className="px-4 py-3 text-left">Estado</th>
-                <th className="px-4 py-3 text-left">Acciones</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Producto</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Código</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Categoría</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Precio</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Stock total</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Estado</th>
+                <th className="px-4 py-3 text-left whitespace-nowrap">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -66,23 +67,26 @@ export default async function AdminProductsPage({ searchParams }: Props) {
                         <span className="font-semibold text-gray-800 line-clamp-1">{p.title}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-500 font-mono">{p.code}</td>
-                    <td className="px-4 py-3 text-gray-500">{p.category.name}</td>
-                    <td className="px-4 py-3 font-semibold text-[#11ABC4]">{formatPrice(minPrice)}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-gray-500 font-mono whitespace-nowrap">{p.code}</td>
+                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{p.category.name}</td>
+                    <td className="px-4 py-3 font-semibold text-[#11ABC4] whitespace-nowrap">{formatPrice(minPrice)}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <span className={`badge ${totalStock === 0 ? "bg-red-100 text-red-600" : totalStock < 5 ? "bg-orange-100 text-orange-600" : "bg-green-100 text-green-700"}`}>
                         {totalStock} uds.
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <span className={`badge ${p.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                        {p.isActive ? "Activo" : "Inactivo"}
+                        {p.isActive ? "Activo" : "Oculto"}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <Link href={`/admin/products/${p.id}/edit`} className="inline-flex items-center gap-1.5 text-xs text-[#11ABC4] hover:bg-[#CCECFB] px-3 py-1.5 rounded-lg transition-colors font-semibold">
-                        <Pencil size={13} /> Editar
-                      </Link>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex gap-1.5">
+                        <ToggleProductStatus productId={p.id} isActive={p.isActive} />
+                        <Link href={`/admin/products/${p.id}/edit`} className="inline-flex items-center gap-1.5 text-xs text-[#11ABC4] hover:bg-[#CCECFB] px-3 py-1.5 rounded-lg transition-colors font-semibold">
+                          <Pencil size={13} /> Editar
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 );

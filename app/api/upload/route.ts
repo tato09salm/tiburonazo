@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
+import { v4 as uuidv4 } from "uuid";
+
+// This file has been updated to use the 'uuid' package after installation.
+// Please restart your dev server if you see any module not found errors.
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -13,22 +19,32 @@ export async function POST(req: NextRequest) {
     const file = formData.get("file") as File;
     if (!file) return NextResponse.json({ error: "No se encontró archivo" }, { status: 400 });
 
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = "tiburonazo_unsigned";
+    // ─── Local Upload Logic ──────────────────────────────────────────────────
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-    const cloudFormData = new FormData();
-    cloudFormData.append("file", file);
-    cloudFormData.append("upload_preset", uploadPreset);
-    cloudFormData.append("folder", "tiburonazo/products");
+    // Create unique filename using uuid package
+    const fileExtension = file.name.split('.').pop();
+    const fileName = `${uuidv4()}.${fileExtension}`;
+    
+    // Define path
+    const uploadDir = join(process.cwd(), "public", "uploads", "products");
+    
+    // Ensure directory exists
+    try {
+      await mkdir(uploadDir, { recursive: true });
+    } catch (e) {}
 
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-      method: "POST",
-      body: cloudFormData,
-    });
+    const filePath = join(uploadDir, fileName);
+    
+    // Write file
+    await writeFile(filePath, buffer);
 
-    if (!res.ok) throw new Error("Error al subir imagen");
-    const data = await res.json();
-    return NextResponse.json({ url: data.secure_url });
+    // Return public URL
+    const publicUrl = `/uploads/products/${fileName}`;
+    
+    return NextResponse.json({ url: publicUrl });
+    // ─────────────────────────────────────────────────────────────────────────
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json({ error: "Error al procesar imagen" }, { status: 500 });

@@ -21,17 +21,31 @@ export function ProductDetailClient({ product }: Props) {
   const [added, setAdded] = useState(false);
 
   // Group variants by color
-  const colors = [...new Set(product.variants.map((v) => v.color).filter(Boolean))];
-  const sizes = [...new Set(product.variants.filter((v) => !selectedVariant?.color || v.color === selectedVariant?.color).map((v) => v.size).filter(Boolean))];
+  const colors = [...new Set(product.variants.map((v) => v.color?.name).filter(Boolean))];
+  const sizes = [...new Set(product.variants.filter((v) => !selectedVariant?.color?.name || v.color?.name === selectedVariant?.color?.name).map((v) => v.size?.label).filter(Boolean))];
 
-  function selectColor(color: string) {
-    const variant = product.variants.find((v) => v.color === color);
-    if (variant) { setSelectedVariant(variant); setQuantity(1); }
+  // Filter images by selected color
+  const filteredImages = product.images.filter(img => 
+    !img.colorId || img.colorId === selectedVariant?.colorId
+  ).sort((a, b) => a.order - b.order);
+
+  // If activeImage index is out of bounds for filtered images, reset it
+  if (activeImage >= filteredImages.length && filteredImages.length > 0) {
+    setActiveImage(0);
   }
 
-  function selectSize(size: string) {
+  function selectColor(colorName: string) {
+    const variant = product.variants.find((v) => v.color?.name === colorName);
+    if (variant) { 
+      setSelectedVariant(variant); 
+      setQuantity(1); 
+      setActiveImage(0); // Reset image to first one of new color
+    }
+  }
+
+  function selectSize(sizeLabel: string) {
     const variant = product.variants.find(
-      (v) => v.size === size && (!selectedVariant?.color || v.color === selectedVariant?.color)
+      (v) => v.size?.label === sizeLabel && (!selectedVariant?.color?.name || v.color?.name === selectedVariant?.color?.name)
     );
     if (variant) { setSelectedVariant(variant); setQuantity(1); }
   }
@@ -44,8 +58,8 @@ export function ProductDetailClient({ product }: Props) {
       title: product.title,
       slug: product.slug,
       image: product.images[0]?.url ?? "/placeholder.png",
-      color: selectedVariant.color,
-      size: selectedVariant.size,
+      color: selectedVariant.color?.name ?? null,
+      size: selectedVariant.size?.label ?? null,
       model: selectedVariant.model,
       price: selectedVariant.price,
       quantity,
@@ -74,10 +88,10 @@ export function ProductDetailClient({ product }: Props) {
         {/* Images */}
         <div className="space-y-3">
           <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50">
-            {product.images[activeImage] ? (
+            {filteredImages[activeImage] ? (
               <Image
-                src={product.images[activeImage].url}
-                alt={product.images[activeImage].alt ?? product.title}
+                src={filteredImages[activeImage].url}
+                alt={filteredImages[activeImage].alt ?? product.title}
                 fill
                 className="object-cover"
                 priority
@@ -93,9 +107,9 @@ export function ProductDetailClient({ product }: Props) {
               </div>
             )}
           </div>
-          {product.images.length > 1 && (
+          {filteredImages.length > 1 && (
             <div className="flex gap-2 overflow-x-auto pb-1">
-              {product.images.map((img, i) => (
+              {filteredImages.map((img, i) => (
                 <button
                   key={img.id}
                   onClick={() => setActiveImage(i)}
@@ -132,21 +146,21 @@ export function ProductDetailClient({ product }: Props) {
           {colors.length > 0 && (
             <div>
               <p className="text-sm font-semibold text-gray-700 mb-2">
-                Color: <span className="font-normal text-gray-500">{selectedVariant?.color}</span>
+                Color: <span className="font-normal text-gray-500">{selectedVariant?.color?.name}</span>
               </p>
               <div className="flex gap-2 flex-wrap">
-                {colors.map((color) => (
+                {colors.map((colorName) => (
                   <button
-                    key={color!}
-                    onClick={() => selectColor(color!)}
+                    key={colorName!}
+                    onClick={() => selectColor(colorName!)}
                     className={cn(
                       "px-3 py-1.5 rounded-lg border-2 text-sm font-medium transition-all",
-                      selectedVariant?.color === color
+                      selectedVariant?.color?.name === colorName
                         ? "border-[#11ABC4] bg-[#CCECFB] text-[#11ABC4]"
                         : "border-gray-200 hover:border-[#11ABC4] text-gray-600"
                     )}
                   >
-                    {color}
+                    {colorName}
                   </button>
                 ))}
               </div>
@@ -157,27 +171,27 @@ export function ProductDetailClient({ product }: Props) {
           {sizes.length > 0 && (
             <div>
               <p className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1">
-                <Ruler size={14} /> Talla: <span className="font-normal text-gray-500">{selectedVariant?.size}</span>
+                <Ruler size={14} /> Talla: <span className="font-normal text-gray-500">{selectedVariant?.size?.label}</span>
               </p>
               <div className="flex gap-2 flex-wrap">
-                {sizes.map((size) => {
-                  const v = product.variants.find((v) => v.size === size && (!selectedVariant?.color || v.color === selectedVariant?.color));
+                {sizes.map((sizeLabel) => {
+                  const v = product.variants.find((v) => v.size?.label === sizeLabel && (!selectedVariant?.color?.name || v.color?.name === selectedVariant?.color?.name));
                   const available = (v?.stock ?? 0) > 0;
                   return (
                     <button
-                      key={size!}
-                      onClick={() => selectSize(size!)}
+                      key={sizeLabel!}
+                      onClick={() => selectSize(sizeLabel!)}
                       disabled={!available}
                       className={cn(
                         "min-w-[44px] px-3 py-2 rounded-lg border-2 text-sm font-semibold transition-all",
-                        selectedVariant?.size === size
+                        selectedVariant?.size?.label === sizeLabel
                           ? "border-[#11ABC4] bg-[#11ABC4] text-white"
                           : available
                           ? "border-gray-200 hover:border-[#11ABC4] text-gray-700"
                           : "border-gray-100 text-gray-300 cursor-not-allowed line-through"
                       )}
                     >
-                      {size}
+                      {sizeLabel}
                     </button>
                   );
                 })}

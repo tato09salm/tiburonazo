@@ -14,8 +14,8 @@ export interface ProductImage {
 export interface ProductVariant {
   id: string;
   sku: string;
-  color: string | null;
-  size: string | null;
+  color: { id: string; name: string; hex: string | null } | null;
+  size: { id: string; label: string } | null;
   model: string | null;
   price: number;
   oldPrice: number | null;
