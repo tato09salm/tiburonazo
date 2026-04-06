@@ -1,6 +1,7 @@
 import { getCategories } from "@/actions/category.actions";
 import { CategoryForm } from "@/components/admin/categories/CategoryForm";
 import { DeleteCategoryButton } from "@/components/admin/categories/DeleteCategoryButton";
+import { EditCategoryModal } from "@/components/admin/categories/EditCategoryModal";
 import { Tag, FolderOpen } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -43,15 +44,24 @@ export default async function AdminCategoriesPage() {
                       <p className="text-xs text-gray-400">{cat.slug} · {(cat as { _count?: { products: number } })._count?.products ?? 0} productos</p>
                     </div>
                   </div>
-                  <DeleteCategoryButton id={cat.id} name={cat.name} />
+                  <div className="flex items-center gap-1">
+                    <EditCategoryModal id={cat.id} name={cat.name} />
+                    <DeleteCategoryButton id={cat.id} name={cat.name} />
+                  </div>
                 </div>
                 {cat.children?.length > 0 && (
                   <div className="ml-12 mt-2 space-y-1">
                     {cat.children.map((child) => (
-                      <div key={child.id} className="flex items-center gap-2 text-sm text-gray-500">
-                        <span className="w-4 h-px bg-gray-200" />
-                        {child.name}
-                        <span className="text-xs text-gray-300">({child.slug})</span>
+                      <div key={child.id} className="flex items-center justify-between py-1 group">
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <span className="w-4 h-px bg-gray-200" />
+                          {child.name}
+                          <span className="text-xs text-gray-300">({child.slug})</span>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <EditCategoryModal id={child.id} name={child.name} />
+                          <DeleteCategoryButton id={child.id} name={child.name} />
+                        </div>
                       </div>
                     ))}
                   </div>

@@ -72,7 +72,7 @@ model Product {
   slug        String   @unique
   description String?
   material    String?
-  linea       Linea?
+  linea       String?
   gender      Gender   @default(UNISEX)
   weight      Float?
   isActive    Boolean  @default(true)
@@ -90,11 +90,6 @@ model Product {
   images     ProductImage[]
 
   @@map("products")
-}
-
-enum Linea {
-  ENTRENAMIENTO
-  COMPETENCIA
 }
 
 model ProductVariant {

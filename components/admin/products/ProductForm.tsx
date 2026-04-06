@@ -26,6 +26,7 @@ interface Variant {
   stock: number;
   color?: { name: string };
   size?: { label: string };
+  isAutoSku?: boolean;
 }
 
 interface ProductImage {
@@ -60,14 +61,15 @@ interface Props {
   product?: ProductData;
 }
 
-const emptyVariant = (): Variant => ({
-  sku: "",
+const emptyVariant = (code: string = ""): Variant => ({
+  sku: code.trim().toUpperCase().replace(/\s+/g, "-"),
   colorId: null,
   sizeId: null,
   model: null,
   price: 0,
   oldPrice: null,
   stock: 0,
+  isAutoSku: true,
 });
 
 export function ProductForm({ categories, colors, sizes, brands: initialBrands, product }: Props) {
@@ -100,9 +102,10 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
           colorId: v.colorId ?? null, 
           sizeId: v.sizeId ?? null, 
           model: v.model ?? "", 
-          oldPrice: v.oldPrice 
+          oldPrice: v.oldPrice,
+          isAutoSku: false
         }))
-      : [emptyVariant()]
+      : [emptyVariant(product?.code)]
   );
 
   const [images, setImages] = useState<ProductImage[]>(
@@ -135,11 +138,64 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const update = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm((f) => ({ ...f, [k]: e.target.value }));
+  const update = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const val = e.target.value;
+    setForm((f) => {
+      const newForm = { ...f, [k]: val };
+      if (k === "code") {
+        setVariants(vs => vs.map(v => {
+          if (v.isAutoSku) {
+            return { ...v, sku: generateSKU(v, val) };
+          }
+          return v;
+        }));
+      }
+      return newForm;
+    });
+  };
+
+  function generateSKU(variant: Variant, productCode: string) {
+    const parts = [productCode.trim()];
+    
+    if (variant.colorId) {
+      const color = colors.find(c => c.id === variant.colorId);
+      if (color) parts.push(color.name);
+    }
+    
+    if (variant.sizeId) {
+      const size = sizes.find(s => s.id === variant.sizeId);
+      if (size) parts.push(size.label);
+    }
+    
+    if (variant.model) {
+      parts.push(variant.model);
+    }
+    
+    return parts
+      .filter(Boolean)
+      .join("-")
+      .toUpperCase()
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+  }
 
   function updateVariant(i: number, key: string, val: string | number | null) {
-    setVariants((vs) => vs.map((v, idx) => idx === i ? { ...v, [key]: val } : v));
+    setVariants((vs) => vs.map((v, idx) => {
+      if (idx !== i) return v;
+      
+      let newVariant = { ...v, [key]: val };
+      
+      if (key === "sku") {
+         newVariant.isAutoSku = false;
+         newVariant.sku = String(val || "").toUpperCase().replace(/\s+/g, "-");
+       } else if (["colorId", "sizeId", "model"].includes(key)) {
+        if (newVariant.isAutoSku) {
+          newVariant.sku = generateSKU(newVariant, form.code);
+        }
+      }
+      
+      return newVariant;
+    }));
   }
 
   function handleOpenVariantDeleteModal(i: number) {
@@ -220,6 +276,12 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
     setLoading(true);
     setError("");
     try {
+      const skus = variants.map(v => v.sku.trim().toUpperCase()).filter(Boolean);
+      const uniqueSkus = new Set(skus);
+      if (skus.length !== uniqueSkus.size) {
+        throw new Error("Los SKUs deben ser únicos");
+      }
+
       const vars = variants.filter((v) => v.sku && v.price > 0).map((v) => ({
         sku: v.sku,
         colorId: v.colorId || undefined,
@@ -302,7 +364,7 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Título *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre *</label>
                   <input value={form.title} onChange={update("title")} required className="input" placeholder="Nombre del producto" />
                 </div>
                 <div className="relative">
@@ -390,7 +452,7 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Línea</label>
-                  <input value={form.linea} onChange={update("linea")} className="input" placeholder="Competencia..." />
+                  <input value={form.linea} onChange={update("linea")} className="input" placeholder="Verano 2026..." />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Público</label>
@@ -410,12 +472,23 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
             <div className="card p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-heading text-lg font-bold">Variantes</h2>
-                <button type="button" onClick={() => setVariants((v) => [...v, emptyVariant()])} className="btn-secondary text-sm px-3 py-1.5 flex items-center gap-1">
+                <button type="button" onClick={() => setVariants((v) => [...v, emptyVariant(form.code)])} className="btn-secondary text-sm px-3 py-1.5 flex items-center gap-1">
                   <Plus size={14} /> Agregar
                 </button>
               </div>
 
               <div className="space-y-3">
+                {/* Headers */}
+                <div className="hidden md:grid md:grid-cols-7 gap-2 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  <div className="md:col-span-1">SKU</div>
+                  <div>Color</div>
+                  <div>Talla</div>
+                  <div>Modelo</div>
+                  <div>Precio</div>
+                  <div>P. Anterior</div>
+                  <div>Stock</div>
+                </div>
+
                 {variants.map((v, i) => (
                   <div key={i} className="grid grid-cols-2 md:grid-cols-7 gap-2 p-3 bg-gray-50 rounded-xl">
                     <input value={v.sku} onChange={(e) => updateVariant(i, "sku", e.target.value)} placeholder="SKU *" className="input text-xs md:col-span-1" />
@@ -473,7 +546,7 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
                 {images.map((img, i) => (
                   <div key={i} className="relative group border border-gray-100 rounded-2xl overflow-hidden bg-gray-50 flex flex-col">
                     <div className="relative aspect-square w-full">
-                      <Image src={img.url} alt={`Imagen ${i + 1}`} fill className="object-cover" />
+                      <Image src={img.url} alt={`Imagen ${i + 1}`} fill className="object-cover" quality={100} />
                       <button 
                         type="button" 
                         onClick={() => removeImage(i)}

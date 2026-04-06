@@ -38,7 +38,7 @@ export default function CartPage() {
           {items.map((item) => (
             <div key={item.variantId} className="card p-4 flex gap-4 items-start">
               <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-gray-50 flex-shrink-0">
-                <Image src={item.image} alt={item.title} fill className="object-cover" />
+                <Image src={item.image} alt={item.title} fill className="object-cover" quality={100} />
               </div>
               <div className="flex-1 min-w-0">
                 <Link href={`/productos/${item.slug}`} className="font-semibold text-sm hover:text-[#11ABC4] line-clamp-2">

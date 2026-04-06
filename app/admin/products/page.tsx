@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Plus, Pencil, Search } from "lucide-react";
 import type { Metadata } from "next";
 import { ToggleProductStatus } from "@/components/admin/products/ToggleProductStatus";
+import Image from "next/image";
 
 export const metadata: Metadata = { title: "Productos - Admin" };
 
@@ -59,11 +60,20 @@ export default async function AdminProductsPage({ searchParams }: Props) {
                   <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        {p.images[0] ? (
-                          <img src={p.images[0].url} alt={p.title} className="w-10 h-10 rounded-lg object-cover" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg">🏊</div>
-                        )}
+                        <div className="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                          {p.images[0] ? (
+                            <Image 
+                              src={p.images[0].url} 
+                              alt={p.title} 
+                              fill 
+                              className="object-cover"
+                              sizes="40px"
+                              quality={100}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-lg">🏊</div>
+                          )}
+                        </div>
                         <span className="font-semibold text-gray-800 line-clamp-1">{p.title}</span>
                       </div>
                     </td>

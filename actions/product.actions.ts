@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { slugify, getMinMaxPrice } from "@/lib/utils";
 import { PRODUCTS_PER_PAGE } from "@/lib/constants";
-import { Gender, Linea } from "@prisma/client";
+import { Gender } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export interface GetProductsParams {
@@ -116,7 +116,7 @@ export async function createProduct(data: {
   title: string;
   description?: string;
   material?: string;
-  linea?: Linea;
+  linea?: string;
   gender: Gender;
   weight?: number;
   categoryId: string;
@@ -125,30 +125,37 @@ export async function createProduct(data: {
   variants: Array<{ sku: string; color?: string; size?: string; model?: string; price: number; oldPrice?: number; stock: number }>;
   images: Array<{ url: string; alt?: string; order: number }>;
 }) {
-  const slug = slugify(data.title + "-" + data.code);
+  try {
+    const slug = slugify(data.title + "-" + data.code);
 
-  const product = await prisma.product.create({
-    data: {
-      code: data.code,
-      title: data.title,
-      slug,
-      description: data.description,
-      material: data.material,
-      linea: data.linea || null,
-      gender: data.gender,
-      weight: data.weight,
-      categoryId: data.categoryId,
-      brandId: data.brandId,
-      isFeatured: data.isFeatured,
-      variants: { create: data.variants },
-      images: { create: data.images },
-    },
-    include: { variants: true, images: true },
-  });
+    const product = await prisma.product.create({
+      data: {
+        code: data.code,
+        title: data.title,
+        slug,
+        description: data.description,
+        material: data.material,
+        linea: data.linea || null,
+        gender: data.gender,
+        weight: data.weight,
+        categoryId: data.categoryId,
+        brandId: data.brandId,
+        isFeatured: data.isFeatured,
+        variants: { create: data.variants },
+        images: { create: data.images },
+      },
+      include: { variants: true, images: true },
+    });
 
-  revalidatePath("/productos");
-  revalidatePath("/admin/products");
-  return product;
+    revalidatePath("/productos");
+    revalidatePath("/admin/products");
+    return product;
+  } catch (err: any) {
+    if (err.code === "P2002") {
+      throw new Error("El codigo del producto ya existe");
+    }
+    throw err;
+  }
 }
 
 export async function updateProduct(
@@ -157,7 +164,7 @@ export async function updateProduct(
     title: string; 
     description: string; 
     material: string; 
-    linea: Linea | ""; 
+    linea: string; 
     gender: Gender; 
     isActive: boolean; 
     isFeatured: boolean; 
@@ -166,59 +173,66 @@ export async function updateProduct(
     images: Array<{ id?: string; url: string; order: number; colorId?: string }>;
   }>
 ) {
-  const { linea, images, ...rest } = data;
-  
-  // Usar una transacción para actualizar producto e imágenes
-  const product = await prisma.$transaction(async (tx) => {
-    // 1. Actualizar datos básicos del producto
-    const updatedProduct = await tx.product.update({ 
-      where: { id }, 
-      data: {
-        ...rest,
-        linea: linea === "" ? null : linea
-      } 
-    });
-
-    // 2. Gestionar imágenes si se proporcionan
-    if (images) {
-      // Eliminar imágenes que ya no están en la lista
-      const imageIdsToKeep = images.filter(img => img.id).map(img => img.id!);
-      await tx.productImage.deleteMany({
-        where: {
-          productId: id,
-          id: { notIn: imageIdsToKeep }
-        }
+  try {
+    const { images, ...rest } = data;
+    
+    // Usar una transacción para actualizar producto e imágenes
+    const product = await prisma.$transaction(async (tx) => {
+      // 1. Actualizar datos básicos del producto
+      const updatedProduct = await tx.product.update({ 
+        where: { id }, 
+        data: {
+          ...rest,
+          linea: rest.linea || null
+        } 
       });
 
-      // Actualizar o crear nuevas imágenes
-      for (const img of images) {
-        if (img.id) {
-          await tx.productImage.update({
-            where: { id: img.id },
-            data: { 
-              order: img.order,
-              colorId: img.colorId || null
-            }
-          });
-        } else {
-          await tx.productImage.create({
-            data: {
-              url: img.url,
-              order: img.order,
-              colorId: img.colorId || null,
-              productId: id
-            }
-          });
+      // 2. Gestionar imágenes si se proporcionan
+      if (images) {
+        // Eliminar imágenes que ya no están en la lista
+        const imageIdsToKeep = images.filter(img => img.id).map(img => img.id!);
+        await tx.productImage.deleteMany({
+          where: {
+            productId: id,
+            id: { notIn: imageIdsToKeep }
+          }
+        });
+
+        // Actualizar o crear nuevas imágenes
+        for (const img of images) {
+          if (img.id) {
+            await tx.productImage.update({
+              where: { id: img.id },
+              data: { 
+                order: img.order,
+                colorId: img.colorId || null
+              }
+            });
+          } else {
+            await tx.productImage.create({
+              data: {
+                url: img.url,
+                order: img.order,
+                colorId: img.colorId || null,
+                productId: id
+              }
+            });
+          }
         }
       }
+
+      return updatedProduct;
+    });
+
+    revalidatePath("/productos");
+    revalidatePath("/admin/products");
+    return product;
+  } catch (err: any) {
+    if (err.code === "P2002") {
+      throw new Error("El codigo del producto ya existe");
     }
-
-    return updatedProduct;
-  });
-
-  revalidatePath("/productos");
-  revalidatePath("/admin/products");
-  return product;
+    throw err;
+  }
 }
 
 export async function deleteProduct(id: string) {

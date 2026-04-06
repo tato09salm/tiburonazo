@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Nuevo Producto - Admin" };
 
+
 export default async function NewProductPage() {
   const { categories, colors, sizes, brands } = await getAdminInitialData();
 
