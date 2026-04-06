@@ -74,7 +74,12 @@ export default async function AdminProductsPage({ searchParams }: Props) {
                             <div className="w-full h-full flex items-center justify-center text-lg">🏊</div>
                           )}
                         </div>
-                        <span className="font-semibold text-gray-800 line-clamp-1">{p.title}</span>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-semibold text-gray-800 line-clamp-1">{p.title}</span>
+                          <span className="text-[11px] text-gray-400 font-medium leading-none mt-0.5">
+                            {p.brand?.name || "Sin marca"}
+                          </span>
+                        </div>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-gray-500 font-mono whitespace-nowrap">{p.code}</td>

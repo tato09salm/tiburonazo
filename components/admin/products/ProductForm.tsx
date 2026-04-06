@@ -12,7 +12,7 @@ import Image from "next/image";
 
 interface Category { id: string; name: string }
 interface Color { id: string; name: string }
-interface Size { id: string; label: string }
+interface Size { id: string; label: string; sortOrder: number; category?: string | null }
 interface Brand { id: string; name: string }
 
 interface Variant {
@@ -150,9 +150,50 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
           return v;
         }));
       }
+      
+      // Limpiar tallas si se cambia la categoría
+      if (k === "categoryId") {
+        const selectedCategory = categories.find(c => c.id === val);
+        const categoryName = selectedCategory?.name || "";
+        
+        setVariants(vs => vs.map(v => {
+          if (!v.sizeId) return v;
+          
+          const currentSize = sizes.find(s => s.id === v.sizeId);
+          if (!currentSize) return { ...v, sizeId: null };
+          
+          const sizeCategories = currentSize.category 
+            ? currentSize.category.split(",").map((c: string) => c.trim().toLowerCase()) 
+            : [];
+            
+          const isDefault = sizeCategories.includes("default");
+          const matchesCategory = sizeCategories.includes(categoryName.toLowerCase());
+          
+          if (!isDefault && !matchesCategory) {
+            return { ...v, sizeId: null };
+          }
+          return v;
+        }));
+      }
+      
       return newForm;
     });
   };
+
+  const filteredSizes = useMemo(() => {
+    const selectedCategory = categories.find(c => c.id === form.categoryId);
+    const categoryName = selectedCategory?.name || "";
+    
+    return sizes
+      .filter(s => {
+        const sizeCategories = s.category 
+          ? s.category.split(",").map((c: string) => c.trim().toLowerCase()) 
+          : [];
+        
+        return sizeCategories.includes("default") || sizeCategories.includes(categoryName.toLowerCase());
+      })
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+  }, [sizes, form.categoryId, categories]);
 
   function generateSKU(variant: Variant, productCode: string) {
     const parts = [productCode.trim()];
@@ -500,7 +541,7 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
 
                     <select value={v.sizeId ?? ""} onChange={(e) => updateVariant(i, "sizeId", e.target.value || null)} className="input text-xs">
                       <option value="">Talla</option>
-                      {sizes.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                      {filteredSizes.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                     </select>
 
                     <input value={v.model ?? ""} onChange={(e) => updateVariant(i, "model", e.target.value || null)} placeholder="Modelo" className="input text-xs" />

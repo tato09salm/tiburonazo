@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Plus, Pencil, Trash2, Search, Loader2, Save, X } from "lucide-react";
 import { createColor, updateColor, deleteColor } from "@/actions/color.actions";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 interface Color {
   id: string;
@@ -164,8 +165,11 @@ export function ColorsClient({ initialColors }: Props) {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <div 
-                          className="w-6 h-6 rounded-full border border-gray-200" 
-                          style={{ backgroundColor: color.hex || "#fff" }}
+                          className={cn(
+                            "w-6 h-6 rounded-full border border-gray-200",
+                            color.name.toLowerCase() === "transparente" && "bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] bg-gray-100"
+                          )}
+                          style={{ backgroundColor: color.name.toLowerCase() === "transparente" ? undefined : (color.hex || "#fff") }}
                         />
                         <span className="font-mono text-xs text-gray-400 uppercase">{color.hex || "N/A"}</span>
                       </div>

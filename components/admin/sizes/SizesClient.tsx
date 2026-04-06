@@ -14,9 +14,10 @@ interface Size {
 
 interface Props {
   initialSizes: Size[];
+  productCategories: string[];
 }
 
-export function SizesClient({ initialSizes }: Props) {
+export function SizesClient({ initialSizes, productCategories }: Props) {
   const router = useRouter();
   const [sizes, setSizes] = useState<Size[]>(initialSizes);
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,11 +26,17 @@ export function SizesClient({ initialSizes }: Props) {
   const [editingSize, setEditingSize] = useState<Size | null>(null);
   const [sizeToDelete, setSizeToDelete] = useState<Size | null>(null);
   const [label, setLabel] = useState("");
-  const [category, setCategory] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const existingCategories = useMemo(() => {
+    const sizeCats = sizes.flatMap(s => (s.category || "").split(",").map(c => c.trim())).filter(Boolean);
+    const allUniqueCats = Array.from(new Set([...sizeCats, ...productCategories])).filter(c => c.toLowerCase() !== "default");
+    return ["Default", ...allUniqueCats.sort()];
+  }, [sizes, productCategories]);
 
   const filteredSizes = useMemo(() => {
     return sizes.filter((s) =>
@@ -42,12 +49,13 @@ export function SizesClient({ initialSizes }: Props) {
     if (size) {
       setEditingSize(size);
       setLabel(size.label);
-      setCategory(size.category || "");
+      const cats = (size.category || "").split(",").map(c => c.trim()).filter(Boolean);
+      setSelectedCategories(cats);
       setSortOrder(size.sortOrder);
     } else {
       setEditingSize(null);
       setLabel("");
-      setCategory("");
+      setSelectedCategories([]);
       setSortOrder(0);
     }
     setIsModalOpen(true);
@@ -57,8 +65,19 @@ export function SizesClient({ initialSizes }: Props) {
     setIsModalOpen(false);
     setEditingSize(null);
     setLabel("");
-    setCategory("");
+    setSelectedCategories([]);
     setSortOrder(0);
+  };
+
+  const addCategory = (cat: string) => {
+    const trimmed = cat.trim();
+    if (trimmed && !selectedCategories.includes(trimmed)) {
+      setSelectedCategories([...selectedCategories, trimmed]);
+    }
+  };
+
+  const removeCategory = (cat: string) => {
+    setSelectedCategories(selectedCategories.filter(c => c !== cat));
   };
 
   const handleOpenDeleteModal = (size: Size) => {
@@ -77,19 +96,24 @@ export function SizesClient({ initialSizes }: Props) {
     e.stopPropagation();
     if (!label.trim()) return;
 
+    const categoryString = selectedCategories.join(", ");
+
     setSubmitting(true);
     try {
       if (editingSize) {
         const updated = await updateSize(editingSize.id, { 
           label, 
-          category: category || undefined, 
+          category: categoryString || undefined, 
           sortOrder: Number(sortOrder) 
         });
-        setSizes(sizes.map((s) => (s.id === updated.id ? (updated as Size) : s)));
+        setSizes(sizes.map((s) => (s.id === updated.id ? (updated as Size) : s)).sort((a, b) => {
+          if (a.category !== b.category) return (a.category || "").localeCompare(b.category || "");
+          return a.sortOrder - b.sortOrder;
+        }));
       } else {
         const created = await createSize({ 
           label, 
-          category: category || undefined, 
+          category: categoryString || undefined, 
           sortOrder: Number(sortOrder) 
         });
         const newSizes = [...sizes, created as Size].sort((a, b) => {
@@ -181,9 +205,17 @@ export function SizesClient({ initialSizes }: Props) {
                       <span className="font-semibold text-gray-800">{size.label}</span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-gray-500 text-xs px-2 py-1 bg-gray-100 rounded-full">
-                        {size.category || "General"}
-                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {size.category ? (
+                          size.category.split(",").map((cat, idx) => (
+                            <span key={idx} className="text-[10px] text-gray-500 px-2 py-0.5 bg-gray-100 rounded-full border border-gray-200">
+                              {cat.trim()}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-gray-400 text-[10px] italic">General</span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-gray-400 font-mono text-xs">{size.sortOrder}</span>
@@ -237,14 +269,53 @@ export function SizesClient({ initialSizes }: Props) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Categoría (Opcional)</label>
-                <input
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  placeholder="Ej: Ropa, Calzado, Aletas"
-                  className="input w-full h-10 text-sm"
-                />
-                <p className="text-[10px] text-gray-400 mt-1 italic">Sirve para agrupar tallas en el selector.</p>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Categorías (Opcional)</label>
+                
+                {/* Selected Categories Tags */}
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {selectedCategories.map((cat) => (
+                    <span 
+                      key={cat} 
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-[#CCECFB] text-[#11ABC4] text-xs font-bold rounded-lg border border-[#11ABC4]/20"
+                    >
+                      {cat}
+                      <button 
+                        type="button" 
+                        onClick={() => removeCategory(cat)}
+                        className="hover:bg-[#11ABC4] hover:text-white rounded-full p-0.5 transition-colors"
+                      >
+                        <X size={10} />
+                      </button>
+                    </span>
+                  ))}
+                  {selectedCategories.length === 0 && (
+                    <span className="text-xs text-gray-400 italic">Ninguna seleccionada</span>
+                  )}
+                </div>
+
+                <div className="relative group">
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <select
+                        value=""
+                        onChange={(e) => addCategory(e.target.value)}
+                        className="input w-full h-10 text-sm appearance-none pr-8"
+                      >
+                        <option value="">Seleccionar categoría...</option>
+                        {existingCategories
+                          .filter(cat => !selectedCategories.includes(cat))
+                          .map((cat) => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))
+                        }
+                      </select>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <Search size={14} className="text-gray-400" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[10px] text-gray-400 mt-2 italic">Selecciona las categorías para agrupar esta talla.</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Orden de clasificación</label>
