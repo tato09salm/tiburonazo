@@ -23,6 +23,16 @@ model User {
   @@map("users")
 }
 
+model PasswordReset {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("password_resets")
+}
+
 model Section {
   id        String    @id @default(cuid())
   name      String    @unique
