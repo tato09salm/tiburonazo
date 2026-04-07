@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
@@ -14,22 +14,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
-
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
-        });
-
+        const user = await prisma.user.findUnique({ where: { email: credentials.email as string } });
         if (!user) return null;
-
         const isValid = await bcrypt.compare(credentials.password as string, user.password);
         if (!isValid) return null;
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        };
+        // Retornamos el usuario completo (incluyendo isActive)
+        return user;
       },
     }),
   ],
@@ -47,6 +38,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.id as string;
       }
       return session;
+    },
+    async signIn({ user }) {
+      // Aquí validamos el estado ACTIVO
+      // 'user' es lo que retornó el authorize de arriba
+      if (user && "isActive" in user && !user.isActive) {
+        // Al lanzar un error con un string específico aquí, 
+        // NextAuth lo enviará a la URL o al result.error
+        throw new Error("inactive_user");
+      }
+      return true; // Permitir el ingreso
     },
   },
   pages: {

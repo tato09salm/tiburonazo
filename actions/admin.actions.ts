@@ -6,6 +6,7 @@ import { MoveType, PaymentMethod } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { LOW_STOCK_THRESHOLD } from "@/lib/constants";
+import { userSchema } from "@/lib/validations/user";
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
@@ -146,13 +147,81 @@ export async function getSales(storeId?: string, from?: Date, to?: Date) {
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 
-export async function createUser(data: { name: string; email: string; password: string; role?: "ADMIN" | "VENDEDOR" | "CLIENTE" }) {
-  const hashed = await bcrypt.hash(data.password, 10);
-  return prisma.user.create({ data: { ...data, password: hashed } });
+export async function createUser(rawContent: unknown) {
+  // Validamos los datos recibidos antes de procesar
+  const result = userSchema.safeParse(rawContent);
+
+  if (!result.success) {
+    throw new Error("Datos de usuario inválidos");
+  }
+
+  const { name, email, password, role } = result.data;
+  
+  const hashed = await bcrypt.hash(password, 10);
+  
+  const user = await prisma.user.create({ 
+    data: { name, email, password: hashed, role } 
+  });
+
+  revalidatePath("/admin/users");
+  return user;
 }
 
-export async function getUsers() {
-  return prisma.user.findMany({ select: { id: true, name: true, email: true, role: true, createdAt: true }, orderBy: { createdAt: "desc" } });
+export async function toggleUserStatus(id: string, currentStatus: boolean) {
+  try {
+    await prisma.user.update({
+      where: { id },
+      data: { isActive: !currentStatus },
+    });
+    revalidatePath("/admin/users");
+  } catch (error) {
+    throw new Error("No se pudo actualizar el estado del usuario");
+  }
+}
+
+export async function getUsers(
+  page: number = 1, 
+  pageSize: number = 5,
+  search?: string,
+  role?: string,
+  status?: string
+) {
+  const skip = (page - 1) * pageSize;
+
+  // Construimos el objeto de filtros dinámicamente
+  const where: any = {};
+
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { email: { contains: search, mode: 'insensitive' } },
+    ];
+  }
+
+  if (role && role !== "ALL") {
+    where.role = role;
+  }
+
+  if (status && status !== "ALL") {
+    where.isActive = status === "ACTIVE";
+  }
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      where, // Aplicamos los filtros aquí
+      take: pageSize,
+      skip: skip,
+      select: { id: true, name: true, email: true, role: true, isActive: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.user.count({ where }), // Contamos solo los filtrados
+  ]);
+
+  return {
+    users,
+    totalPages: Math.ceil(total / pageSize),
+    totalUsers: total
+  };
 }
 
 // ─── Stores ───────────────────────────────────────────────────────────────────

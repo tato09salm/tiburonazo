@@ -36,7 +36,6 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f8fbff] to-[#CCECFB] px-4 py-12">
       <div className="card w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <Link href="/"><span className="font-brand text-4xl text-[#11ABC4]">TIBURONAZO</span></Link>
           <h1 className="font-heading text-2xl font-bold mt-4 text-gray-800">Crear cuenta</h1>
         </div>
 
