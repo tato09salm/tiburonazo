@@ -49,7 +49,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
             <Users size={28} className="text-[#11ABC4]" /> Usuarios
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            {totalUsers} usuarios registrados en total
+            {totalUsers} usuarios registrados
           </p>
         </div>
       </div>
@@ -95,9 +95,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                       >
                         <td className="px-6 py-4">
                           <p className="font-bold text-gray-800">{u.name}</p>
-                          <p className="text-[10px] text-gray-400 font-mono uppercase">
-                            ID: {u.id.substring(0, 8)}
-                          </p>
+                          <p className="text-[10px] text-gray-400">{new Date(u.createdAt).toLocaleDateString()}</p>
                         </td>
                         <td className="px-6 py-4 text-gray-600">{u.email}</td>
                         <td className="px-6 py-4">
@@ -141,7 +139,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
           </div>
           
           <div className="flex flex-col items-center sm:flex-row sm:justify-center px-2 gap-2">
-            <p className="text-[11px] font-medium text-gray-400 uppercase tracking-widest text-center">
+            <p className="text-[11px] font-medium text-gray-500 uppercase tracking-widest text-center">
               Mostrando {users.length} de {totalUsers} usuarios
             </p>
           </div>
