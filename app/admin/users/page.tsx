@@ -1,4 +1,5 @@
 import { getUsers } from "@/actions/admin.actions";
+import { ToggleUserStatus } from "@/components/admin/ToggleUserStatus";
 import { UserForm } from "@/components/admin/UserForm";
 import { Users } from "lucide-react";
 import type { Metadata } from "next";
@@ -36,18 +37,30 @@ export default async function AdminUsersPage() {
                 <th className="px-4 py-3 text-left">Nombre</th>
                 <th className="px-4 py-3 text-left">Email</th>
                 <th className="px-4 py-3 text-left">Rol</th>
-                <th className="px-4 py-3 text-left">Registrado</th>
+                <th className="px-4 py-3 text-center">Estado</th> {/* Nueva columna */}
+                <th className="px-4 py-3 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {users.map((u) => (
-                <tr key={u.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-semibold text-gray-800">{u.name}</td>
+                <tr key={u.id} className={`hover:bg-gray-50 ${!u.isActive ? "opacity-60" : ""}`}>
+                  <td className="px-4 py-3">
+                    <p className="font-semibold text-gray-800">{u.name}</p>
+                    <p className="text-[10px] text-gray-400">Registrado: {new Date(u.createdAt).toLocaleDateString()}</p>
+                  </td>
                   <td className="px-4 py-3 text-gray-500">{u.email}</td>
                   <td className="px-4 py-3">
                     <span className={`badge ${ROLE_COLORS[u.role]}`}>{u.role}</span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-400">{new Date(u.createdAt).toLocaleDateString("es-PE")}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${u.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                      }`}>
+                      {u.isActive ? "ACTIVO" : "INACTIVO"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <ToggleUserStatus id={u.id} isActive={u.isActive} />
+                  </td>
                 </tr>
               ))}
             </tbody>

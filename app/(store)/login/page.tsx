@@ -21,13 +21,30 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const result = await signIn("credentials", { email, password, redirect: false });
-    setLoading(false);
-    if (result?.error) {
-      setError("Correo o contraseña incorrectos");
-    } else {
-      router.push(redirect);
-      router.refresh();
+
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false
+      });
+
+      if (result?.error) {
+        if (result.error === "AccessDenied") {
+          setError("Tu cuenta está desactivada.");
+        } else if (result.error === "CredentialsSignin") {
+          setError("Correo o contraseña incorrectos");
+        } else {
+          setError("Ocurrió un error al intentar ingresar");
+        }
+      } else {
+        router.push(redirect);
+        router.refresh();
+      }
+    } catch (err) {
+      setError("Ocurrió un error inesperado");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -35,9 +52,6 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f8fbff] to-[#CCECFB] px-4 py-12">
       <div className="card w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <Link href="/">
-            <span className="font-brand text-4xl text-[#11ABC4]">TIBURONAZO</span>
-          </Link>
           <h1 className="font-heading text-2xl font-bold mt-4 text-gray-800">Bienvenido de vuelta</h1>
           <p className="text-gray-500 text-sm mt-1">Ingresa a tu cuenta para continuar</p>
         </div>

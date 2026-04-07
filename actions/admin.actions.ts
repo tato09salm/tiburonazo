@@ -167,8 +167,30 @@ export async function createUser(rawContent: unknown) {
   return user;
 }
 
+export async function toggleUserStatus(id: string, currentStatus: boolean) {
+  try {
+    await prisma.user.update({
+      where: { id },
+      data: { isActive: !currentStatus },
+    });
+    revalidatePath("/admin/users");
+  } catch (error) {
+    throw new Error("No se pudo actualizar el estado del usuario");
+  }
+}
+
 export async function getUsers() {
-  return prisma.user.findMany({ select: { id: true, name: true, email: true, role: true, createdAt: true }, orderBy: { createdAt: "desc" } });
+  return prisma.user.findMany({ 
+    select: { 
+      id: true, 
+      name: true, 
+      email: true, 
+      role: true, 
+      isActive: true, 
+      createdAt: true 
+    }, 
+    orderBy: { createdAt: "desc" } 
+  });
 }
 
 // ─── Stores ───────────────────────────────────────────────────────────────────
