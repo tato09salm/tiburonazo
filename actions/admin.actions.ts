@@ -6,6 +6,7 @@ import { MoveType, PaymentMethod } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { LOW_STOCK_THRESHOLD } from "@/lib/constants";
+import { userSchema } from "@/lib/validations/user";
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
@@ -146,9 +147,24 @@ export async function getSales(storeId?: string, from?: Date, to?: Date) {
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 
-export async function createUser(data: { name: string; email: string; password: string; role?: "ADMIN" | "VENDEDOR" | "CLIENTE" }) {
-  const hashed = await bcrypt.hash(data.password, 10);
-  return prisma.user.create({ data: { ...data, password: hashed } });
+export async function createUser(rawContent: unknown) {
+  // Validamos los datos recibidos antes de procesar
+  const result = userSchema.safeParse(rawContent);
+
+  if (!result.success) {
+    throw new Error("Datos de usuario inválidos");
+  }
+
+  const { name, email, password, role } = result.data;
+  
+  const hashed = await bcrypt.hash(password, 10);
+  
+  const user = await prisma.user.create({ 
+    data: { name, email, password: hashed, role } 
+  });
+
+  revalidatePath("/admin/users");
+  return user;
 }
 
 export async function getUsers() {
