@@ -7,14 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── AUTH ────────────────────────────────────────────────────────────────────
-
-enum Role {
-  ADMIN
-  VENDEDOR
-  CLIENTE
-}
-
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -24,14 +16,24 @@ model User {
   phone     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   orders    Order[]
   sales     Sale[]   @relation("VendedorSales")
 
   @@map("users")
 }
 
-// ─── CATALOG ─────────────────────────────────────────────────────────────────
+model Section {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String
+  order     Int       @default(0)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[] @relation("ProductSections")
+
+  @@map("sections")
+}
 
 model Category {
   id          String     @id @default(cuid())
@@ -40,11 +42,11 @@ model Category {
   description String?
   imageUrl    String?
   parentId    String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   parent      Category?  @relation("SubCategories", fields: [parentId], references: [id])
   children    Category[] @relation("SubCategories")
   products    Product[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
 
   @@map("categories")
 }
@@ -58,62 +60,49 @@ model Brand {
   @@map("brands")
 }
 
-enum Gender {
-  ADULTO
-  NINO
-  BEBE
-  UNISEX
-}
-
 model Product {
-  id          String   @id @default(cuid())
-  code        String   @unique
+  id          String           @id @default(cuid())
+  code        String           @unique
   title       String
-  slug        String   @unique
+  slug        String           @unique
   description String?
   material    String?
-  linea       String?
-  gender      Gender   @default(UNISEX)
+  gender      Gender           @default(UNISEX)
   weight      Float?
-  isActive    Boolean  @default(true)
-  isFeatured  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-
-  brandId String?
-  brand   Brand?  @relation(fields: [brandId], references: [id])
-
-  variants   ProductVariant[]
-  images     ProductImage[]
+  isActive    Boolean          @default(true)
+  isFeatured  Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  categoryId  String
+  brandId     String?
+  linea       String?
+  images      ProductImage[]
+  variants    ProductVariant[]
+  brand       Brand?           @relation(fields: [brandId], references: [id])
+  category    Category         @relation(fields: [categoryId], references: [id])
+  sections    Section[]        @relation("ProductSections")
 
   @@map("products")
 }
 
 model ProductVariant {
-  id         String   @id @default(cuid())
-  sku        String   @unique
-  model      String?   // modelo (para accesorios)
-  price      Float
-  oldPrice   Float?    // precio anterior tachado
-  stock      Int      @default(0)
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  colorId String?
-  color   Color?  @relation(fields: [colorId], references: [id])
-
-  sizeId String?
-  size   Size?   @relation(fields: [sizeId], references: [id])
-
-  orderItems     OrderItem[]
+  id             String          @id @default(cuid())
+  sku            String          @unique
+  model          String?
+  price          Float
+  oldPrice       Float?
+  stock          Int             @default(0)
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  productId      String
+  colorId        String?
+  sizeId         String?
   inventoryMoves InventoryMove[]
+  orderItems     OrderItem[]
+  color          Color?          @relation(fields: [colorId], references: [id])
+  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size           Size?           @relation(fields: [sizeId], references: [id])
   saleItems      SaleItem[]
 
   @@map("product_variants")
@@ -121,19 +110,19 @@ model ProductVariant {
 
 model Color {
   id       String           @id @default(cuid())
-  name     String           @unique  // "Rojo", "Azul marino"
-  hex      String?                   // "#FF0000" (opcional, para UI)
-  variants ProductVariant[]
+  name     String           @unique
+  hex      String?
   images   ProductImage[]
+  variants ProductVariant[]
 
   @@map("colors")
 }
 
 model Size {
   id        String           @id @default(cuid())
-  label     String           @unique  // "XS", "S", "M", "L", "XL", "4", "6"...
-  category  String?                   // "ropa", "aletas", "único" — para agrupar
-  sortOrder Int              @default(0) // para ordenar correctamente en el frontend
+  label     String           @unique
+  category  String?
+  sortOrder Int              @default(0)
   variants  ProductVariant[]
 
   @@map("sizes")
@@ -145,15 +134,12 @@ model ProductImage {
   alt       String?
   order     Int     @default(0)
   productId String
+  colorId   String?
+  color     Color?  @relation(fields: [colorId], references: [id])
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  colorId String?
-  color   Color?  @relation(fields: [colorId], references: [id])
 
   @@map("product_images")
 }
-
-// ─── STORES ──────────────────────────────────────────────────────────────────
 
 model Store {
   id             String          @id @default(cuid())
@@ -165,7 +151,96 @@ model Store {
   @@map("stores")
 }
 
-// ─── INVENTORY ───────────────────────────────────────────────────────────────
+model InventoryMove {
+  id        String         @id @default(cuid())
+  code      String         @unique
+  date      DateTime       @default(now())
+  type      MoveType
+  quantity  Int
+  reason    String?
+  note      String?
+  createdAt DateTime       @default(now())
+  variantId String
+  storeId   String
+  store     Store          @relation(fields: [storeId], references: [id])
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@map("inventory_moves")
+}
+
+model Order {
+  id            String         @id @default(cuid())
+  code          String         @unique
+  status        OrderStatus    @default(PENDIENTE)
+  paymentMethod PaymentMethod?
+  total         Float
+  shippingCost  Float          @default(0)
+  address       String?
+  notes         String?
+  culqiChargeId String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  userId        String
+  items         OrderItem[]
+  user          User           @relation(fields: [userId], references: [id])
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String         @id @default(cuid())
+  quantity  Int
+  price     Float
+  orderId   String
+  variantId String
+  order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@map("order_items")
+}
+
+model Sale {
+  id            String        @id @default(cuid())
+  code          String        @unique
+  date          DateTime      @default(now())
+  paymentMethod PaymentMethod
+  total         Float
+  destination   String?
+  notes         String?
+  createdAt     DateTime      @default(now())
+  storeId       String
+  vendedorId    String?
+  items         SaleItem[]
+  store         Store         @relation(fields: [storeId], references: [id])
+  vendedor      User?         @relation("VendedorSales", fields: [vendedorId], references: [id])
+
+  @@map("sales")
+}
+
+model SaleItem {
+  id        String         @id @default(cuid())
+  quantity  Int
+  price     Float
+  saleId    String
+  variantId String
+  sale      Sale           @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@map("sale_items")
+}
+
+enum Role {
+  ADMIN
+  VENDEDOR
+  CLIENTE
+}
+
+enum Gender {
+  ADULTO
+  NINO
+  BEBE
+  UNISEX
+}
 
 enum MoveType {
   ENTRADA
@@ -173,27 +248,6 @@ enum MoveType {
   AJUSTE
   TRASLADO
 }
-
-model InventoryMove {
-  id          String    @id @default(cuid())
-  code        String    @unique
-  date        DateTime  @default(now())
-  type        MoveType
-  quantity    Int
-  reason      String?
-  note        String?
-  createdAt   DateTime  @default(now())
-
-  variantId String
-  variant   ProductVariant @relation(fields: [variantId], references: [id])
-
-  storeId String
-  store   Store @relation(fields: [storeId], references: [id])
-
-  @@map("inventory_moves")
-}
-
-// ─── ORDERS (E-commerce) ─────────────────────────────────────────────────────
 
 enum OrderStatus {
   PENDIENTE
@@ -209,74 +263,4 @@ enum PaymentMethod {
   PLIN
   EFECTIVO
   TRANSFERENCIA
-}
-
-model Order {
-  id            String        @id @default(cuid())
-  code          String        @unique
-  status        OrderStatus   @default(PENDIENTE)
-  paymentMethod PaymentMethod?
-  total         Float
-  shippingCost  Float         @default(0)
-  address       String?
-  notes         String?
-  culqiChargeId String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  items OrderItem[]
-
-  @@map("orders")
-}
-
-model OrderItem {
-  id       String @id @default(cuid())
-  quantity Int
-  price    Float
-
-  orderId   String
-  order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  variantId String
-  variant   ProductVariant @relation(fields: [variantId], references: [id])
-
-  @@map("order_items")
-}
-
-// ─── SALES (POS físico) ──────────────────────────────────────────────────────
-
-model Sale {
-  id            String        @id @default(cuid())
-  code          String        @unique
-  date          DateTime      @default(now())
-  paymentMethod PaymentMethod
-  total         Float
-  destination   String?
-  notes         String?
-  createdAt     DateTime      @default(now())
-
-  storeId String
-  store   Store @relation(fields: [storeId], references: [id])
-
-  vendedorId String?
-  vendedor   User?   @relation("VendedorSales", fields: [vendedorId], references: [id])
-
-  items SaleItem[]
-
-  @@map("sales")
-}
-
-model SaleItem {
-  id       String @id @default(cuid())
-  quantity Int
-  price    Float
-
-  saleId    String
-  sale      Sale           @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  variantId String
-  variant   ProductVariant @relation(fields: [variantId], references: [id])
-
-  @@map("sale_items")
 }
