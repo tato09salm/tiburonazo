@@ -179,18 +179,24 @@ export async function toggleUserStatus(id: string, currentStatus: boolean) {
   }
 }
 
-export async function getUsers() {
-  return prisma.user.findMany({ 
-    select: { 
-      id: true, 
-      name: true, 
-      email: true, 
-      role: true, 
-      isActive: true, 
-      createdAt: true 
-    }, 
-    orderBy: { createdAt: "desc" } 
-  });
+export async function getUsers(page: number = 1, pageSize: number = 8) {
+  const skip = (page - 1) * pageSize;
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      take: pageSize,
+      skip: skip,
+      select: { id: true, name: true, email: true, role: true, isActive: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.user.count(),
+  ]);
+
+  return {
+    users,
+    totalPages: Math.ceil(total / pageSize),
+    totalUsers: total
+  };
 }
 
 // ─── Stores ───────────────────────────────────────────────────────────────────
