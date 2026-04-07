@@ -9,6 +9,7 @@ import { Gender } from "@prisma/client";
 
 interface Props {
   categorySlug?: string;
+  sectionSlug?: string;
   gender?: Gender;
   search?: string;
   minPrice?: number;

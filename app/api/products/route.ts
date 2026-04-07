@@ -7,11 +7,21 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
 
+    const genderParam = searchParams.get("gender");
+    let gender: Gender | undefined = undefined;
+    if (genderParam) {
+      const normalizedGender = genderParam.toUpperCase().replace("Ñ", "N");
+      if (["ADULTO", "NINO", "BEBE", "UNISEX"].includes(normalizedGender)) {
+        gender = normalizedGender as Gender;
+      }
+    }
+
     const params = {
       page: Number(searchParams.get("page") ?? 1),
       limit: Number(searchParams.get("limit") ?? PRODUCTS_PER_PAGE),
-      categorySlug: searchParams.get("categorySlug") ?? undefined,
-      gender: (searchParams.get("gender") as Gender) || undefined,
+      categorySlug: searchParams.get("categorySlug") || searchParams.get("category") || undefined,
+      sectionSlug: searchParams.get("sectionSlug") || searchParams.get("section") || undefined,
+      gender,
       search: searchParams.get("search") ?? undefined,
       minPrice: searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : undefined,
       maxPrice: searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : undefined,

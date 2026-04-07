@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Nuevo Producto - Admin" };
 
 
 export default async function NewProductPage() {
-  const { categories, colors, sizes, brands } = await getAdminInitialData();
+  const { categories, colors, sizes, brands, sections } = await getAdminInitialData();
 
   return (
     <div>
@@ -15,7 +15,8 @@ export default async function NewProductPage() {
         categories={categories} 
         colors={colors} 
         sizes={sizes} 
-        brands={brands} 
+        brands={brands}
+        sections={sections}
       />
     </div>
   );

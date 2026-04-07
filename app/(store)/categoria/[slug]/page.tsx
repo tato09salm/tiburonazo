@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 
 interface Props {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ gender?: string }>;
+  searchParams: Promise<{ gender?: string; section?: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -29,7 +29,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         {category.description && <p className="text-gray-500 mt-2">{category.description}</p>}
       </div>
       <Suspense fallback={<ProductGridSkeleton />}>
-        <ProductGrid categorySlug={slug} gender={sp.gender as never} />
+        <ProductGrid categorySlug={slug} gender={sp.gender as never} sectionSlug={sp.section} />
       </Suspense>
     </div>
   );

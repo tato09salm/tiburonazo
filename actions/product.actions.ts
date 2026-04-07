@@ -10,6 +10,7 @@ export interface GetProductsParams {
   page?: number;
   limit?: number;
   categorySlug?: string;
+  sectionSlug?: string;
   gender?: Gender;
   search?: string;
   minPrice?: number;
@@ -23,6 +24,7 @@ export async function getProducts(params: GetProductsParams = {}) {
     page = 1,
     limit = PRODUCTS_PER_PAGE,
     categorySlug,
+    sectionSlug,
     gender,
     search,
     minPrice,
@@ -33,10 +35,31 @@ export async function getProducts(params: GetProductsParams = {}) {
 
   const skip = (page - 1) * limit;
 
-  const where: Record<string, unknown> = { isActive: true };
+  const where: any = { isActive: true };
 
-  if (categorySlug) where.category = { slug: categorySlug };
-  if (gender) where.gender = gender;
+  if (categorySlug) {
+    where.category = {
+      OR: [
+        { slug: { equals: categorySlug, mode: "insensitive" } },
+        { id: categorySlug }
+      ]
+    };
+  }
+  if (sectionSlug) {
+    where.sections = {
+      some: {
+        OR: [
+          { slug: { equals: sectionSlug, mode: "insensitive" } },
+          { id: sectionSlug },
+          { name: { equals: sectionSlug, mode: "insensitive" } }
+        ]
+      }
+    };
+  }
+  if (gender) {
+    where.gender = gender;
+  }
+  
   if (search) where.title = { contains: search, mode: "insensitive" };
   if (brandId) where.brandId = brandId;
   if (featured) where.isFeatured = true;
@@ -89,6 +112,7 @@ export async function getProductBySlug(slug: string) {
       category: { select: { name: true, slug: true } },
       brand: { select: { name: true } },
       images: { orderBy: { order: "asc" } },
+      sections: true,
       variants: {
         where: { isActive: true },
         orderBy: { price: "asc" },
@@ -97,7 +121,7 @@ export async function getProductBySlug(slug: string) {
           size: true,
         },
       },
-    },
+    }, 
   });
 
   if (!product) return null;
@@ -120,7 +144,8 @@ export async function createProduct(data: {
   gender: Gender;
   weight?: number;
   categoryId: string;
-  brandId?: string;
+  brandId?: string | null;
+  sectionIds?: string[];
   isFeatured?: boolean;
   variants: Array<{ sku: string; color?: string; size?: string; model?: string; price: number; oldPrice?: number; stock: number }>;
   images: Array<{ url: string; alt?: string; order: number }>;
@@ -138,8 +163,11 @@ export async function createProduct(data: {
         linea: data.linea || null,
         gender: data.gender,
         weight: data.weight,
-        categoryId: data.categoryId,
-        brandId: data.brandId,
+        category: { connect: { id: data.categoryId } },
+        brand: data.brandId ? { connect: { id: data.brandId } } : undefined,
+        sections: {
+          connect: data.sectionIds?.map(id => ({ id })) || []
+        },
         isFeatured: data.isFeatured,
         variants: { create: data.variants },
         images: { create: data.images },
@@ -149,6 +177,7 @@ export async function createProduct(data: {
 
     revalidatePath("/productos");
     revalidatePath("/admin/products");
+    revalidatePath("/");
     return product;
   } catch (err: any) {
     if (err.code === "P2002") {
@@ -170,21 +199,37 @@ export async function updateProduct(
     isFeatured: boolean; 
     categoryId: string; 
     brandId: string | null;
+    sectionIds: string[];
     images: Array<{ id?: string; url: string; order: number; colorId?: string }>;
   }>
 ) {
   try {
-    const { images, ...rest } = data;
+    const { images, sectionIds, categoryId, brandId, ...rest } = data;
     
     // Usar una transacción para actualizar producto e imágenes
     const product = await prisma.$transaction(async (tx) => {
       // 1. Actualizar datos básicos del producto
+      const updateData: any = {
+        ...rest,
+        linea: rest.linea || null,
+      };
+
+      if (categoryId) {
+        updateData.category = { connect: { id: categoryId } };
+      }
+
+      if (brandId !== undefined) {
+        updateData.brand = brandId ? { connect: { id: brandId } } : { disconnect: true };
+      }
+
+      // Actualizar sections si se proporcionan
+      if (sectionIds) {
+        updateData.sections = { set: sectionIds.map(id => ({ id })) };
+      }
+
       const updatedProduct = await tx.product.update({ 
         where: { id }, 
-        data: {
-          ...rest,
-          linea: rest.linea || null
-        } 
+        data: updateData
       });
 
       // 2. Gestionar imágenes si se proporcionan
@@ -226,6 +271,7 @@ export async function updateProduct(
 
     revalidatePath("/productos");
     revalidatePath("/admin/products");
+    revalidatePath("/");
     return product;
   } catch (err: any) {
     if (err.code === "P2002") {
@@ -268,13 +314,14 @@ export async function upsertVariant(productId: string, data: {
 }
 
 export async function getAdminInitialData() {
-  const [categories, colors, sizes, brands] = await Promise.all([
+  const [categories, colors, sizes, brands, sections] = await Promise.all([
     prisma.category.findMany({ orderBy: { name: "asc" } }),
     prisma.color.findMany({ orderBy: { name: "asc" } }),
     prisma.size.findMany({ orderBy: { label: "asc" } }),
     prisma.brand.findMany({ orderBy: { name: "asc" } }),
+    prisma.section.findMany({ where: { isActive: true }, orderBy: { order: "asc" } }),
   ]);
-  return { categories, colors, sizes, brands };
+  return { categories, colors, sizes, brands, sections };
 }
 
 export async function getAdminProducts(page = 1, search = "") {

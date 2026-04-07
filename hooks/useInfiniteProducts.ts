@@ -6,6 +6,7 @@ import { Gender } from "@prisma/client";
 
 interface Params {
   categorySlug?: string;
+  sectionSlug?: string;
   gender?: Gender;
   search?: string;
   minPrice?: number;

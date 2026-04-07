@@ -14,6 +14,7 @@ interface Category { id: string; name: string }
 interface Color { id: string; name: string }
 interface Size { id: string; label: string; sortOrder: number; category?: string | null }
 interface Brand { id: string; name: string }
+interface Section { id: string; name: string }
 
 interface Variant {
   id?: string;
@@ -48,6 +49,8 @@ interface ProductData {
   weight?: number | null;
   categoryId?: string;
   brandId?: string | null;
+  sectionId?: string | null;
+  sections?: Array<{ id: string; name: string }>;
   isFeatured?: boolean;
   variants?: Variant[];
   images?: ProductImage[];
@@ -58,6 +61,7 @@ interface Props {
   colors: Color[];
   sizes: Size[];
   brands: Brand[];
+  sections: Section[];
   product?: ProductData;
 }
 
@@ -72,7 +76,7 @@ const emptyVariant = (code: string = ""): Variant => ({
   isAutoSku: true,
 });
 
-export function ProductForm({ categories, colors, sizes, brands: initialBrands, product }: Props) {
+export function ProductForm({ categories, colors, sizes, brands: initialBrands, sections, product }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isEdit = !!product?.id;
@@ -87,6 +91,30 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
     weight: product?.weight ?? "",
     categoryId: product?.categoryId ?? "",
     brandId: product?.brandId ?? "",
+    sectionValue: (() => {
+      if (!product?.sections?.length) return "";
+      
+      const currentSectionIds = product.sections.map(s => s.id);
+      
+      // Buscar secciones por nombre para identificar combinaciones unisex
+      const hombre = sections.find(s => s.name.toLowerCase() === "hombre");
+      const mujer = sections.find(s => s.name.toLowerCase() === "mujer");
+      const nino = sections.find(s => s.name.toLowerCase().includes("niño"));
+      const nina = sections.find(s => s.name.toLowerCase().includes("niña"));
+
+      // Caso Unisex Adulto: Tiene al menos Hombre y Mujer
+      if (hombre && mujer && currentSectionIds.includes(hombre.id) && currentSectionIds.includes(mujer.id)) {
+        return "UNISEX_ADULTO";
+      }
+
+      // Caso Unisex Niño: Tiene al menos Niño y Niña
+      if (nino && nina && currentSectionIds.includes(nino.id) && currentSectionIds.includes(nina.id)) {
+        return "UNISEX_NINO";
+      }
+
+      // Si no es ninguna combinación especial, mostrar la primera sección (o la única que tenga)
+      return currentSectionIds[0] || "";
+    })(),
     isFeatured: product?.isFeatured ?? false,
   });
 
@@ -174,6 +202,27 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
           }
           return v;
         }));
+      }
+
+      // Sincronizar gender automáticamente cuando cambie la sección
+      if (k === "sectionValue") {
+        if (val === "UNISEX_ADULTO") {
+          newForm.gender = "ADULTO";
+        } else if (val === "UNISEX_NINO") {
+          newForm.gender = "NINO";
+        } else if (val) {
+          const selectedSection = sections.find(s => s.id === val);
+          if (selectedSection) {
+            const name = selectedSection.name.toLowerCase();
+            if (name.includes("niño") || name.includes("niña")) {
+              newForm.gender = "NINO";
+            } else if (name.includes("bebe") || name.includes("bebé")) {
+              newForm.gender = "BEBE";
+            } else if (name.includes("hombre") || name.includes("mujer")) {
+              newForm.gender = "ADULTO";
+            }
+          }
+        }
       }
       
       return newForm;
@@ -323,6 +372,20 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
         throw new Error("Los SKUs deben ser únicos");
       }
 
+      // Mapear sección a IDs reales
+      let sectionIds: string[] = [];
+      if (form.sectionValue === "UNISEX_ADULTO") {
+        sectionIds = sections
+          .filter(s => s.name.toLowerCase() === "hombre" || s.name.toLowerCase() === "mujer")
+          .map(s => s.id);
+      } else if (form.sectionValue === "UNISEX_NINO") {
+        sectionIds = sections
+          .filter(s => s.name.toLowerCase() === "niño" || s.name.toLowerCase() === "niña")
+          .map(s => s.id);
+      } else if (form.sectionValue) {
+        sectionIds = [form.sectionValue];
+      }
+
       const vars = variants.filter((v) => v.sku && v.price > 0).map((v) => ({
         sku: v.sku,
         colorId: v.colorId || undefined,
@@ -346,11 +409,12 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
           title: form.title, 
           description: form.description, 
           material: form.material, 
-          linea: form.linea as any, 
+          linea: form.linea || null, 
           gender: form.gender as any, 
           isFeatured: form.isFeatured, 
           categoryId: form.categoryId,
           brandId: form.brandId || null,
+          sectionIds,
           images: imagesToSave as any
         });
         for (const v of vars) await upsertVariant(product.id, v);
@@ -358,6 +422,7 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
         await createProduct({ 
           ...form, 
           brandId: form.brandId || undefined,
+          sectionIds,
           linea: form.linea as any,
           gender: form.gender as any, 
           weight: form.weight ? Number(form.weight) : undefined, 
@@ -496,9 +561,12 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
                   <input value={form.linea} onChange={update("linea")} className="input" placeholder="Verano 2026..." />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Público</label>
-                  <select value={form.gender} onChange={update("gender")} className="input">
-                    {GENDERS.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Sección *</label>
+                  <select value={form.sectionValue} onChange={update("sectionValue")} required className="input">
+                    <option value="">Seleccionar...</option>
+                    <option value="UNISEX_ADULTO">Unisex Adulto</option>
+                    <option value="UNISEX_NINO">Unisex Niño</option>
+                    {sections.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
                 </div>
               </div>

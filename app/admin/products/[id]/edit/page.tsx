@@ -13,7 +13,11 @@ export default async function EditProductPage({ params }: Props) {
   const [product, initialData] = await Promise.all([
     prisma.product.findUnique({
       where: { id },
-      include: { variants: true, images: { orderBy: { order: "asc" } } },
+      include: { 
+        variants: true, 
+        images: { orderBy: { order: "asc" } },
+        sections: true
+      },
     }),
     getAdminInitialData(),
   ]);
@@ -27,7 +31,8 @@ export default async function EditProductPage({ params }: Props) {
         categories={initialData.categories} 
         colors={initialData.colors} 
         sizes={initialData.sizes} 
-        brands={initialData.brands} 
+        brands={initialData.brands}
+        sections={initialData.sections}
         product={product} 
       />
     </div>

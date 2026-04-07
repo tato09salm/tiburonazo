@@ -3,21 +3,33 @@
 import Link from "next/link";
 import { ShoppingCart, User, Search, Menu, X, Heart, Truck, Phone } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { NAV_LINKS, SITE_NAME } from "@/lib/constants";
+import { SITE_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-const CATEGORY_GROUPS = [
-  { label: "Mujer", href: "/productos?gender=ADULTO", sub: [{ label: "Ropa de baño", href: "/categoria/ropa-de-bano" }, { label: "Enterizos", href: "/categoria/enterizos" }, { label: "Parkas", href: "/categoria/parkas" }] },
-  { label: "Hombre", href: "/productos?gender=ADULTO", sub: [{ label: "Jammer", href: "/categoria/jammer" }, { label: "Parkas", href: "/categoria/parkas" }] },
-  { label: "Niño", href: "/productos?gender=NINO", sub: [{ label: "Ropa de baño", href: "/categoria/ropa-de-bano?gender=NINO" }, { label: "Conjuntos", href: "/categoria/conjuntos" }] },
-  { label: "Bebé", href: "/productos?gender=BEBE", sub: [] },
-  { label: "Accesorios", href: "/categoria/lentes", sub: [{ label: "Lentes", href: "/categoria/lentes" }, { label: "Gorros", href: "/categoria/gorros" }, { label: "Aletas", href: "/categoria/aletas" }, { label: "Vinchas", href: "/categoria/vinchas" }] },
-  { label: "Outlet", href: "/productos?outlet=true", sub: [] },
-];
+interface Section {
+  id: string;
+  name: string;
+  slug: string;
+  order: number;
+  isActive: boolean;
+  products?: Array<{
+    category: {
+      id: string;
+      name: string;
+      slug: string;
+    }
+  }>;
+}
 
-export function Header() {
+interface Props {
+  initialSections?: Section[];
+}
+
+export function Header({ initialSections = [] }: Props) {
+  const router = useRouter();
   const count = useCartStore((s) => s.count());
   const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -25,6 +37,40 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+
+  // Extraer categorías únicas para cada sección
+  const menuItems = useMemo(() => {
+    if (initialSections.length === 0) {
+      return [
+        { label: "Mujer", href: "/productos?section=mujer", sub: [] },
+        { label: "Hombre", href: "/productos?section=hombre", sub: [] },
+        { label: "Niño", href: "/productos?section=nino", sub: [] },
+        { label: "Bebé", href: "/productos?section=bebe", sub: [] },
+        { label: "Accesorios", href: "/categoria/lentes", sub: [] },
+        { label: "Outlet", href: "/productos?section=outlet", sub: [] },
+      ];
+    }
+
+    return initialSections.map(s => {
+      // Obtener categorías únicas de los productos de esta sección
+      const categoriesMap = new Map<string, { label: string, href: string }>();
+      
+      s.products?.forEach(p => {
+        if (!categoriesMap.has(p.category.id)) {
+          categoriesMap.set(p.category.id, {
+            label: p.category.name,
+            href: `/productos?category=${p.category.slug}&section=${s.slug}`
+          });
+        }
+      });
+
+      return {
+        label: s.name,
+        href: `/productos?section=${s.slug}`,
+        sub: Array.from(categoriesMap.values())
+      };
+    });
+  }, [initialSections]);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -53,28 +99,28 @@ export function Header() {
           <span className="font-brand text-3xl text-[#11ABC4] tracking-wider">TIBURONAZO</span>
         </Link>
 
-        {/* Nav desktop */}
+        {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center">
-          {CATEGORY_GROUPS.map((group) => (
+          {menuItems.map((item) => (
             <div
-              key={group.label}
+              key={item.label}
               className="relative group"
-              onMouseEnter={() => setOpenGroup(group.label)}
+              onMouseEnter={() => setOpenGroup(item.label)}
               onMouseLeave={() => setOpenGroup(null)}
             >
               <Link
-                href={group.href}
+                href={item.href}
                 className="px-3 py-2 text-sm font-semibold text-gray-700 hover:text-[#11ABC4] rounded-lg hover:bg-[#CCECFB] transition-colors"
               >
-                {group.label}
+                {item.label}
               </Link>
-              {group.sub.length > 0 && openGroup === group.label && (
-                <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-lg border border-slate-100 min-w-[160px] py-1 z-50">
-                  {group.sub.map((s) => (
+              {item.sub.length > 0 && openGroup === item.label && (
+                <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-lg border border-slate-100 min-w-[180px] py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  {item.sub.map((s) => (
                     <Link
                       key={s.label}
                       href={s.href}
-                      className="block px-4 py-2 text-sm text-gray-600 hover:bg-[#CCECFB] hover:text-[#11ABC4] transition-colors"
+                      className="block px-4 py-2 text-sm text-gray-600 hover:bg-[#CCECFB] hover:text-[#11ABC4] font-medium transition-colors"
                     >
                       {s.label}
                     </Link>
@@ -160,10 +206,21 @@ export function Header() {
             <button type="submit" className="btn-primary px-3 py-2"><Search size={16} /></button>
           </form>
           <nav className="flex flex-col gap-1">
-            {CATEGORY_GROUPS.map((g) => (
-              <Link key={g.label} href={g.href} className="py-2.5 px-3 rounded-lg font-semibold text-gray-700 hover:bg-[#CCECFB] hover:text-[#11ABC4]" onClick={() => setMobileOpen(false)}>
-                {g.label}
-              </Link>
+            {menuItems.map((g) => (
+              <div key={g.label} className="flex flex-col">
+                <Link href={g.href} className="py-2.5 px-3 rounded-lg font-semibold text-gray-700 hover:bg-[#CCECFB] hover:text-[#11ABC4]" onClick={() => setMobileOpen(false)}>
+                  {g.label}
+                </Link>
+                {g.sub.length > 0 && (
+                  <div className="flex flex-col ml-4 border-l border-slate-100 pl-2">
+                    {g.sub.map((s) => (
+                      <Link key={s.label} href={s.href} className="py-2 px-3 text-sm text-gray-500 hover:text-[#11ABC4]" onClick={() => setMobileOpen(false)}>
+                        {s.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
             {!session && <Link href="/login" className="btn-primary text-center mt-2" onClick={() => setMobileOpen(false)}>Ingresar</Link>}
           </nav>
