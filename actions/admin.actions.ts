@@ -187,8 +187,6 @@ export async function getUsers(
   status?: string
 ) {
   const skip = (page - 1) * pageSize;
-
-  // Construimos el objeto de filtros dinámicamente
   const where: any = {};
 
   if (search) {
@@ -197,30 +195,25 @@ export async function getUsers(
       { email: { contains: search, mode: 'insensitive' } },
     ];
   }
+  if (role && role !== "ALL") where.role = role;
+  if (status && status !== "ALL") where.isActive = status === "ACTIVE";
 
-  if (role && role !== "ALL") {
-    where.role = role;
-  }
-
-  if (status && status !== "ALL") {
-    where.isActive = status === "ACTIVE";
-  }
-
-  const [users, total] = await Promise.all([
+  const [users, filteredTotal, globalCount] = await Promise.all([
     prisma.user.findMany({
-      where, // Aplicamos los filtros aquí
+      where,
       take: pageSize,
       skip: skip,
-      select: { id: true, name: true, email: true, role: true, isActive: true, createdAt: true },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.user.count({ where }), // Contamos solo los filtrados
+    prisma.user.count({ where }),
+    prisma.user.count(),         
   ]);
 
   return {
     users,
-    totalPages: Math.ceil(total / pageSize),
-    totalUsers: total
+    totalPages: Math.ceil(filteredTotal / pageSize),
+    totalFiltered: filteredTotal, 
+    globalCount: globalCount     
   };
 }
 
