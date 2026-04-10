@@ -24,7 +24,6 @@ interface Props {
 }
 
 export default async function AdminUsersPage({ searchParams }: Props) {
-  // 1. Extraemos los parámetros de búsqueda de la URL
   const params = await searchParams;
   const currentPage = Number(params.page) || 1;
   const search = params.search;
@@ -40,8 +39,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Cabecera de la página */}
+    <div className="space-y-6 relative z-0">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-3xl font-bold text-gray-900 flex items-center gap-2">
@@ -53,22 +51,20 @@ export default async function AdminUsersPage({ searchParams }: Props) {
         </div>
       </div>
 
-      {/* Barra de herramientas: Buscador y Filtros en una sola fila */}
       <UserFilters />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         
-        {/* Columna Izquierda: Formulario de Creación (Sticky para no perderlo de vista) */}
+        {/* COLUMNA IZQUIERDA: Ajustamos el z-index aquí */}
         <div className="lg:col-span-1">
-          <div className="card p-6 sticky top-6 shadow-sm border border-gray-100 bg-white rounded-xl">
+          <div className="card p-6 sticky top-6 z-10 shadow-sm border border-gray-100 bg-white rounded-xl">
             <h2 className="font-heading text-lg font-bold mb-4 text-gray-800">Crear nuevo usuario</h2>
             <UserForm />
           </div>
         </div>
 
-        {/* Columna Derecha: Tabla de Resultados */}
+        {/* COLUMNA DERECHA */}
         <div className="lg:col-span-2 flex flex-col gap-4">
-          
           <div className="card overflow-hidden h-fit shadow-sm border border-gray-100 bg-white rounded-xl">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
