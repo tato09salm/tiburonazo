@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createProduct, updateProduct, upsertVariant, deleteVariant } from "@/actions/product.actions";
+import { createProduct, updateProduct, upsertVariant, deleteVariant, getNextProductCode } from "@/actions/product.actions";
 import { getBrands } from "@/actions/brand.actions";
 import { GENDERS } from "@/lib/constants";
 import { Plus, Trash2, Save, Loader2, Search, X, Upload, Image as ImageIcon } from "lucide-react";
@@ -165,6 +165,19 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!isEdit) {
+      const fetchNextCode = async () => {
+        const nextCode = await getNextProductCode();
+        if (nextCode) {
+          setForm(f => ({ ...f, code: nextCode }));
+          setVariants(vs => vs.map(v => v.isAutoSku ? { ...v, sku: generateSKU(v, nextCode) } : v));
+        }
+      };
+      fetchNextCode();
+    }
+  }, [isEdit]);
 
   const update = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const val = e.target.value;
@@ -444,6 +457,7 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
         <BrandManager 
           onClose={() => setShowBrandManager(false)} 
           onRefresh={refreshBrands} 
+          initialView="create"
         />
       )}
 
@@ -537,7 +551,7 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
                       type="button" 
                       onClick={() => setShowBrandManager(true)}
                       className="btn-secondary p-2.5 h-10 flex items-center justify-center aspect-square"
-                      title="Gestionar marcas"
+                      title="Nueva marca"
                     >
                       <Plus size={18} />
                     </button>
@@ -616,7 +630,15 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
                     <input type="number" value={v.price || ""} onChange={(e) => updateVariant(i, "price", e.target.value)} placeholder="Precio *" className="input text-xs" min={0} step={0.01} />
                     <input type="number" value={v.oldPrice ?? ""} onChange={(e) => updateVariant(i, "oldPrice", e.target.value || null)} placeholder="P. anterior" className="input text-xs" min={0} step={0.01} />
                     <div className="flex gap-1">
-                      <input type="number" value={v.stock} onChange={(e) => updateVariant(i, "stock", Number(e.target.value))} placeholder="Stock" className="input text-xs flex-1" min={0} />
+                      <input 
+                        type="number" 
+                        value={v.stock} 
+                        readOnly 
+                        disabled 
+                        placeholder="Stock" 
+                        className="input text-xs flex-1 bg-gray-100 cursor-not-allowed text-gray-400" 
+                        min={0} 
+                      />
                       <button type="button" onClick={() => handleOpenVariantDeleteModal(i)} className="text-red-400 hover:text-red-600 px-1.5">
                         <Trash2 size={14} />
                       </button>

@@ -59,7 +59,11 @@ export function UserForm() {
       <div>
         <label className="block text-xs font-semibold text-gray-600 mb-1">Email *</label>
         <input 
-          {...register("email")} 
+          {...register("email", {
+            onChange: (e) => {
+              e.target.value = e.target.value.toLowerCase();
+            }
+          })} 
           type="email" 
           className={`input text-sm ${errors.email ? "border-red-500" : ""}`} 
           placeholder="correo@ejemplo.com" 

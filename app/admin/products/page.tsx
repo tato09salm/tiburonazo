@@ -1,19 +1,21 @@
-import { getAdminProducts } from "@/actions/product.actions";
+import { getAdminProducts, getAdminInitialData } from "@/actions/product.actions";
 import { formatPrice } from "@/lib/utils";
 import Link from "next/link";
-import { Plus, Pencil, Search } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import type { Metadata } from "next";
 import { ToggleProductStatus } from "@/components/admin/products/ToggleProductStatus";
 import Image from "next/image";
+import { ProductFilters } from "@/components/admin/products/ProductFilters";
 
 export const metadata: Metadata = { title: "Productos - Admin" };
 
-interface Props { searchParams: Promise<{ page?: string; search?: string }> }
+interface Props { searchParams: Promise<{ page?: string; search?: string; category?: string; status?: string }> }
 
 export default async function AdminProductsPage({ searchParams }: Props) {
   const sp = await searchParams;
   const page = Number(sp.page ?? 1);
-  const { products, total, pages } = await getAdminProducts(page, sp.search);
+  const { products, total, pages } = await getAdminProducts(page, sp.search, sp.category, sp.status);
+  const { categories } = await getAdminInitialData();
 
   return (
     <div>
@@ -27,16 +29,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
         </Link>
       </div>
 
-      {/* Search */}
-      <form method="GET" className="mb-4">
-        <div className="flex gap-2 max-w-sm">
-          <div className="relative flex-1">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input name="search" defaultValue={sp.search} placeholder="Buscar productos..." className="input pl-9 text-sm h-10" />
-          </div>
-          <button type="submit" className="btn-primary px-4 py-2 text-sm">Buscar</button>
-        </div>
-      </form>
+      <ProductFilters categories={categories} />
 
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">

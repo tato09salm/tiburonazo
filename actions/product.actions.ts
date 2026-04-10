@@ -133,6 +133,29 @@ export async function getFeaturedProducts() {
   return getProducts({ featured: true, limit: 8 });
 }
 
+export async function getNextProductCode() {
+  try {
+    const products = await prisma.product.findMany({
+      select: { code: true },
+    });
+
+    const codes = products.map((p) => p.code.trim().toUpperCase());
+    
+    // Buscar el primer número disponible en el formato P001, P002, etc.
+    let nextNum = 1;
+    while (true) {
+      const suggestedCode = `P${nextNum.toString().padStart(3, "0")}`;
+      if (!codes.includes(suggestedCode)) {
+        return suggestedCode;
+      }
+      nextNum++;
+    }
+  } catch (error) {
+    console.error("Error al obtener el siguiente código:", error);
+    return "";
+  }
+}
+
 // ─── Admin CRUD ───────────────────────────────────────────────────────────────
 
 export async function createProduct(data: {
@@ -324,10 +347,25 @@ export async function getAdminInitialData() {
   return { categories, colors, sizes, brands, sections };
 }
 
-export async function getAdminProducts(page = 1, search = "") {
+export async function getAdminProducts(page = 1, search = "", categoryId = "", status = "") {
   const limit = 20;
   const skip = (page - 1) * limit;
-  const where = search ? { title: { contains: search, mode: "insensitive" as const } } : {};
+  const where: any = {};
+
+  if (search) {
+    where.OR = [
+      { title: { contains: search, mode: "insensitive" as const } },
+      { code: { contains: search, mode: "insensitive" as const } },
+    ];
+  }
+
+  if (categoryId) {
+    where.categoryId = categoryId;
+  }
+
+  if (status) {
+    where.isActive = status === "active";
+  }
 
   const [products, total] = await Promise.all([
     prisma.product.findMany({

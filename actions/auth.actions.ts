@@ -14,28 +14,28 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendPasswordResetCode(email: string) {
+  const normalizedEmail = email.trim().toLowerCase();
   try {
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (!user) {
-      // Por seguridad no revelamos si el usuario existe o no
-      return { success: true };
+      return { error: "El correo electrónico no está asociado a ninguna cuenta" };
     }
 
     // Generar código de 6 dígitos
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutos
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
 
     // Guardar en la base de datos (borrando códigos anteriores para ese email)
     await prisma.passwordReset.deleteMany({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     await prisma.passwordReset.create({
       data: {
-        email,
+        email: normalizedEmail,
         code,
         expiresAt,
       },
@@ -44,7 +44,7 @@ export async function sendPasswordResetCode(email: string) {
     // Enviar correo
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
-      to: email,
+      to: normalizedEmail,
       subject: "Código de recuperación de contraseña - TIBURONAZO",
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e1e1e1; border-radius: 10px;">
@@ -53,7 +53,7 @@ export async function sendPasswordResetCode(email: string) {
           <div style="background-color: #f4f4f4; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #333; margin: 20px 0; border-radius: 5px;">
             ${code}
           </div>
-          <p style="color: #666; font-size: 14px;">Este código expirará en 2 minutos.</p>
+          <p style="color: #666; font-size: 14px;">Este código expirará en 10 minutos.</p>
           <p style="color: #666; font-size: 14px;">Si no solicitaste este cambio, puedes ignorar este mensaje.</p>
         </div>
       `,
@@ -67,10 +67,11 @@ export async function sendPasswordResetCode(email: string) {
 }
 
 export async function validateResetCode(email: string, code: string) {
+  const normalizedEmail = email.trim().toLowerCase();
   try {
     const resetRequest = await prisma.passwordReset.findFirst({
       where: {
-        email,
+        email: normalizedEmail,
         code,
         expiresAt: {
           gt: new Date(),
@@ -90,10 +91,14 @@ export async function validateResetCode(email: string, code: string) {
 }
 
 export async function resetPassword(email: string, code: string, newPassword: string) {
+  const normalizedEmail = email.trim().toLowerCase();
   try {
+    if (newPassword.length < 8) {
+      return { error: "La contraseña debe tener al menos 8 caracteres" };
+    }
     const resetRequest = await prisma.passwordReset.findFirst({
       where: {
-        email,
+        email: normalizedEmail,
         code,
         expiresAt: {
           gt: new Date(),
@@ -109,7 +114,7 @@ export async function resetPassword(email: string, code: string, newPassword: st
 
     await prisma.$transaction([
       prisma.user.update({
-        where: { email },
+        where: { email: normalizedEmail },
         data: { password: hashedPassword },
       }),
       prisma.passwordReset.delete({

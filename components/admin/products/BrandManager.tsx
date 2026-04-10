@@ -14,14 +14,15 @@ interface Brand {
 interface Props {
   onClose: () => void;
   onRefresh: () => void;
+  initialView?: "list" | "create";
 }
 
-export function BrandManager({ onClose, onRefresh }: Props) {
+export function BrandManager({ onClose, onRefresh, initialView = "list" }: Props) {
   const router = useRouter();
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(initialView === "create");
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,9 +58,13 @@ export function BrandManager({ onClose, onRefresh }: Props) {
   };
 
   const handleCloseFormModal = () => {
-    setIsFormModalOpen(false);
-    setEditingBrand(null);
-    setName("");
+    if (initialView === "create") {
+      onClose();
+    } else {
+      setIsFormModalOpen(false);
+      setEditingBrand(null);
+      setName("");
+    }
   };
 
   async function handleSubmit(e: React.FormEvent) {
@@ -75,7 +80,9 @@ export function BrandManager({ onClose, onRefresh }: Props) {
         await createBrand({ name });
       }
       handleCloseFormModal();
-      await fetchBrands();
+      if (initialView === "list") {
+        await fetchBrands();
+      }
       onRefresh();
       router.refresh();
     } catch (error) {
@@ -127,78 +134,83 @@ export function BrandManager({ onClose, onRefresh }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="p-4 border-b flex items-center justify-between bg-gray-50">
-          <h2 className="font-heading font-bold text-gray-800">Gestionar Marcas</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded-lg transition-colors">
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="p-4 border-b space-y-3">
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar en la lista..."
-                className="input pl-9 h-10 text-xs"
-                autoFocus
-              />
-            </div>
-            <button
-              onClick={() => handleOpenFormModal()}
-              className="btn-primary px-4 h-10 text-sm flex items-center gap-1.5"
-            >
-              <Plus size={16} />
-              Agregar
+    <div className={cn(
+      "fixed inset-0 z-[60] flex items-center justify-center p-4",
+      initialView === "list" && "bg-black/50"
+    )}>
+      {initialView === "list" && (
+        <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="p-4 border-b flex items-center justify-between bg-gray-50">
+            <h2 className="font-heading font-bold text-gray-800">Gestionar Marcas</h2>
+            <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded-lg transition-colors">
+              <X size={20} />
             </button>
           </div>
-        </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <Loader2 size={24} className="animate-spin text-[#11ABC4]" />
-            </div>
-          ) : filteredBrands.length === 0 ? (
-            <p className="text-center py-8 text-gray-500 text-sm">
-              {searchTerm ? "No se encontraron coincidencias" : "No hay marcas registradas"}
-            </p>
-          ) : (
-            <div className="space-y-2">
-              <div className="flex justify-between px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                <span>Lista de marcas</span>
-                <span>Acciones</span>
+          <div className="p-4 border-b space-y-3">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Buscar en la lista..."
+                  className="input pl-9 h-10 text-xs"
+                  autoFocus
+                />
               </div>
-              {filteredBrands.map((brand) => (
-                <div
-                  key={brand.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                >
-                  <span className="text-sm font-medium text-gray-700">{brand.name}</span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEdit(brand)}
-                      className="inline-flex items-center gap-1 text-xs text-blue-500 hover:bg-blue-50 px-2 py-1 rounded-lg transition-colors font-semibold"
-                    >
-                      <Pencil size={12} /> Editar
-                    </button>
-                    <button
-                      onClick={() => handleOpenDeleteModal(brand)}
-                      className="inline-flex items-center gap-1 text-xs text-red-500 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors font-semibold"
-                    >
-                      <Trash2 size={12} /> Eliminar
-                    </button>
-                  </div>
-                </div>
-              ))}
+              <button
+                onClick={() => handleOpenFormModal()}
+                className="btn-primary px-4 h-10 text-sm flex items-center gap-1.5"
+              >
+                <Plus size={16} />
+                Agregar
+              </button>
             </div>
-          )}
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4">
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 size={24} className="animate-spin text-[#11ABC4]" />
+              </div>
+            ) : filteredBrands.length === 0 ? (
+              <p className="text-center py-8 text-gray-500 text-sm">
+                {searchTerm ? "No se encontraron coincidencias" : "No hay marcas registradas"}
+              </p>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex justify-between px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  <span>Lista de marcas</span>
+                  <span>Acciones</span>
+                </div>
+                {filteredBrands.map((brand) => (
+                  <div
+                    key={brand.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                  >
+                    <span className="text-sm font-medium text-gray-700">{brand.name}</span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(brand)}
+                        className="inline-flex items-center gap-1 text-xs text-blue-500 hover:bg-blue-50 px-2 py-1 rounded-lg transition-colors font-semibold"
+                      >
+                        <Pencil size={12} /> Editar
+                      </button>
+                      <button
+                        onClick={() => handleOpenDeleteModal(brand)}
+                        className="inline-flex items-center gap-1 text-xs text-red-500 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors font-semibold"
+                      >
+                        <Trash2 size={12} /> Eliminar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Modal for Add/Edit Brand */}
       {isFormModalOpen && (

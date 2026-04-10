@@ -156,11 +156,12 @@ export async function createUser(rawContent: unknown) {
   }
 
   const { name, email, password, role } = result.data;
+  const normalizedEmail = email.toLowerCase().trim();
   
   const hashed = await bcrypt.hash(password, 10);
   
   const user = await prisma.user.create({ 
-    data: { name, email, password: hashed, role } 
+    data: { name, email: normalizedEmail, password: hashed, role } 
   });
 
   revalidatePath("/admin/users");

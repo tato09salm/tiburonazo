@@ -34,7 +34,11 @@ export function UserFilters() {
           type="text"
           placeholder="Buscar usuario o email..."
           className="input pl-10 h-10 text-sm w-full border-gray-200 focus:border-[#11ABC4]"
-          onChange={(e) => handleSearch(e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value.toLowerCase();
+            e.target.value = val;
+            handleSearch(val);
+          }}
           defaultValue={searchParams.get("search")?.toString()}
         />
       </div>

@@ -48,7 +48,7 @@ export function ForgotPasswordModal({ onClose }: Props) {
       setError(res.error);
     } else {
       setStep("CODE");
-      setTimer(120); // 2 minutos
+      setTimer(600); // 10 minutos
     }
   }
 
@@ -74,8 +74,8 @@ export function ForgotPasswordModal({ onClose }: Props) {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres");
+    if (newPassword.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres");
       return;
     }
 
@@ -122,7 +122,7 @@ export function ForgotPasswordModal({ onClose }: Props) {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value.toLowerCase())}
                   required
                   className="input"
                   placeholder="tu@correo.com"
