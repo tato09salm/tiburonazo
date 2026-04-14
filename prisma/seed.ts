@@ -1,4 +1,4 @@
-import { PrismaClient, Gender } from "@prisma/client";
+import { PrismaClient, Gender, MoveType } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -113,19 +113,6 @@ async function main() {
     categoryMap[cat.slug] = created.id;
   }
 
-  // 2. Tiendas (del Excel)
-  console.log("🏪 Creando tiendas...");
-  const stores = ["SAGRADO CORAZÓN", "BERENDSON", "CLARETIANO"];
-  const storeMap: Record<string, string> = {};
-  for (const name of stores) {
-    const s = await prisma.store.upsert({
-      where: { name },
-      update: {},
-      create: { name },
-    });
-    storeMap[name] = s.id;
-  }
-
   // 3. Admin user
   console.log("👤 Creando usuarios...");
   const adminPass = await bcrypt.hash("admin123", 10);
@@ -215,22 +202,22 @@ async function main() {
     }
   }
 
-  // 6. Inventario inicial de Sagrado Corazón (del Excel)
-  console.log("📊 Cargando inventario inicial de Sagrado Corazón...");
+  // 6. Inventario inicial
+  console.log("📊 Cargando inventario inicial...");
   const variants = await prisma.productVariant.findMany({ take: 20 });
-  const sagId = storeMap["SAGRADO CORAZÓN"];
-  if (sagId && variants.length) {
+
+  if (variants.length) {
     for (const v of variants.slice(0, 10)) {
       await prisma.inventoryMove.upsert({
         where: { code: `INV-INIT-${v.id}` },
         update: {},
         create: {
           code: `INV-INIT-${v.id}`,
-          type: "ENTRADA",
+          type: MoveType.ENTRADA,
           quantity: v.stock,
+          stockAfter: v.stock, 
           reason: "INICIAL",
           variantId: v.id,
-          storeId: sagId,
           date: new Date("2026-02-24"),
         },
       });

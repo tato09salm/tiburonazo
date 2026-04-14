@@ -19,7 +19,7 @@ export async function getDashboardStats() {
     prisma.sale.findMany({
       take: 10,
       orderBy: { date: "desc" },
-      include: { store: true, vendedor: { select: { name: true } }, items: { include: { variant: { include: { product: { select: { title: true } } } } } } },
+      include: { vendedor: { select: { name: true } }, items: { include: { variant: { include: { product: { select: { title: true } } } } } } },
     }),
   ]);
 
@@ -33,41 +33,75 @@ export async function getDashboardStats() {
 }
 
 // ─── Inventory ────────────────────────────────────────────────────────────────
-
 export async function createInventoryMove(data: {
-  variantId: string;
-  storeId: string;
   type: MoveType;
-  quantity: number;
-  reason?: string;
+  reason: string;
   note?: string;
+  items: { variantId: string; quantity: number }[];
 }) {
-  const code = `INV-${Date.now()}`;
+  // Generamos un prefijo basado en el tiempo
+  const timestamp = Date.now();
 
-  const [move] = await prisma.$transaction([
-    prisma.inventoryMove.create({ data: { ...data, code } }),
-    prisma.productVariant.update({
-      where: { id: data.variantId },
-      data: {
-        stock: data.type === "ENTRADA"
-          ? { increment: data.quantity }
-          : { decrement: data.quantity },
-      },
-    }),
-  ]);
+  return await prisma.$transaction(async (tx) => {
+    const results = [];
 
-  revalidatePath("/admin/inventory");
-  return move;
+    // Usamos el índice (i) para garantizar que el código sea único por cada ítem
+    for (let i = 0; i < data.items.length; i++) {
+      const item = data.items[i];
+      
+      const variant = await tx.productVariant.findUnique({ 
+        where: { id: item.variantId } 
+      });
+      
+      if (!variant) throw new Error(`Producto no encontrado`);
+
+      const newStock = data.type === "ENTRADA" 
+        ? variant.stock + item.quantity 
+        : variant.stock - item.quantity;
+
+      if (newStock < 0) {
+        throw new Error(`Stock insuficiente para: ${variant.sku || variant.model}`);
+      }
+
+      // --- LA SOLUCIÓN AQUÍ ---
+      // Agregamos el índice al final del código: INV-1712345678-0, INV-1712345678-1...
+      const uniqueCode = `INV-${timestamp}-${i}`;
+
+      const move = await tx.inventoryMove.create({
+        data: {
+          variantId: item.variantId,
+          type: data.type,
+          quantity: item.quantity,
+          reason: data.reason,
+          note: data.note,
+          code: uniqueCode, // Ahora sí es único
+          stockAfter: newStock
+        },
+      });
+
+      await tx.productVariant.update({
+        where: { id: item.variantId },
+        data: { stock: newStock },
+      });
+
+      results.push(move);
+    }
+
+    return results;
+  });
 }
 
-export async function getInventoryMoves(variantId?: string, storeId?: string) {
+export async function getInventoryMoves(variantId?: string) {
   return prisma.inventoryMove.findMany({
-    where: { ...(variantId && { variantId }), ...(storeId && { storeId }) },
+    where: { ...(variantId && { variantId }) },
     orderBy: { date: "desc" },
     take: 100,
     include: {
-      variant: { include: { product: { select: { title: true, code: true } } } },
-      store: { select: { name: true } },
+      variant: { 
+        include: { 
+          product: { select: { title: true, code: true } } 
+        } 
+      },
     },
   });
 }
@@ -78,6 +112,49 @@ export async function getLowStockProducts() {
     include: { product: { select: { title: true, code: true, category: { select: { name: true } } } } },
     orderBy: { stock: "asc" },
   });
+}
+
+export async function searchVariants(query: string) {
+  return await prisma.productVariant.findMany({
+    where: {
+      OR: [
+        { sku: { contains: query, mode: "insensitive" } },
+        { product: { title: { contains: query, mode: "insensitive" } } },
+      ],
+      isActive: true,
+    },
+    include: {
+      product: { select: { title: true } },
+      color: { select: { name: true } },
+      size: { select: { label: true } },
+    },
+    take: 5, // Límite de resultados por búsqueda
+  });
+}
+
+// Action para obtener los detalles de los KPIs
+export async function getInventoryStats() {
+  const [lowStock, outOfStock, noMovement] = await Promise.all([
+    prisma.productVariant.findMany({
+      where: { stock: { gt: 0, lte: 5 }, isActive: true },
+      include: { product: true }
+    }),
+    prisma.productVariant.findMany({
+      where: { stock: 0, isActive: true },
+      include: { product: true }
+    }),
+    // Productos sin movimientos en los últimos 30 días
+    prisma.productVariant.findMany({
+      where: {
+        inventoryMoves: {
+          none: { date: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } }
+        }
+      },
+      include: { product: true }
+    })
+  ]);
+
+  return { lowStock, outOfStock, noMovement };
 }
 
 // ─── Sales (POS) ──────────────────────────────────────────────────────────────
@@ -216,14 +293,4 @@ export async function getUsers(
     totalFiltered: filteredTotal, 
     globalCount: globalCount     
   };
-}
-
-// ─── Stores ───────────────────────────────────────────────────────────────────
-
-export async function getStores() {
-  return prisma.store.findMany({ orderBy: { name: "asc" } });
-}
-
-export async function createStore(data: { name: string; address?: string }) {
-  return prisma.store.create({ data });
 }

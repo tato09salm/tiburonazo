@@ -152,28 +152,17 @@ model ProductImage {
   @@map("product_images")
 }
 
-model Store {
-  id             String          @id @default(cuid())
-  name           String          @unique
-  address        String?
-  inventoryMoves InventoryMove[]
-  sales          Sale[]
-
-  @@map("stores")
-}
-
 model InventoryMove {
   id        String         @id @default(cuid())
   code      String         @unique
   date      DateTime       @default(now())
   type      MoveType
   quantity  Int
+  stockAfter Int        
   reason    String?
   note      String?
   createdAt DateTime       @default(now())
   variantId String
-  storeId   String
-  store     Store          @relation(fields: [storeId], references: [id])
   variant   ProductVariant @relation(fields: [variantId], references: [id])
 
   @@map("inventory_moves")
@@ -219,10 +208,8 @@ model Sale {
   destination   String?
   notes         String?
   createdAt     DateTime      @default(now())
-  storeId       String
   vendedorId    String?
   items         SaleItem[]
-  store         Store         @relation(fields: [storeId], references: [id])
   vendedor      User?         @relation("VendedorSales", fields: [vendedorId], references: [id])
 
   @@map("sales")

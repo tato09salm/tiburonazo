@@ -1,93 +1,67 @@
-import { getInventoryMoves, getLowStockProducts, getStores } from "@/actions/admin.actions";
-import { formatPrice } from "@/lib/utils";
-import { Warehouse, AlertTriangle, ArrowDown, ArrowUp } from "lucide-react";
-import { InventoryMoveForm } from "@/components/admin/inventory/InventoryMoveForm";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = { title: "Inventario - Admin" };
+import { getInventoryMoves, getInventoryStats } from "@/actions/admin.actions";
+import { History, Plus, Warehouse } from "lucide-react";
+import { InventoryModal } from "@/components/admin/inventory/InventoryModal";
+import { InventoryStatsCards } from "@/components/admin/inventory/InventoryStatsCards";
+import { InventoryKardexTable } from "@/components/admin/inventory/InventoryKardexTable";
 
 export default async function InventoryPage() {
-  const [moves, lowStock, stores] = await Promise.all([
+  const [moves, stats] = await Promise.all([
     getInventoryMoves(),
-    getLowStockProducts(),
-    getStores(),
+    getInventoryStats(),
   ]);
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="font-heading text-3xl font-bold text-gray-900">Inventario</h1>
-        <p className="text-gray-500 text-sm mt-1">Movimientos y alertas de stock</p>
+    <div className="space-y-4 pb-10 max-w-[1600px] mx-auto animate-in fade-in duration-500">
+
+      {/* HEADER*/}
+      <div className="font-heading text-3xl font-bold text-gray-900 flex items-center gap-2">
+        <Warehouse size={28} className="text-[#11ABC4]" /> Inventario
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Move form */}
-        <div className="card p-6">
-          <h2 className="font-heading text-lg font-bold mb-4 flex items-center gap-2">
-            <Warehouse size={18} className="text-[#11ABC4]" /> Registrar movimiento
-          </h2>
-          <InventoryMoveForm stores={stores} />
+      {/* KPIs*/}
+      <section>
+        <InventoryStatsCards stats={stats} />
+      </section>
+
+      {/* CONTENEDOR PRINCIPAL */}
+      <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
+
+        {/* TOOLBAR SUPERIOR DE LA TABLA */}
+        <div className="px-6 py-5 border-b border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-cyan-50 text-[#11ABC4] rounded-xl">
+              <History size={18} />
+            </div>
+            <h3 className="font-bold text-gray-800 text-base">Movimientos</h3>
+          </div>
+
+          {/* EL BOTÓN */}
+          <InventoryModal>
+            <button className="
+              flex items-center gap-2 px-5 py-2.5 
+              bg-[#1a1a2e] text-white rounded-xl text-xs font-black 
+              shadow-lg shadow-blue-900/10 
+              group
+              /* TRANSICIÓN MEJORADA */
+              transition-all duration-300 ease-in-out
+              hover:bg-[#11ABC4] hover:shadow-[#11ABC4]/20 hover:-translate-y-0.5
+              active:scale-95 active:translate-y-0
+            ">
+              <Plus
+                size={16}
+                className="transition-transform duration-500 ease-out group-hover:rotate-90"
+              />
+              <span>REGISTRAR MOVIMIENTO</span>
+            </button>
+          </InventoryModal>
         </div>
 
-        {/* Low stock */}
-        <div className="card p-6">
-          <h2 className="font-heading text-lg font-bold mb-4 flex items-center gap-2">
-            <AlertTriangle size={18} className="text-orange-500" /> Stock bajo ({lowStock.length})
-          </h2>
-          <div className="space-y-2 max-h-[400px] overflow-y-auto">
-            {lowStock.length === 0 && <p className="text-gray-400 text-sm">Todo bien ✓</p>}
-            {lowStock.map((v) => (
-              <div key={v.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                <div>
-                  <p className="text-xs font-semibold text-gray-800 line-clamp-1">{v.product.title}</p>
-                  <p className="text-xs text-gray-400">{v.sku}</p>
-                </div>
-                <span className={`badge text-xs ${v.stock === 0 ? "bg-red-100 text-red-600" : "bg-orange-100 text-orange-600"}`}>
-                  {v.stock} uds.
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent moves */}
-        <div className="card p-6 lg:col-span-3">
-          <h2 className="font-heading text-lg font-bold mb-4">Movimientos recientes</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
-                <tr>
-                  <th className="px-3 py-2 text-left">Fecha</th>
-                  <th className="px-3 py-2 text-left">Producto</th>
-                  <th className="px-3 py-2 text-left">SKU</th>
-                  <th className="px-3 py-2 text-left">Tienda</th>
-                  <th className="px-3 py-2 text-left">Tipo</th>
-                  <th className="px-3 py-2 text-left">Cantidad</th>
-                  <th className="px-3 py-2 text-left">Motivo</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {moves.map((m) => (
-                  <tr key={m.id} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 text-gray-500 text-xs">{new Date(m.date).toLocaleDateString("es-PE")}</td>
-                    <td className="px-3 py-2 font-medium line-clamp-1">{m.variant.product.title}</td>
-                    <td className="px-3 py-2 text-gray-500 font-mono text-xs">{m.variant.sku}</td>
-                    <td className="px-3 py-2 text-gray-500">{m.store.name}</td>
-                    <td className="px-3 py-2">
-                      <span className={`badge flex items-center gap-1 w-fit ${m.type === "ENTRADA" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
-                        {m.type === "ENTRADA" ? <ArrowDown size={10} /> : <ArrowUp size={10} />}
-                        {m.type}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 font-bold">{m.quantity}</td>
-                    <td className="px-3 py-2 text-gray-400 text-xs">{m.reason ?? "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {/* TABLA */}
+        <div className="p-1">
+          <InventoryKardexTable initialMoves={moves} />
         </div>
       </div>
+
     </div>
   );
 }
