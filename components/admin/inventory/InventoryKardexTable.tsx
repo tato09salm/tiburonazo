@@ -10,9 +10,11 @@ import {
   FilterX,
   CalendarDays,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  FileDown // Icono nuevo
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { generateInventoryPDF } from "@/lib/pdf/inventario-pdf"; // Importamos la utilidad
 
 interface KardexProps {
   initialMoves: any[];
@@ -23,33 +25,40 @@ export function InventoryKardexTable({ initialMoves }: KardexProps) {
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
-  // --- ESTADO DE PAGINACIÓN ---
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 15;
 
   const filteredMoves = useMemo(() => {
     return initialMoves.filter((move) => {
-      const moveDate = new Date(move.date).getTime();
-      const start = startDate ? new Date(startDate).getTime() : null;
-      const end = endDate ? new Date(endDate).getTime() : null;
+      const moveDate = new Date(move.date);
+      
+      let start: number | null = null;
+      if (startDate) {
+        const [y, m, d] = startDate.split('-').map(Number);
+        start = new Date(y, m - 1, d).getTime();
+      }
 
+      let end: number | null = null;
+      if (endDate) {
+        const [y, m, d] = endDate.split('-').map(Number);
+        end = new Date(y, m - 1, d, 23, 59, 59, 999).getTime();
+      }
+
+      const moveTimestamp = moveDate.getTime();
       const matchesSearch =
         move.variant.product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         move.variant.sku.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesType = typeFilter === "ALL" || move.type === typeFilter;
-      const matchesDate = (!start || moveDate >= start) &&
-        (!end || moveDate <= (end + 86400000));
+      const matchesDate = (!start || moveTimestamp >= start) &&
+                          (!end || moveTimestamp <= end);
 
       return matchesSearch && matchesType && matchesDate;
     });
   }, [searchTerm, typeFilter, startDate, endDate, initialMoves]);
 
-  // --- LÓGICA DE PAGINACIÓN ---
   const totalPages = Math.ceil(filteredMoves.length / rowsPerPage);
 
-  // Reiniciar a la página 1 cuando cambian los filtros
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, typeFilter, startDate, endDate]);
@@ -66,10 +75,20 @@ export function InventoryKardexTable({ initialMoves }: KardexProps) {
     setEndDate("");
   };
 
+  // Función para disparar el PDF
+  const handleExportPDF = () => {
+    generateInventoryPDF(filteredMoves, {
+      searchTerm,
+      type: typeFilter,
+      start: startDate,
+      end: endDate
+    });
+  };
+
   return (
     <div className="flex flex-col bg-white">
       {/* --- PANEL DE FILTROS --- */}
-      <div className="px-6 py-2 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white border-b border-gray-100">
+      <div className="px-6 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white border-b border-gray-100">
         <div className="flex flex-wrap items-center gap-3 flex-1">
           <div className="relative w-full md:w-64 group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#11ABC4] transition-colors" size={14} />
@@ -103,6 +122,15 @@ export function InventoryKardexTable({ initialMoves }: KardexProps) {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* BOTÓN EXPORTAR PDF */}
+          <button
+            onClick={handleExportPDF}
+            className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] text-white rounded-xl text-[10px] font-black tracking-widest hover:bg-[#11ABC4] transition-all shadow-md active:scale-95"
+          >
+            <FileDown size={14} />
+            PDF
+          </button>
+
           <div className="flex items-center bg-gray-100/50 rounded-lg p-0.5 border border-gray-100">
             {["ALL", "ENTRADA", "SALIDA"].map((t) => (
               <button
@@ -204,48 +232,26 @@ export function InventoryKardexTable({ initialMoves }: KardexProps) {
         </table>
       </div>
 
-      {/* --- FOOTER CON PAGINACIÓN CENTRADA --- */}
+      {/* --- FOOTER --- */}
       <div className="px-6 py-3 bg-white border-t border-gray-100 grid grid-cols-3 items-center">
-
-        {/* Lado izquierdo (Vacío o información extra) */}
-        <div className="hidden md:block">
-          {/* Puedes dejarlo vacío para mantener el equilibrio */}
-        </div>
-
-        {/* CENTRO: Contador de registros */}
+        <div className="hidden md:block"></div>
         <div className="flex justify-center">
-          <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
-            Mostrando <span className="text-gray-600">{paginatedMoves.length}</span> de <span className="text-gray-700">{filteredMoves.length}</span> registros
+          <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+            Mostrando <span className="text-gray-600">{paginatedMoves.length}</span> de <span className="text-gray-800">{filteredMoves.length}</span> registros
           </p>
         </div>
-
-        {/* Lado derecho: Controles de navegación */}
         <div className="flex justify-end items-center gap-2">
           {totalPages > 1 && (
             <>
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="p-1.5 rounded-lg border border-gray-100 hover:bg-gray-50 disabled:opacity-30 transition-colors"
-              >
+              <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="p-1.5 rounded-lg border border-gray-100 hover:bg-gray-50 disabled:opacity-30 transition-colors">
                 <ChevronLeft size={14} className="text-gray-600" />
               </button>
-
               <div className="flex items-center gap-1.5 min-w-[60px] justify-center">
-                <span className="text-[10px] font-black ">
-                  {currentPage}
-                </span>
+                <span className="text-[10px] font-black ">{currentPage}</span>
                 <span className="text-[10px] font-bold text-gray-300">/</span>
-                <span className="text-[10px] font-bold text-gray-400">
-                  {totalPages}
-                </span>
+                <span className="text-[10px] font-bold text-gray-400">{totalPages}</span>
               </div>
-
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="p-1.5 rounded-lg border border-gray-100 hover:bg-gray-50 disabled:opacity-30 transition-colors"
-              >
+              <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="p-1.5 rounded-lg border border-gray-100 hover:bg-gray-50 disabled:opacity-30 transition-colors">
                 <ChevronRight size={14} className="text-gray-600" />
               </button>
             </>
