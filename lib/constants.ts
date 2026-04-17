@@ -37,10 +37,10 @@ export const GENDERS = [
 ] as const;
 
 export const PAYMENT_METHODS = [
-  { value: "CULQI", label: "Tarjeta (Culqi)" },
-  { value: "YAPE", label: "Yape/Plin" },
   { value: "EFECTIVO", label: "Efectivo" },
-  { value: "TRANSFERENCIA", label: "Transferencia" },
+  { value: "YAPE", label: "Yape" },
+  { value: "PLIN", label: "Plin" },
+  { value: "CULQI", label: "Tarjeta" },
 ] as const;
 
 export const PRODUCTS_PER_PAGE = 12;

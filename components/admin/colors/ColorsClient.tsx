@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2, Search, Loader2, Save, X } from "lucide-react";
 import { createColor, updateColor, deleteColor } from "@/actions/color.actions";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 interface Color {
   id: string;
@@ -266,50 +267,17 @@ export function ColorsClient({ initialColors }: Props) {
       )}
 
       {/* Modal for Delete Confirmation */}
-      {isDeleteModalOpen && colorToDelete && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Trash2 size={32} />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Eliminar Color</h3>
-              <p className="text-gray-500 text-sm">
-                ¿Estás seguro de eliminar el color <span className="font-bold text-gray-900">"{colorToDelete.name}"</span>?
-              </p>
-              
-              {deleteError && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2 text-left">
-                  <X size={16} className="text-red-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-red-600 font-medium leading-tight">
-                    {deleteError}
-                  </p>
-                </div>
-              )}
-            </div>
-            <div className="bg-gray-50 px-6 py-4 flex gap-3">
-              <button
-                onClick={handleCloseDeleteModal}
-                className="btn-secondary flex-1 h-11 text-sm font-semibold"
-                disabled={deleting}
-              >
-                cancelar
-              </button>
-              <button
-                onClick={(e) => confirmDelete(e)}
-                className="btn-primary bg-red-600 hover:bg-red-700 border-red-600 flex-1 h-11 text-sm font-semibold flex items-center justify-center gap-2"
-                disabled={deleting}
-              >
-                {deleting ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : (
-                  "eliminar"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal 
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={confirmDelete}
+        title="Eliminar Color"
+        message={`¿Estás seguro de eliminar el color "${colorToDelete?.name}"?`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        type="danger"
+        loading={deleting}
+      />
     </div>
   );
 }

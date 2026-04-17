@@ -202,8 +202,10 @@ model OrderItem {
 model Sale {
   id            String        @id @default(cuid())
   code          String        @unique
+  nroVenta      Int?
   date          DateTime      @default(now())
   paymentMethod PaymentMethod
+  status        SaleStatus    @default(COMPLETADA)
   total         Float
   destination   String?
   notes         String?
@@ -212,7 +214,13 @@ model Sale {
   items         SaleItem[]
   vendedor      User?         @relation("VendedorSales", fields: [vendedorId], references: [id])
 
+  @@unique([date, nroVenta])
   @@map("sales")
+}
+
+enum SaleStatus {
+  COMPLETADA
+  ANULADA
 }
 
 model SaleItem {

@@ -50,9 +50,16 @@ export function ProductCardComponent({ product }: Props) {
   }
 
   return (
-    <Link href={`/productos/${product.slug}`} className="group card flex flex-col hover:shadow-md transition-shadow duration-300">
+    <div className="group card flex flex-col hover:shadow-md transition-shadow duration-300 relative overflow-hidden">
+      {/* Link que cubre toda la tarjeta */}
+      <Link 
+        href={`/productos/${product.slug}`} 
+        className="absolute inset-0 z-0"
+        aria-label={product.title}
+      />
+
       {/* Image */}
-      <div className="relative overflow-hidden bg-gray-50 aspect-[3/4]">
+      <div className="relative overflow-hidden bg-gray-50 aspect-[3/4] z-10 pointer-events-none">
         <Image
           src={mainImage}
           alt={product.title}
@@ -88,9 +95,13 @@ export function ProductCardComponent({ product }: Props) {
         </div>
 
         {/* Quick action */}
-        <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-auto">
           <button
-            onClick={handleAddToCart}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddToCart(e);
+            }}
             disabled={!inStock}
             className={cn(
               "p-2 rounded-xl shadow-md transition-all duration-200 text-white",
@@ -101,19 +112,17 @@ export function ProductCardComponent({ product }: Props) {
           >
             <ShoppingCart size={16} />
           </button>
-          <Link
-            href={`/productos/${product.slug}`}
-            onClick={(e) => e.stopPropagation()}
+          <div
             className="p-2 rounded-xl bg-white shadow-md text-[#11ABC4] hover:bg-[#CCECFB] transition-all duration-200"
             title="Ver producto"
           >
             <Eye size={16} />
-          </Link>
+          </div>
         </div>
       </div>
 
       {/* Info */}
-      <div className="p-3 flex flex-col flex-1 gap-1">
+      <div className="p-3 flex flex-col flex-1 gap-1 z-10 pointer-events-none">
         <p className="text-xs text-[#11ABC4] font-semibold uppercase tracking-wide">
           {product.category.name}
         </p>
@@ -148,6 +157,6 @@ export function ProductCardComponent({ product }: Props) {
           )}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
