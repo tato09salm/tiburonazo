@@ -59,7 +59,7 @@ export async function getProducts(params: GetProductsParams = {}) {
   if (gender) {
     where.gender = gender;
   }
-  
+
   if (search) where.title = { contains: search, mode: "insensitive" };
   if (brandId) where.brandId = brandId;
   if (featured) where.isFeatured = true;
@@ -88,8 +88,8 @@ export async function getProducts(params: GetProductsParams = {}) {
         variants: {
           where: { isActive: true },
           include: {
-            color: { select: { name: true, hex: true } },
-            size: { select: { label: true } },
+            color: { select: { id: true, name: true, hex: true } },
+            size: { select: { id: true, label: true } },
           },
         },
       },
@@ -121,7 +121,7 @@ export async function getProductBySlug(slug: string) {
           size: true,
         },
       },
-    }, 
+    },
   });
 
   if (!product) return null;
@@ -140,7 +140,7 @@ export async function getNextProductCode() {
     });
 
     const codes = products.map((p) => p.code.trim().toUpperCase());
-    
+
     // Buscar el primer número disponible en el formato P001, P002, etc.
     let nextNum = 1;
     while (true) {
@@ -212,15 +212,15 @@ export async function createProduct(data: {
 
 export async function updateProduct(
   id: string,
-  data: Partial<{ 
-    title: string; 
-    description: string; 
-    material: string; 
-    linea: string; 
-    gender: Gender; 
-    isActive: boolean; 
-    isFeatured: boolean; 
-    categoryId: string; 
+  data: Partial<{
+    title: string;
+    description: string;
+    material: string;
+    linea: string;
+    gender: Gender;
+    isActive: boolean;
+    isFeatured: boolean;
+    categoryId: string;
     brandId: string | null;
     sectionIds: string[];
     images: Array<{ id?: string; url: string; order: number; colorId?: string }>;
@@ -228,7 +228,7 @@ export async function updateProduct(
 ) {
   try {
     const { images, sectionIds, categoryId, brandId, ...rest } = data;
-    
+
     // Usar una transacción para actualizar producto e imágenes
     const product = await prisma.$transaction(async (tx) => {
       // 1. Actualizar datos básicos del producto
@@ -250,8 +250,8 @@ export async function updateProduct(
         updateData.sections = { set: sectionIds.map(id => ({ id })) };
       }
 
-      const updatedProduct = await tx.product.update({ 
-        where: { id }, 
+      const updatedProduct = await tx.product.update({
+        where: { id },
         data: updateData
       });
 
@@ -271,7 +271,7 @@ export async function updateProduct(
           if (img.id) {
             await tx.productImage.update({
               where: { id: img.id },
-              data: { 
+              data: {
                 order: img.order,
                 colorId: img.colorId || null
               }
@@ -326,13 +326,13 @@ export async function upsertVariant(productId: string, data: {
 }) {
   const { id, ...rest } = data;
   if (id) {
-    return prisma.productVariant.update({ 
-      where: { id }, 
-      data: rest 
+    return prisma.productVariant.update({
+      where: { id },
+      data: rest
     });
   }
-  return prisma.productVariant.create({ 
-    data: { ...rest, productId } 
+  return prisma.productVariant.create({
+    data: { ...rest, productId }
   });
 }
 

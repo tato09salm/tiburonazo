@@ -17,21 +17,21 @@ export function ProductCardComponent({ product }: Props) {
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
 
-  const mainImage = product.images[0]?.url ?? "/placeholder.png";
+  const mainImage = product.images[0]?.url ?? "/placeholder4.png";
   const hoverImage = product.images[1]?.url;
   const defaultVariant = product.variants[0];
   const hasDiscount = defaultVariant?.oldPrice && defaultVariant.oldPrice > defaultVariant.price;
   const inStock = product.variants.some((v) => v.stock > 0);
 
-  // Obtener colores únicos de las variantes (usando hex de la relación color)
   const colors = Array.from(new Set(product.variants.map(v => v.color?.hex).filter(Boolean)));
-
   const firstColorName = defaultVariant?.color?.name || "Único";
   const firstSizeLabel = defaultVariant?.size?.label || "Único";
 
   function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
+    e.stopPropagation(); // Evita que el clic active el enlace de la tarjeta
     if (!defaultVariant || !inStock) return;
+    
     addItem({
       variantId: defaultVariant.id,
       productId: product.id,
@@ -50,7 +50,16 @@ export function ProductCardComponent({ product }: Props) {
   }
 
   return (
-    <Link href={`/productos/${product.slug}`} className="group card flex flex-col hover:shadow-md transition-shadow duration-300">
+    // CAMBIO 1: El contenedor ahora es un div relativo
+    <div className="group relative card flex flex-col hover:shadow-md transition-shadow duration-300 bg-white rounded-xl overflow-hidden">
+      
+      {/* CAMBIO 2: Este es el enlace principal que cubre toda la tarjeta */}
+      <Link 
+        href={`/productos/${product.slug}`} 
+        className="absolute inset-0 z-10" 
+        aria-label={product.title}
+      />
+
       {/* Image */}
       <div className="relative overflow-hidden bg-gray-50 aspect-[3/4]">
         <Image
@@ -62,7 +71,7 @@ export function ProductCardComponent({ product }: Props) {
             hoverImage ? "group-hover:opacity-0" : "group-hover:scale-105"
           )}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          quality={100}
+          quality={75}
         />
         {hoverImage && (
           <Image
@@ -71,12 +80,12 @@ export function ProductCardComponent({ product }: Props) {
             fill
             className="object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            quality={100}
+            quality={75}
           />
         )}
 
         {/* Badges */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
+        <div className="absolute top-2 left-2 flex flex-col gap-1 z-20">
           {hasDiscount && (
             <span className="badge bg-red-500 text-white">
               -{Math.round(((defaultVariant.oldPrice! - defaultVariant.price) / defaultVariant.oldPrice!) * 100)}%
@@ -87,8 +96,8 @@ export function ProductCardComponent({ product }: Props) {
           )}
         </div>
 
-        {/* Quick action */}
-        <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        {/* Quick action - CAMBIO 3: z-30 para estar por encima del link invisible */}
+        <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30">
           <button
             onClick={handleAddToCart}
             disabled={!inStock}
@@ -101,9 +110,10 @@ export function ProductCardComponent({ product }: Props) {
           >
             <ShoppingCart size={16} />
           </button>
+          
+          {/* Este segundo link ya no causa error porque no está dentro de otro <a> en el HTML final */}
           <Link
             href={`/productos/${product.slug}`}
-            onClick={(e) => e.stopPropagation()}
             className="p-2 rounded-xl bg-white shadow-md text-[#11ABC4] hover:bg-[#CCECFB] transition-all duration-200"
             title="Ver producto"
           >
@@ -120,11 +130,12 @@ export function ProductCardComponent({ product }: Props) {
         <h3 className="font-semibold text-sm leading-tight line-clamp-2 text-gray-800">
           {product.title}
         </h3>
+        
+        {/* ... resto de tu código igual ... */}
         {product.brand && (
           <p className="text-xs text-gray-500">{product.brand.name}</p>
         )}
 
-        {/* Colors preview */}
         {colors.length > 0 && (
           <div className="flex gap-1 mt-1">
             {colors.slice(0, 4).map((hex, i) => (
@@ -148,6 +159,6 @@ export function ProductCardComponent({ product }: Props) {
           )}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

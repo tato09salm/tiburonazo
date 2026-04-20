@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { getProductBySlug, getProducts } from "@/actions/product.actions";
 import { ProductDetailClient } from "./ProductDetailClient";
-import { ProductCardComponent } from "@/components/store/product-card";
 import type { Metadata } from "next";
 
 interface Props {
@@ -26,25 +25,15 @@ export default async function ProductPage({ params }: Props) {
 
   const { products: related } = await getProducts({
     categorySlug: product.category.slug,
-    limit: 4,
+    limit: 6,
   });
 
-  const filtered = related.filter((p) => p.id !== product.id).slice(0, 4);
+  const filteredRelated = related.filter((p) => p.id !== product.id).slice(0, 4);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <ProductDetailClient product={product} />
-
-      {filtered.length > 0 && (
-        <section className="mt-16">
-          <h2 className="section-title mb-6">También te puede gustar</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {filtered.map((p) => (
-              <ProductCardComponent key={p.id} product={p} />
-            ))}
-          </div>
-        </section>
-      )}
+    <div className="max-w-7xl mx-auto px-4 py-1">
+      {/* Pasamos los productos relacionados al cliente para que el sticky funcione */}
+      <ProductDetailClient product={product} relatedProducts={filteredRelated} />
     </div>
   );
 }

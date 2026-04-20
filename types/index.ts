@@ -9,13 +9,16 @@ export interface ProductImage {
   url: string;
   alt: string | null;
   order: number;
+  colorId: string | null; 
 }
 
 export interface ProductVariant {
   id: string;
   sku: string;
+  colorId: string | null; 
+  sizeId: string | null;  
   color: { id: string; name: string; hex: string | null } | null;
-  size: { id: string; label: string } | null;
+  size: { id: string; label: string; category?: string | null; sortOrder?: number } | null;
   model: string | null;
   price: number;
   oldPrice: number | null;
@@ -35,6 +38,7 @@ export interface ProductCard {
   variants: ProductVariant[];
   minPrice: number;
   maxPrice: number;
+  linea?: string | null;
 }
 
 export interface ProductDetail extends ProductCard {
