@@ -152,6 +152,15 @@ model ProductImage {
   @@map("product_images")
 }
 
+model Store {
+  id             String          @id @default(cuid())
+  name           String          @unique
+  address        String?
+  sales          Sale[]
+
+  @@map("stores")
+}
+
 model InventoryMove {
   id        String         @id @default(cuid())
   code      String         @unique
@@ -210,8 +219,11 @@ model Sale {
   destination   String?
   notes         String?
   createdAt     DateTime      @default(now())
+  storeId String
+
   vendedorId    String?
   items         SaleItem[]
+  store         Store         @relation(fields: [storeId], references: [id])
   vendedor      User?         @relation("VendedorSales", fields: [vendedorId], references: [id])
 
   @@unique([date, nroVenta])

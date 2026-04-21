@@ -113,6 +113,19 @@ async function main() {
     categoryMap[cat.slug] = created.id;
   }
 
+  // 2. Tiendas (del Excel)
+  console.log("🏪 Creando tiendas...");
+  const stores = ["SAGRADO CORAZÓN", "BERENDSON", "CLARETIANO"];
+  const storeMap: Record<string, string> = {};
+  for (const name of stores) {
+    const s = await prisma.store.upsert({
+      where: { name },
+      update: {},
+      create: { name },
+    });
+    storeMap[name] = s.id;
+  }
+  
   // 3. Admin user
   console.log("👤 Creando usuarios...");
   const adminPass = await bcrypt.hash("admin123", 10);
