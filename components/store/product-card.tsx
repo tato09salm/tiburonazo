@@ -50,18 +50,16 @@ export function ProductCardComponent({ product }: Props) {
   }
 
   return (
-    // CAMBIO 1: El contenedor ahora es un div relativo
-    <div className="group relative card flex flex-col hover:shadow-md transition-shadow duration-300 bg-white rounded-xl overflow-hidden">
-      
-      {/* CAMBIO 2: Este es el enlace principal que cubre toda la tarjeta */}
+    <div className="group card flex flex-col hover:shadow-md transition-shadow duration-300 relative overflow-hidden">
+      {/* Link que cubre toda la tarjeta */}
       <Link 
         href={`/productos/${product.slug}`} 
-        className="absolute inset-0 z-10" 
+        className="absolute inset-0 z-0"
         aria-label={product.title}
       />
 
       {/* Image */}
-      <div className="relative overflow-hidden bg-gray-50 aspect-[3/4]">
+      <div className="relative overflow-hidden bg-gray-50 aspect-[3/4] z-10 pointer-events-none">
         <Image
           src={mainImage}
           alt={product.title}
@@ -96,10 +94,14 @@ export function ProductCardComponent({ product }: Props) {
           )}
         </div>
 
-        {/* Quick action - CAMBIO 3: z-30 para estar por encima del link invisible */}
-        <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30">
+        {/* Quick action */}
+        <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-auto">
           <button
-            onClick={handleAddToCart}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddToCart(e);
+            }}
             disabled={!inStock}
             className={cn(
               "p-2 rounded-xl shadow-md transition-all duration-200 text-white",
@@ -110,20 +112,17 @@ export function ProductCardComponent({ product }: Props) {
           >
             <ShoppingCart size={16} />
           </button>
-          
-          {/* Este segundo link ya no causa error porque no está dentro de otro <a> en el HTML final */}
-          <Link
-            href={`/productos/${product.slug}`}
+          <div
             className="p-2 rounded-xl bg-white shadow-md text-[#11ABC4] hover:bg-[#CCECFB] transition-all duration-200"
             title="Ver producto"
           >
             <Eye size={16} />
-          </Link>
+          </div>
         </div>
       </div>
 
       {/* Info */}
-      <div className="p-3 flex flex-col flex-1 gap-1">
+      <div className="p-3 flex flex-col flex-1 gap-1 z-10 pointer-events-none">
         <p className="text-xs text-[#11ABC4] font-semibold uppercase tracking-wide">
           {product.category.name}
         </p>

@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { generateOrderCode } from "@/lib/utils";
-import { MoveType, PaymentMethod } from "@prisma/client";
+import { MoveType, PaymentMethod, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { LOW_STOCK_THRESHOLD } from "@/lib/constants";
@@ -18,8 +18,11 @@ export async function getDashboardStats() {
     prisma.productVariant.count({ where: { stock: { lte: LOW_STOCK_THRESHOLD }, isActive: true } }),
     prisma.sale.findMany({
       take: 10,
-      orderBy: { date: "desc" },
-      include: { vendedor: { select: { name: true } }, items: { include: { variant: { include: { product: { select: { title: true } } } } } } },
+      orderBy: [
+      { date: "desc" },
+      { nroVenta: "desc" }
+    ],
+      include: { store: true, vendedor: { select: { name: true } }, items: { include: { variant: { include: { product: { select: { title: true } } } } } } },
     }),
   ]);
 
@@ -159,67 +162,252 @@ export async function getInventoryStats() {
 
 // ─── Sales (POS) ──────────────────────────────────────────────────────────────
 
-export async function createSale(data: {
-  storeId: string;
+export async function createSale(data: { 
+  storeId: string; 
   vendedorId?: string;
-  paymentMethod: PaymentMethod;
-  destination?: string;
-  notes?: string;
-  items: Array<{ variantId: string; quantity: number; price: number }>;
+  date?: string;
+  paymentMethod: string; 
+  destination?: string; 
+  notes?: string; 
+  items: { variantId: string; quantity: number; price: number }[] 
 }) {
-  const total = data.items.reduce((s, i) => s + i.price * i.quantity, 0);
-  const code = generateOrderCode().replace("TIB", "VTA");
+  const subtotal = data.items.reduce((s, i) => s + i.price * i.quantity, 0);
+  
+  // Lógica de redondeo para Perú (Efectivo a favor del cliente)
+  const total = data.paymentMethod === "EFECTIVO" 
+    ? Math.floor(subtotal * 10) / 10 
+    : subtotal;
+  
+  // 1. Normalización estricta de la fecha a medianoche UTC
+  const inputDate = data.date ? new Date(data.date) : new Date();
+  const normalizedDate = new Date(Date.UTC(
+    inputDate.getUTCFullYear(),
+    inputDate.getUTCMonth(),
+    inputDate.getUTCDate(),
+    0, 0, 0, 0
+  ));
 
-  const sale = await prisma.$transaction(async (tx) => {
-    const s = await tx.sale.create({
-      data: {
-        code,
-        storeId: data.storeId,
-        vendedorId: data.vendedorId,
-        paymentMethod: data.paymentMethod,
-        destination: data.destination,
-        notes: data.notes,
-        total,
-        items: { create: data.items },
-      },
-      include: { items: true },
-    });
+  const dateStr = `${normalizedDate.getUTCFullYear()}${String(normalizedDate.getUTCMonth() + 1).padStart(2, '0')}${String(normalizedDate.getUTCDate()).padStart(2, '0')}`;
 
-    // Decrease stock
-    for (const item of data.items) {
-      await tx.productVariant.update({
-        where: { id: item.variantId },
-        data: { stock: { decrement: item.quantity } },
+  let retries = 5;
+  while (retries > 0) {
+    try {
+      const sale = await prisma.$transaction(async (tx) => {
+        // 2. Buscar el máximo nroVenta para esa fecha exacta
+        // Usamos aggregate para mayor precisión sobre el campo nroVenta
+        const result = await tx.sale.aggregate({
+          where: { date: normalizedDate },
+          _max: { nroVenta: true }
+        });
+
+        const nextNro = (result._max.nroVenta || 0) + 1;
+        const code = `${dateStr}-${String(nextNro).padStart(2, '0')}`;
+
+        console.log(`[Ventas] Intentando registrar: ${code} (Nro: ${nextNro})`);
+
+        // 3. Crear la venta
+        const s = await tx.sale.create({
+          data: {
+            code,
+            nroVenta: nextNro,
+            date: normalizedDate,
+            storeId: data.storeId,
+            vendedorId: data.vendedorId,
+            paymentMethod: data.paymentMethod,
+            destination: data.destination,
+            notes: data.notes,
+            total,
+            items: {
+              create: data.items.map(item => ({
+                variantId: item.variantId,
+                quantity: item.quantity,
+                price: item.price,
+              }))
+            },
+          },
+          include: { items: true },
+        });
+
+        // 4. Actualizar stock
+        for (const item of data.items) {
+          await tx.productVariant.update({
+            where: { id: item.variantId },
+            data: { stock: { decrement: item.quantity } },
+          });
+        }
+
+        return s;
+      }, {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
       });
+
+      revalidatePath("/admin/sales");
+      return sale;
+    } catch (error: any) {
+      // Si el error es de duplicidad (P2002), reintentamos con el siguiente número
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        retries--;
+        const delay = Math.floor(Math.random() * 100) + 50;
+        console.warn(`[Ventas] Colisión detectada para ${dateStr}. Reintentando en ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      console.error("[Ventas] Error al registrar venta:", error);
+      throw error;
     }
-
-    return s;
-  });
-
-  revalidatePath("/admin/sales");
-  return sale;
+  }
+  throw new Error("No se pudo generar un código de venta único tras varios reintentos. Por favor, intente de nuevo.");
 }
 
-export async function getSales(storeId?: string, from?: Date, to?: Date) {
-  return prisma.sale.findMany({
-    where: {
-      ...(storeId && { storeId }),
-      ...(from && to && { date: { gte: from, lte: to } }),
-    },
-    orderBy: { date: "desc" },
-    take: 200,
-    include: {
-      store: { select: { name: true } },
-      vendedor: { select: { name: true } },
-      items: {
-        include: {
-          variant: {
-            include: { product: { select: { title: true, code: true } } },
+export async function getSales(params?: {
+  storeId?: string;
+  from?: Date;
+  to?: Date;
+  vendedorId?: string;
+  paymentMethod?: string;
+  status?: string;
+  client?: string;
+  minTotal?: number;
+  maxTotal?: number;
+  page?: number;
+  take?: number;
+}) {
+  const { storeId, from, to, vendedorId, paymentMethod, status, client, minTotal, maxTotal, page = 1, take = 10 } = params || {};
+  const skip = (page - 1) * take;
+
+  console.log("[getSales] Filtering with:", { vendedorId, paymentMethod, status, client, minTotal, maxTotal, page, take });
+
+  const where = {
+    ...(storeId && { storeId }),
+    ...(vendedorId && { vendedorId }),
+    ...(paymentMethod && { paymentMethod: paymentMethod as any }),
+    ...(status && { status: status as any }),
+    ...((from || to) && {
+      date: {
+        ...(from && { gte: from }),
+        ...(to && { lte: to }),
+      }
+    }),
+    ...(client && {
+      OR: [
+        { notes: { contains: client, mode: 'insensitive' } },
+        { destination: { contains: client, mode: 'insensitive' } },
+        {
+          items: {
+            some: {
+              variant: {
+                OR: [
+                  { sku: { contains: client, mode: 'insensitive' } },
+                  { product: { title: { contains: client, mode: 'insensitive' } } }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }),
+    ...((minTotal !== undefined || maxTotal !== undefined) && {
+      total: {
+        ...(minTotal !== undefined && { gte: minTotal }),
+        ...(maxTotal !== undefined && { lte: maxTotal }),
+      }
+    }),
+  };
+
+  const [sales, count] = await Promise.all([
+    prisma.sale.findMany({
+      where,
+      orderBy: [
+        { date: "desc" },
+        { nroVenta: "desc" }
+      ],
+      skip,
+      take,
+      include: {
+        store: { select: { name: true } },
+        vendedor: { select: { name: true } },
+        items: {
+          include: {
+            variant: {
+              include: { 
+                product: { 
+                  select: { 
+                    title: true, 
+                    code: true,
+                    images: { take: 1 }
+                  } 
+                },
+                color: { select: { name: true } },
+                size: { select: { label: true } }
+              },
+            },
           },
         },
       },
-    },
-  });
+    }),
+    prisma.sale.count({ where })
+  ]);
+
+  const pages = Math.ceil(count / take);
+
+  return { sales, count, pages };
+}
+
+export async function getTodaySalesTotal() {
+  try {
+    const now = new Date();
+    // Normalizar a medianoche UTC para coincidir con cómo se guardan las ventas
+    const normalizedDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0));
+
+    const aggregate = await prisma.sale.aggregate({
+      where: {
+        status: "COMPLETADA",
+        date: normalizedDate,
+      },
+      _sum: {
+        total: true,
+      },
+    });
+
+    return aggregate._sum.total || 0;
+  } catch (error) {
+    console.error("Error al calcular el total de hoy:", error);
+    return 0;
+  }
+}
+
+export async function cancelSale(saleId: string) {
+  try {
+    const sale = await prisma.sale.findUnique({
+      where: { id: saleId },
+      include: { items: true },
+    });
+
+    if (!sale) throw new Error("Venta no encontrada");
+    if (sale.status === "ANULADA") throw new Error("La venta ya está anulada");
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Update sale status
+      await tx.sale.update({
+        where: { id: saleId },
+        data: { status: "ANULADA" },
+      });
+
+      // 2. Return stock to variants
+      for (const item of sale.items) {
+        await tx.productVariant.update({
+          where: { id: item.variantId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+    });
+
+    revalidatePath("/admin/sales");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error al anular venta:", error);
+    return { error: error.message || "No se pudo anular la venta" };
+  }
 }
 
 // ─── Users ────────────────────────────────────────────────────────────────────
@@ -293,4 +481,67 @@ export async function getUsers(
     totalFiltered: filteredTotal, 
     globalCount: globalCount     
   };
+}
+
+// ─── Stores ───────────────────────────────────────────────────────────────────
+
+export async function getStores() {
+  return prisma.store.findMany({ orderBy: { name: "asc" } });
+}
+
+export async function getVendedores() {
+  return prisma.user.findMany({
+    where: {
+      role: { in: ["ADMIN", "VENDEDOR"] },
+      isActive: true,
+    },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+}
+
+export async function searchProductVariants(query: string) {
+  if (!query || query.length < 2) return [];
+
+  return prisma.productVariant.findMany({
+    where: {
+      OR: [
+        { sku: { contains: query, mode: "insensitive" } },
+        { model: { contains: query, mode: "insensitive" } },
+        {
+          product: {
+            OR: [
+              { title: { contains: query, mode: "insensitive" } },
+              { code: { contains: query, mode: "insensitive" } },
+            ],
+          },
+        },
+      ],
+      isActive: true,
+      product: { isActive: true },
+    },
+    include: {
+      product: { 
+        select: { 
+          title: true, 
+          code: true,
+          images: {
+            select: {
+              url: true,
+              colorId: true,
+              order: true
+            },
+            orderBy: { order: "asc" }
+          }
+        } 
+      },
+      color: { select: { name: true } },
+      size: { select: { label: true } },
+    },
+    take: 10,
+  });
+}
+
+export async function createStore(data: { name: string; address?: string }) {
+  return prisma.store.create({ data });
 }

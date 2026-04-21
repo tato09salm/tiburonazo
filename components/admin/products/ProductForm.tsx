@@ -607,8 +607,8 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
                   <div>Color</div>
                   <div>Talla</div>
                   <div>Modelo</div>
-                  <div>Precio</div>
-                  <div>P. Anterior</div>
+                  <div>Precio Base</div>
+                  <div className="text-red-500">Oferta</div>
                   <div>Stock</div>
                 </div>
 
@@ -627,8 +627,8 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
                     </select>
 
                     <input value={v.model ?? ""} onChange={(e) => updateVariant(i, "model", e.target.value || null)} placeholder="Modelo" className="input text-xs" />
+                    <input type="number" value={v.oldPrice ?? ""} onChange={(e) => updateVariant(i, "oldPrice", e.target.value || null)} placeholder="P. Base" className="input text-xs" min={0} step={0.01} />
                     <input type="number" value={v.price || ""} onChange={(e) => updateVariant(i, "price", e.target.value)} placeholder="Precio *" className="input text-xs" min={0} step={0.01} />
-                    <input type="number" value={v.oldPrice ?? ""} onChange={(e) => updateVariant(i, "oldPrice", e.target.value || null)} placeholder="P. anterior" className="input text-xs" min={0} step={0.01} />
                     <div className="flex gap-1">
                       <input 
                         type="number" 

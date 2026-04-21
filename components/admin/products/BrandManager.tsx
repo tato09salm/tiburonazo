@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2, X, Loader2, Save, Search } from "lucide-react";
 import { getBrands, createBrand, updateBrand, deleteBrand } from "@/actions/brand.actions";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 interface Brand {
   id: string;
@@ -263,50 +264,17 @@ export function BrandManager({ onClose, onRefresh, initialView = "list" }: Props
       )}
 
       {/* Modal for Delete Confirmation */}
-      {isDeleteModalOpen && brandToDelete && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-xs shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6 text-center">
-              <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Trash2 size={24} />
-              </div>
-              <h3 className="text-base font-bold text-gray-900 mb-1">¿Eliminar Marca?</h3>
-              <p className="text-gray-500 text-xs">
-                ¿Estás seguro de eliminar la marca <span className="font-bold text-gray-900">"{brandToDelete.name}"</span>?
-              </p>
-
-              {deleteError && (
-                <div className="mt-3 p-2 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2 text-left">
-                  <X size={14} className="text-red-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-[10px] text-red-600 font-medium leading-tight">
-                    {deleteError}
-                  </p>
-                </div>
-              )}
-            </div>
-            <div className="bg-gray-50 px-4 py-3 flex gap-2">
-              <button
-                onClick={handleCloseDeleteModal}
-                className="btn-secondary flex-1 h-9 text-xs font-semibold"
-                disabled={deleting}
-              >
-                cancelar
-              </button>
-              <button
-                onClick={(e) => confirmDelete(e)}
-                className="btn-primary bg-red-600 hover:bg-red-700 border-red-600 flex-1 h-9 text-xs font-semibold flex items-center justify-center gap-2"
-                disabled={deleting}
-              >
-                {deleting ? (
-                  <Loader2 size={14} className="animate-spin" />
-                ) : (
-                  "eliminar"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal 
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={confirmDelete}
+        title="Eliminar Marca"
+        message={`¿Estás seguro de eliminar la marca "${brandToDelete?.name}"?`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        type="danger"
+        loading={deleting}
+      />
     </div>
   );
 }
