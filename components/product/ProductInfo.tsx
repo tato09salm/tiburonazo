@@ -12,9 +12,10 @@ interface InfoProps {
   selectedVariant: ProductVariant | null;
   onVariantChange: (variant: ProductVariant) => void;
   resetGallery: () => void;
+  hideHeader?: boolean; // Nueva Prop
 }
 
-export function ProductInfo({ product, selectedVariant, onVariantChange, resetGallery }: InfoProps) {
+export function ProductInfo({ product, selectedVariant, onVariantChange, resetGallery, hideHeader }: InfoProps) {
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
@@ -45,12 +46,15 @@ export function ProductInfo({ product, selectedVariant, onVariantChange, resetGa
 
   return (
     <div className="space-y-8">
-      <div className="space-y-4">
-        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-none tracking-tight uppercase">
-          {product.title}
-        </h1>
-        {selectedVariant && <PriceDisplay price={selectedVariant.price} oldPrice={selectedVariant.oldPrice} size="lg" />}
-      </div>
+      {/* Ocultar en móvil si hideHeader es true */}
+      {!hideHeader && (
+        <div className="space-y-4">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-none tracking-tight uppercase">
+            {product.title}
+          </h1>
+          {selectedVariant && <PriceDisplay price={selectedVariant.price} oldPrice={selectedVariant.oldPrice} size="lg" />}
+        </div>
+      )}
 
       <div className="space-y-4">
         <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Color</p>
@@ -76,14 +80,14 @@ export function ProductInfo({ product, selectedVariant, onVariantChange, resetGa
                   )}
                 >
                   <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", light && "border border-gray-100")} style={{ backgroundColor: color.hex || "#EEE" }}>
-                    <Image 
-                      src="/logo2.png" 
-                      alt="logo" 
-                      width={90} 
-                      height={44} 
-                      className={cn("w-[90%] h-auto object-contain transition-all duration-300", 
-                        isSelected ? "opacity-100 scale-100" : "opacity-30 scale-75", 
-                        light ? "brightness-0" : "brightness-0 invert")} 
+                    <Image
+                      src="/logo2.png"
+                      alt="logo"
+                      width={90}
+                      height={44}
+                      className={cn("w-[90%] h-auto object-contain transition-all duration-300",
+                        isSelected ? "opacity-100 scale-100" : "opacity-30 scale-75",
+                        light ? "brightness-0" : "brightness-0 invert")}
                     />
                   </div>
                 </button>
