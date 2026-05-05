@@ -1,19 +1,23 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, X, Calendar, User, CreditCard, DollarSign, Filter } from "lucide-react";
+import { Search, X, Calendar, DollarSign, Filter, FileDown } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { PAYMENT_METHODS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import {
+  generateSalesPDFByRange,
+} from "@/lib/pdf/ventas-pdf";
 
 interface Props {
   vendedores: { id: string; name: string }[];
+  salesForReports: any[];
 }
 
 type FilterTab = 'general' | 'date' | 'details' | 'amount';
 
-export function SalesFilters({ vendedores }: { vendedores: any[] }) {
+export function SalesFilters({ vendedores, salesForReports }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<FilterTab>('general');
@@ -97,6 +101,10 @@ export function SalesFilters({ vendedores }: { vendedores: any[] }) {
 
   const hasFilters = Object.values(filters).some(v => v !== "");
 
+  const handleReport = () => {
+    generateSalesPDFByRange(salesForReports, filters);
+  };
+
   // Count active filters per category
   const activeCount = {
     general: filters.client ? 1 : 0,
@@ -108,62 +116,75 @@ export function SalesFilters({ vendedores }: { vendedores: any[] }) {
   return (
     <div className="card p-0 mb-6 bg-white shadow-sm border border-gray-100 overflow-hidden">
       {/* Header with Category Tabs */}
-      <div className="bg-gray-50/50 border-b border-gray-100 p-1 flex flex-wrap items-center gap-1">
-        <button
-          onClick={() => setActiveTab('general')}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all",
-            activeTab === 'general' ? "bg-white text-[#11ABC4] shadow-sm" : "text-gray-500 hover:bg-gray-100"
-          )}
-        >
-          <Search size={14} /> Búsqueda {activeCount.general > 0 && <span className="w-1.5 h-1.5 rounded-full bg-[#11ABC4]" />}
-        </button>
-        <button
-          onClick={() => setActiveTab('date')}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all",
-            activeTab === 'date' ? "bg-white text-[#11ABC4] shadow-sm" : "text-gray-500 hover:bg-gray-100"
-          )}
-        >
-          <Calendar size={14} /> Fechas {activeCount.date > 0 && <span className="w-4 h-4 rounded-full bg-[#11ABC4] text-white text-[10px] flex items-center justify-center">{activeCount.date}</span>}
-        </button>
-        <button
-          onClick={() => setActiveTab('details')}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all",
-            activeTab === 'details' ? "bg-white text-[#11ABC4] shadow-sm" : "text-gray-500 hover:bg-gray-100"
-          )}
-        >
-          <Filter size={14} /> Detalles {activeCount.details > 0 && <span className="w-4 h-4 rounded-full bg-[#11ABC4] text-white text-[10px] flex items-center justify-center">{activeCount.details}</span>}
-        </button>
-        <button
-          onClick={() => setActiveTab('amount')}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all",
-            activeTab === 'amount' ? "bg-white text-[#11ABC4] shadow-sm" : "text-gray-500 hover:bg-gray-100"
-          )}
-        >
-          <DollarSign size={14} /> Montos {activeCount.amount > 0 && <span className="w-4 h-4 rounded-full bg-[#11ABC4] text-white text-[10px] flex items-center justify-center">{activeCount.amount}</span>}
-        </button>
-
-        <div className="ml-auto pr-3">
-          {hasFilters && (
-            <button 
-              onClick={clearFilters}
-              className="text-stone-100 hover:text-stone-200 text-[10px] font-bold flex items-center justify-center gap-1.5 transition-all px-3 py-1.5 bg-red-500 rounded-xl shadow-sm hover:shadow-md active:scale-95"
+      <div className="px-4 py-3 border-b border-gray-100 bg-white">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 items-center">
+          <div className="flex flex-wrap items-center gap-1">
+            <button
+              onClick={() => setActiveTab('general')}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all",
+                activeTab === 'general' ? "bg-white text-[#11ABC4] shadow-sm border border-gray-100" : "text-gray-500 hover:bg-gray-100"
+              )}
             >
-              <X size={12} /> Limpiar todo
+              <Search size={14} /> Busqueda {activeCount.general > 0 && <span className="w-1.5 h-1.5 rounded-full bg-[#11ABC4]" />}
             </button>
-          )}
+            <button
+              onClick={() => setActiveTab('date')}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all",
+                activeTab === 'date' ? "bg-white text-[#11ABC4] shadow-sm border border-gray-100" : "text-gray-500 hover:bg-gray-100"
+              )}
+            >
+              <Calendar size={14} /> Fechas {activeCount.date > 0 && <span className="w-4 h-4 rounded-full bg-[#11ABC4] text-white text-[10px] flex items-center justify-center">{activeCount.date}</span>}
+            </button>
+            <button
+              onClick={() => setActiveTab('details')}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all",
+                activeTab === 'details' ? "bg-white text-[#11ABC4] shadow-sm border border-gray-100" : "text-gray-500 hover:bg-gray-100"
+              )}
+            >
+              <Filter size={14} /> Detalles {activeCount.details > 0 && <span className="w-4 h-4 rounded-full bg-[#11ABC4] text-white text-[10px] flex items-center justify-center">{activeCount.details}</span>}
+            </button>
+            <button
+              onClick={() => setActiveTab('amount')}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all",
+                activeTab === 'amount' ? "bg-white text-[#11ABC4] shadow-sm border border-gray-100" : "text-gray-500 hover:bg-gray-100"
+              )}
+            >
+              <DollarSign size={14} /> Montos {activeCount.amount > 0 && <span className="w-4 h-4 rounded-full bg-[#11ABC4] text-white text-[10px] flex items-center justify-center">{activeCount.amount}</span>}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-start xl:justify-end gap-2">
+            {hasFilters && (
+              <button
+                onClick={clearFilters}
+                className="text-stone-100 hover:text-stone-200 text-[10px] font-bold flex items-center justify-center gap-1.5 transition-all px-3 py-2 bg-red-500 rounded-xl shadow-sm hover:shadow-md active:scale-95"
+              >
+                <X size={12} /> Limpiar todo
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleReport}
+              className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] text-white rounded-xl text-[10px] font-black tracking-widest hover:bg-[#11ABC4] transition-all shadow-md active:scale-95"
+            >
+              <FileDown size={14} />
+              REPORTE
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Filter Inputs Area */}
       <div className="p-4 bg-white animate-in fade-in slide-in-from-top-1 duration-200">
         {activeTab === 'general' && (
-          <div className="flex gap-4 items-center">
-            <div className="flex-1">
-              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Buscar por Producto, SKU, Destino o Notas</label>
+          <div className="flex justify-center">
+            <div className="w-full max-w-4xl">
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 text-center">Buscar por Producto, SKU, Destino o Notas</label>
               <div className="relative">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input 
@@ -187,7 +208,7 @@ export function SalesFilters({ vendedores }: { vendedores: any[] }) {
                 value={filters.from}
                 max={filters.to || undefined}
                 onChange={(e) => handleFilterChange("from", e.target.value)}
-                className="input h-11 text-sm w-full"
+                className="input h-11 text-sm xl:w-2/3 xl:mx-auto"
               />
             </div>
             <div>
@@ -197,20 +218,20 @@ export function SalesFilters({ vendedores }: { vendedores: any[] }) {
                 value={filters.to}
                 min={filters.from || undefined}
                 onChange={(e) => handleFilterChange("to", e.target.value)}
-                className="input h-11 text-sm w-full"
+                className="input h-11 text-sm xl:w-2/3 xl:mx-auto"
               />
             </div>
           </div>
         )}
 
         {activeTab === 'details' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             <div>
               <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Vendedor</label>
               <select 
                 value={filters.vendedorId}
                 onChange={(e) => handleFilterChange("vendedorId", e.target.value)}
-                className="input h-11 text-sm w-full"
+                className="input h-11 text-sm xl:w-2/3 xl:mx-auto"  // Cambiado de w-full a w-2/3 <<<<<<<<<<<<<<<<
               >
                 <option value="">Todos los vendedores</option>
                 {vendedores.map(v => (
@@ -223,7 +244,7 @@ export function SalesFilters({ vendedores }: { vendedores: any[] }) {
               <select 
                 value={filters.paymentMethod}
                 onChange={(e) => handleFilterChange("paymentMethod", e.target.value)}
-                className="input h-11 text-sm w-full"
+                className="input h-11 text-sm xl:w-2/3 xl:mx-auto"  // Cambiado de w-full a w-2/3 <<<<<<<<<<<<<<<<
               >
                 <option value="">Todos los métodos</option>
                 {PAYMENT_METHODS.map((method) => (
@@ -236,7 +257,7 @@ export function SalesFilters({ vendedores }: { vendedores: any[] }) {
               <select 
                 value={filters.status}
                 onChange={(e) => handleFilterChange("status", e.target.value)}
-                className="input h-11 text-sm w-full"
+                className="input h-11 text-sm xl:w-2/3 xl:mx-auto" // Cambiado de w-full a w-2/3 <<<<<<<<<<<<<<<<
               >
                 <option value="">Todos los estados</option>
                 <option value="COMPLETADA">Completada</option>
@@ -247,7 +268,7 @@ export function SalesFilters({ vendedores }: { vendedores: any[] }) {
         )}
 
         {activeTab === 'amount' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
             <div>
               <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Monto Mínimo (S/)</label>
               <div className="relative">
@@ -257,7 +278,7 @@ export function SalesFilters({ vendedores }: { vendedores: any[] }) {
                   placeholder="0.00"
                   value={filters.minTotal}
                   onChange={(e) => handleFilterChange("minTotal", e.target.value)}
-                  className="input pl-10 h-11 text-sm w-full"
+                  className="input pl-10 h-11 text-sm xl:w-2/3 xl:mx-auto"
                   min={0}
                 />
               </div>
@@ -271,7 +292,7 @@ export function SalesFilters({ vendedores }: { vendedores: any[] }) {
                   placeholder="Sin límite"
                   value={filters.maxTotal}
                   onChange={(e) => handleFilterChange("maxTotal", e.target.value)}
-                  className="input pl-10 h-11 text-sm w-full"
+                  className="input pl-10 h-11 text-sm xl:w-2/3 xl:mx-auto"
                   min={0}
                 />
               </div>

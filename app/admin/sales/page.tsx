@@ -31,7 +31,7 @@ export default async function SalesPage({
     to = new Date(Date.UTC(toDate.getUTCFullYear(), toDate.getUTCMonth(), toDate.getUTCDate(), 23, 59, 59, 999));
   }
   
-  const [{ sales, count, pages }, totalToday, vendedores] = await Promise.all([
+  const [{ sales, count, pages }, { sales: reportSales }, totalToday, vendedores] = await Promise.all([
     getSales({
       from,
       to,
@@ -43,6 +43,18 @@ export default async function SalesPage({
       maxTotal: searchParams.maxTotal ? Number(searchParams.maxTotal) : undefined,
       page,
       take: 10,
+    }),
+    getSales({
+      from,
+      to,
+      vendedorId: Array.isArray(searchParams.vendedorId) ? searchParams.vendedorId[0] : searchParams.vendedorId,
+      paymentMethod: Array.isArray(searchParams.paymentMethod) ? searchParams.paymentMethod[0] : searchParams.paymentMethod,
+      status: Array.isArray(searchParams.status) ? searchParams.status[0] : searchParams.status,
+      client: Array.isArray(searchParams.client) ? searchParams.client[0] : searchParams.client,
+      minTotal: searchParams.minTotal ? Number(searchParams.minTotal) : undefined,
+      maxTotal: searchParams.maxTotal ? Number(searchParams.maxTotal) : undefined,
+      page: 1,
+      take: 5000,
     }),
     getTodaySalesTotal(),
     getVendedores()
@@ -75,7 +87,7 @@ export default async function SalesPage({
         </Link>
       </div>
 
-      <SalesFilters vendedores={vendedores} />
+      <SalesFilters vendedores={vendedores} salesForReports={reportSales} />
 
       <div className="card overflow-hidden">
         <SalesTable sales={sales} totalCount={count} />
