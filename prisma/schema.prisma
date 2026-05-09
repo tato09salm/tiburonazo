@@ -17,10 +17,27 @@ model User {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  addresses   Address[]
   orders    Order[]
   sales     Sale[]   @relation("VendedorSales")
 
   @@map("users")
+}
+
+model Address {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  phone       String
+  address     String  
+  reference   String?
+  ubigeo      String   // Código de 6 dígitos (Ej: 150131)
+  isDefault   Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@map("addresses")
 }
 
 model PasswordReset {
@@ -184,8 +201,14 @@ model Order {
   paymentMethod PaymentMethod?
   total         Float
   shippingCost  Float          @default(0)
-  address       String?
-  notes         String?
+  firstName     String
+  lastName      String
+  phone         String
+  address       String
+  reference     String?
+  ubigeo        String         // Guardamos el código de 6 dígitos
+  country       String         @default("Perú")
+  document      String         // DNI o RUC
   culqiChargeId String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
