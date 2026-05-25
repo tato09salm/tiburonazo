@@ -1,8 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { generateOrderCode } from "@/lib/utils";
-import { MoveType, PaymentMethod, Prisma } from "@prisma/client";
+import { MoveType, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { LOW_STOCK_THRESHOLD } from "@/lib/constants";
@@ -19,9 +18,9 @@ export async function getDashboardStats() {
     prisma.sale.findMany({
       take: 10,
       orderBy: [
-      { date: "desc" },
-      { nroVenta: "desc" }
-    ],
+        { date: "desc" },
+        { nroVenta: "desc" }
+      ],
       include: { store: true, vendedor: { select: { name: true } }, items: { include: { variant: { include: { product: { select: { title: true } } } } } } },
     }),
   ]);
@@ -51,15 +50,15 @@ export async function createInventoryMove(data: {
     // Usamos el índice (i) para garantizar que el código sea único por cada ítem
     for (let i = 0; i < data.items.length; i++) {
       const item = data.items[i];
-      
-      const variant = await tx.productVariant.findUnique({ 
-        where: { id: item.variantId } 
+
+      const variant = await tx.productVariant.findUnique({
+        where: { id: item.variantId }
       });
-      
+
       if (!variant) throw new Error(`Producto no encontrado`);
 
-      const newStock = data.type === "ENTRADA" 
-        ? variant.stock + item.quantity 
+      const newStock = data.type === "ENTRADA"
+        ? variant.stock + item.quantity
         : variant.stock - item.quantity;
 
       if (newStock < 0) {
@@ -100,10 +99,10 @@ export async function getInventoryMoves(variantId?: string) {
     orderBy: { date: "desc" },
     take: 100,
     include: {
-      variant: { 
-        include: { 
-          product: { select: { title: true, code: true } } 
-        } 
+      variant: {
+        include: {
+          product: { select: { title: true, code: true } }
+        }
       },
     },
   });
@@ -162,22 +161,22 @@ export async function getInventoryStats() {
 
 // ─── Sales (POS) ──────────────────────────────────────────────────────────────
 
-export async function createSale(data: { 
-  storeId: string; 
+export async function createSale(data: {
+  storeId: string;
   vendedorId?: string;
   date?: string;
-  paymentMethod: string; 
-  destination?: string; 
-  notes?: string; 
-  items: { variantId: string; quantity: number; price: number }[] 
+  paymentMethod: string;
+  destination?: string;
+  notes?: string;
+  items: { variantId: string; quantity: number; price: number }[]
 }) {
   const subtotal = data.items.reduce((s, i) => s + i.price * i.quantity, 0);
-  
+
   // Lógica de redondeo para Perú (Efectivo a favor del cliente)
-  const total = data.paymentMethod === "EFECTIVO" 
-    ? Math.floor(subtotal * 10) / 10 
+  const total = data.paymentMethod === "EFECTIVO"
+    ? Math.floor(subtotal * 10) / 10
     : subtotal;
-  
+
   // 1. Normalización estricta de la fecha a medianoche UTC
   const inputDate = data.date ? new Date(data.date) : new Date();
   const normalizedDate = new Date(Date.UTC(
@@ -329,13 +328,13 @@ export async function getSales(params?: {
         items: {
           include: {
             variant: {
-              include: { 
-                product: { 
-                  select: { 
-                    title: true, 
+              include: {
+                product: {
+                  select: {
+                    title: true,
                     code: true,
                     images: { take: 1 }
-                  } 
+                  }
                 },
                 color: { select: { name: true } },
                 size: { select: { label: true } }
@@ -413,20 +412,26 @@ export async function cancelSale(saleId: string) {
 // ─── Users ────────────────────────────────────────────────────────────────────
 
 export async function createUser(rawContent: unknown) {
-  // Validamos los datos recibidos antes de procesar
+  // Validamos los datos recibidos con el nuevo esquema
   const result = userSchema.safeParse(rawContent);
 
   if (!result.success) {
     throw new Error("Datos de usuario inválidos");
   }
 
-  const { name, email, password, role } = result.data;
+  const { firstName, lastName, email, password, role } = result.data;
   const normalizedEmail = email.toLowerCase().trim();
-  
+
   const hashed = await bcrypt.hash(password, 10);
-  
-  const user = await prisma.user.create({ 
-    data: { name, email: normalizedEmail, password: hashed, role } 
+
+  const user = await prisma.user.create({
+    data: {
+      firstName: firstName || null, // Guardará null si viene vacío desde el registro
+      lastName: lastName || null,   // Guardará null si viene vacío desde el registro
+      email: normalizedEmail,
+      password: hashed,
+      role
+    }
   });
 
   revalidatePath("/admin/users");
@@ -446,7 +451,7 @@ export async function toggleUserStatus(id: string, currentStatus: boolean) {
 }
 
 export async function getUsers(
-  page: number = 1, 
+  page: number = 1,
   pageSize: number = 5,
   search?: string,
   role?: string,
@@ -455,9 +460,11 @@ export async function getUsers(
   const skip = (page - 1) * pageSize;
   const where: any = {};
 
+  // Modificado para que busque tanto en firstName como en lastName en lugar de name
   if (search) {
     where.OR = [
-      { name: { contains: search, mode: 'insensitive' } },
+      { firstName: { contains: search, mode: 'insensitive' } },
+      { lastName: { contains: search, mode: 'insensitive' } },
       { email: { contains: search, mode: 'insensitive' } },
     ];
   }
@@ -472,14 +479,14 @@ export async function getUsers(
       orderBy: { createdAt: "desc" },
     }),
     prisma.user.count({ where }),
-    prisma.user.count(),         
+    prisma.user.count(),
   ]);
 
   return {
     users,
     totalPages: Math.ceil(filteredTotal / pageSize),
-    totalFiltered: filteredTotal, 
-    globalCount: globalCount     
+    totalFiltered: filteredTotal,
+    globalCount: globalCount
   };
 }
 
@@ -521,9 +528,9 @@ export async function searchProductVariants(query: string) {
       product: { isActive: true },
     },
     include: {
-      product: { 
-        select: { 
-          title: true, 
+      product: {
+        select: {
+          title: true,
           code: true,
           images: {
             select: {
@@ -533,7 +540,7 @@ export async function searchProductVariants(query: string) {
             },
             orderBy: { order: "asc" }
           }
-        } 
+        }
       },
       color: { select: { name: true } },
       size: { select: { label: true } },

@@ -8,34 +8,35 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
+  id        String    @id @default(cuid())
+  firstName String?
+  lastName  String?
+  email     String    @unique
   password  String
-  role      Role     @default(CLIENTE)
+  role      Role      @default(CLIENTE)
   phone     String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  addresses   Address[]
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  addresses Address[]
   orders    Order[]
-  sales     Sale[]   @relation("VendedorSales")
+  sales     Sale[]    @relation("VendedorSales")
 
   @@map("users")
 }
 
 model Address {
-  id          String   @id @default(cuid())
-  firstName   String
-  lastName    String
-  phone       String
-  address     String  
-  reference   String?
-  ubigeo      String   // Código de 6 dígitos (Ej: 150131)
-  isDefault   Boolean  @default(false)
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  phone     String
+  address   String
+  reference String?
+  ubigeo    String // Código de 6 dígitos (Ej: 150131)
+  isDefault Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 
   @@map("addresses")
 }
@@ -170,26 +171,26 @@ model ProductImage {
 }
 
 model Store {
-  id             String          @id @default(cuid())
-  name           String          @unique
-  address        String?
-  sales          Sale[]
+  id      String  @id @default(cuid())
+  name    String  @unique
+  address String?
+  sales   Sale[]
 
   @@map("stores")
 }
 
 model InventoryMove {
-  id        String         @id @default(cuid())
-  code      String         @unique
-  date      DateTime       @default(now())
-  type      MoveType
-  quantity  Int
-  stockAfter Int        
-  reason    String?
-  note      String?
-  createdAt DateTime       @default(now())
-  variantId String
-  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  id         String         @id @default(cuid())
+  code       String         @unique
+  date       DateTime       @default(now())
+  type       MoveType
+  quantity   Int
+  stockAfter Int
+  reason     String?
+  note       String?
+  createdAt  DateTime       @default(now())
+  variantId  String
+  variant    ProductVariant @relation(fields: [variantId], references: [id])
 
   @@map("inventory_moves")
 }
@@ -206,9 +207,9 @@ model Order {
   phone         String
   address       String
   reference     String?
-  ubigeo        String         // Guardamos el código de 6 dígitos
+  ubigeo        String // Guardamos el código de 6 dígitos
   country       String         @default("Perú")
-  document      String         // DNI o RUC
+  document      String // DNI o RUC
   culqiChargeId String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -242,12 +243,12 @@ model Sale {
   destination   String?
   notes         String?
   createdAt     DateTime      @default(now())
-  storeId String
+  storeId       String
 
-  vendedorId    String?
-  items         SaleItem[]
-  store         Store         @relation(fields: [storeId], references: [id])
-  vendedor      User?         @relation("VendedorSales", fields: [vendedorId], references: [id])
+  vendedorId String?
+  items      SaleItem[]
+  store      Store      @relation(fields: [storeId], references: [id])
+  vendedor   User?      @relation("VendedorSales", fields: [vendedorId], references: [id])
 
   @@unique([date, nroVenta])
   @@map("sales")

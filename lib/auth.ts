@@ -1,4 +1,4 @@
-import NextAuth, { CredentialsSignin } from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
@@ -19,35 +19,44 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const isValid = await bcrypt.compare(credentials.password as string, user.password);
         if (!isValid) return null;
 
-        // Retornamos el usuario completo (incluyendo isActive)
         return user;
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      // Carga inicial al iniciar sesión
       if (user) {
-        token.role = (user as { role: Role }).role;
-        token.id = user.id;
+        const u = user as any;
+        token.id = u.id;
+        token.role = u.role;
+        token.firstName = u.firstName;
+        token.lastName = u.lastName;
+        token.email = u.email; // Aseguramos guardar el email en el JWT
+      }
+      // Opcional: Si actualizas la sesión desde el frontend usando session.update()
+      if (trigger === "update" && session?.user) {
+        if (session.user.firstName) token.firstName = session.user.firstName;
+        if (session.user.lastName) token.lastName = session.user.lastName;
+        if (session.user.email) token.email = session.user.email; // ¡ESTO CORRIGE EL REFLEJO DEL CORREO!
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.role = token.role as Role;
         session.user.id = token.id as string;
+        session.user.role = token.role as Role;
+        session.user.firstName = token.firstName as string;
+        session.user.lastName = token.lastName as string;
+        session.user.email = token.email as string; // Aseguramos que la sesión tenga el email
       }
       return session;
     },
     async signIn({ user }) {
-      // Aquí validamos el estado ACTIVO
-      // 'user' es lo que retornó el authorize de arriba
-      if (user && "isActive" in user && !user.isActive) {
-        // Al lanzar un error con un string específico aquí, 
-        // NextAuth lo enviará a la URL o al result.error
+      if (user && "isActive" in user && !(user as any).isActive) {
         throw new Error("inactive_user");
       }
-      return true; // Permitir el ingreso
+      return true;
     },
   },
   pages: {

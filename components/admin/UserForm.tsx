@@ -21,7 +21,11 @@ export function UserForm() {
     formState: { errors },
   } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
-    defaultValues: { role: "VENDEDOR" },
+    defaultValues: {
+      role: "VENDEDOR",
+      firstName: "",
+      lastName: ""
+    },
   });
 
   async function onSubmit(data: UserFormData) {
@@ -30,7 +34,7 @@ export function UserForm() {
     try {
       await createUser(data);
       setSuccess(true);
-      reset(); // Limpia el formulario
+      reset();
       setTimeout(() => {
         setSuccess(false);
         router.refresh();
@@ -44,29 +48,41 @@ export function UserForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-      {/* Campo Nombre */}
-      <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">Nombre *</label>
-        <input 
-          {...register("name")} 
-          className={`input text-sm ${errors.name ? "border-red-500" : ""}`} 
-          placeholder="Nombre completo" 
-        />
-        {errors.name && <p className="text-[10px] text-red-500 mt-1">{errors.name.message}</p>}
+      {/* Grid de Nombres y Apellidos */}
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">Nombres</label>
+          <input
+            {...register("firstName")}
+            className={`input text-sm ${errors.firstName ? "border-red-500" : ""}`}
+            placeholder="Ej: Juan"
+          />
+          {errors.firstName && <p className="text-[10px] text-red-500 mt-1">{errors.firstName.message}</p>}
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">Apellidos</label>
+          <input
+            {...register("lastName")}
+            className={`input text-sm ${errors.lastName ? "border-red-500" : ""}`}
+            placeholder="Ej: Pérez"
+          />
+          {errors.lastName && <p className="text-[10px] text-red-500 mt-1">{errors.lastName.message}</p>}
+        </div>
       </div>
 
       {/* Campo Email */}
       <div>
         <label className="block text-xs font-semibold text-gray-600 mb-1">Email *</label>
-        <input 
+        <input
           {...register("email", {
             onChange: (e) => {
               e.target.value = e.target.value.toLowerCase();
             }
-          })} 
-          type="email" 
-          className={`input text-sm ${errors.email ? "border-red-500" : ""}`} 
-          placeholder="correo@ejemplo.com" 
+          })}
+          type="email"
+          className={`input text-sm ${errors.email ? "border-red-500" : ""}`}
+          placeholder="correo@ejemplo.com"
         />
         {errors.email && <p className="text-[10px] text-red-500 mt-1">{errors.email.message}</p>}
       </div>
@@ -74,11 +90,11 @@ export function UserForm() {
       {/* Campo Contraseña */}
       <div>
         <label className="block text-xs font-semibold text-gray-600 mb-1">Contraseña *</label>
-        <input 
-          {...register("password")} 
-          type="password" 
-          className={`input text-sm ${errors.password ? "border-red-500" : ""}`} 
-          placeholder="Mínimo 8 caracteres" 
+        <input
+          {...register("password")}
+          type="password"
+          className={`input text-sm ${errors.password ? "border-red-500" : ""}`}
+          placeholder="Mínimo 6 caracteres"
         />
         {errors.password && <p className="text-[10px] text-red-500 mt-1">{errors.password.message}</p>}
       </div>
@@ -95,12 +111,11 @@ export function UserForm() {
 
       {serverError && <p className="text-xs text-red-500">{serverError}</p>}
 
-      <button 
-        type="submit" 
-        disabled={loading} 
-        className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm transition-colors ${
-          success ? "bg-green-500 text-white" : "btn-primary"
-        }`}
+      <button
+        type="submit"
+        disabled={loading}
+        className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm transition-colors ${success ? "bg-green-500 text-white" : "btn-primary"
+          }`}
       >
         {loading ? <Loader2 size={16} className="animate-spin" /> : success ? "✓ Creado" : "Crear usuario"}
       </button>
