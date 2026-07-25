@@ -2,54 +2,124 @@
 
 import { prisma } from "@/lib/prisma";
 import { generateOrderCode } from "@/lib/utils";
-import { PaymentMethod } from "@prisma/client";
-import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
+import { PaymentMethod, OrderStatus } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
-export async function createOrder(data: {
+interface CreateOrderInput {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  address: string;
+  reference?: string;
+  ubigeo: string; // 6 dígitos (INEI)
+  document: string; // DNI o RUC
   paymentMethod: PaymentMethod;
-  address?: string;
-  notes?: string;
   culqiChargeId?: string;
-  items: Array<{ variantId: string; quantity: number; price: number }>;
-}) {
+  shippingCost: number; // 0 si es recojo en tienda
+  total: number; // Suma total de productos + envío
+  items: Array<{
+    variantId: string;
+    quantity: number;
+    price: number;
+  }>;
+}
+
+/**
+ * Crea una nueva orden, gestiona la libreta de direcciones del usuario,
+ * reduce el stock y valida la disponibilidad.
+ */
+export async function createOrder(data: CreateOrderInput) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("No autenticado");
+  if (!session?.user?.id) throw new Error("Sesión no válida o expirada");
 
-  const shippingCost = 0;
-  const total = data.items.reduce((s, i) => s + i.price * i.quantity, 0) + shippingCost;
-  const code = generateOrderCode();
+  const orderCode = generateOrderCode();
 
-  const order = await prisma.$transaction(async (tx) => {
-    const o = await tx.order.create({
+  return await prisma.$transaction(async (tx) => {
+    // 1. Gestión de Libreta de Direcciones (Solo si NO es recojo en tienda)
+    // Usamos el shippingCost como indicador de si hubo un servicio de entrega
+    if (data.shippingCost > 0) {
+      const existingAddress = await tx.address.findFirst({
+        where: {
+          userId: session.user.id,
+          address: data.address,
+          ubigeo: data.ubigeo,
+        },
+      });
+
+      if (!existingAddress) {
+        await tx.address.create({
+          data: {
+            userId: session.user.id!,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            phone: data.phone,
+            address: data.address,
+            reference: data.reference,
+            ubigeo: data.ubigeo,
+            isDefault: true,
+          },
+        });
+      }
+    }
+
+    // 2. Creación de la Orden
+    const order = await tx.order.create({
       data: {
-        code,
-        userId: session.user!.id!,
-        paymentMethod: data.paymentMethod,
+        code: orderCode,
+        userId: session.user.id!,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
         address: data.address,
-        notes: data.notes,
+        reference: data.reference,
+        ubigeo: data.ubigeo,
+        document: data.document,
+        paymentMethod: data.paymentMethod,
+        shippingCost: data.shippingCost,
+        total: data.total,
         culqiChargeId: data.culqiChargeId,
-        total,
-        shippingCost,
-        status: data.culqiChargeId ? "PAGADO" : "PENDIENTE",
-        items: { create: data.items },
+        // Si hay un ID de cargo de Culqi, la orden nace como PAGADA
+        status: data.culqiChargeId ? OrderStatus.PAGADO : OrderStatus.PENDIENTE,
+        items: {
+          create: data.items.map((item) => ({
+            variantId: item.variantId,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+        },
       },
     });
 
+    // 3. Actualización de Stock con validación de seguridad
     for (const item of data.items) {
-      await tx.productVariant.update({
+      const variant = await tx.productVariant.update({
         where: { id: item.variantId },
-        data: { stock: { decrement: item.quantity } },
+        data: {
+          stock: {
+            decrement: item.quantity,
+          },
+        },
       });
+
+      if (variant.stock < 0) {
+        throw new Error(
+          `Lo sentimos, el producto con SKU ${variant.sku} se quedó sin stock suficiente.`
+        );
+      }
     }
 
-    return o;
-  });
+    // Revalidación de rutas para mantener los datos frescos
+    revalidatePath("/cuenta");
+    revalidatePath("/admin/orders");
 
-  revalidatePath("/admin/orders");
-  return order;
+    return order;
+  });
 }
 
+/**
+ * Obtiene las órdenes del usuario autenticado
+ */
 export async function getMyOrders() {
   const session = await auth();
   if (!session?.user?.id) return [];
@@ -60,13 +130,25 @@ export async function getMyOrders() {
     include: {
       items: {
         include: {
-          variant: { include: { product: { select: { title: true, images: { take: 1 } } } } },
+          variant: {
+            include: {
+              product: {
+                select: {
+                  title: true,
+                  images: { take: 1 },
+                },
+              },
+            },
+          },
         },
       },
     },
   });
 }
 
+/**
+ * Obtiene todas las órdenes para el panel administrativo con paginación
+ */
 export async function getAdminOrders(page = 1) {
   const limit = 20;
   const skip = (page - 1) * limit;
@@ -78,17 +160,43 @@ export async function getAdminOrders(page = 1) {
       orderBy: { createdAt: "desc" },
       include: {
         user: { select: { name: true, email: true } },
-        items: { include: { variant: { include: { product: { select: { title: true } } } } } },
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: {
+                  select: { title: true },
+                },
+              },
+            },
+          },
+        },
       },
     }),
     prisma.order.count(),
   ]);
 
-  return { orders, total, pages: Math.ceil(total / limit) };
+  return { 
+    orders, 
+    total, 
+    pages: Math.ceil(total / limit) 
+  };
 }
 
-export async function updateOrderStatus(id: string, status: "PENDIENTE" | "PAGADO" | "ENVIADO" | "ENTREGADO" | "CANCELADO") {
-  const order = await prisma.order.update({ where: { id }, data: { status } });
+/**
+ * Actualiza el estado de una orden desde el panel de administración
+ */
+export async function updateOrderStatus(
+  id: string,
+  status: OrderStatus
+) {
+  const order = await prisma.order.update({
+    where: { id },
+    data: { status },
+  });
+  
   revalidatePath("/admin/orders");
+  revalidatePath("/cuenta"); // Revalidar también la vista del cliente
+  
   return order;
 }

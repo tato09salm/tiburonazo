@@ -8,19 +8,37 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
+  id        String    @id @default(cuid())
+  firstName String?
+  lastName  String?
+  email     String    @unique
   password  String
-  role      Role     @default(CLIENTE)
+  role      Role      @default(CLIENTE)
   phone     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  isActive  Boolean  @default(true)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  addresses Address[]
   orders    Order[]
-  sales     Sale[]   @relation("VendedorSales")
+  sales     Sale[]    @relation("VendedorSales")
 
   @@map("users")
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  phone     String
+  address   String
+  reference String?
+  ubigeo    String // Código de 6 dígitos (Ej: 150131)
+  isDefault Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("addresses")
 }
 
 model PasswordReset {
@@ -153,45 +171,57 @@ model ProductImage {
 }
 
 model Store {
-  id             String          @id @default(cuid())
-  name           String          @unique
-  address        String?
-  sales          Sale[]
+  id      String  @id @default(cuid())
+  name    String  @unique
+  address String?
+  sales   Sale[]
 
   @@map("stores")
 }
 
 model InventoryMove {
-  id        String         @id @default(cuid())
-  code      String         @unique
-  date      DateTime       @default(now())
-  type      MoveType
-  quantity  Int
+  id         String         @id @default(cuid())
+  code       String         @unique
+  date       DateTime       @default(now())
+  type       MoveType
+  quantity   Int
   stockAfter Int
-  reason    String?
-  note      String?
-  createdAt DateTime       @default(now())
-  variantId String
-  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  reason     String?
+  note       String?
+  createdAt  DateTime       @default(now())
+  variantId  String
+  variant    ProductVariant @relation(fields: [variantId], references: [id])
 
   @@map("inventory_moves")
 }
 
+enum DeliveryMethod {
+  SHIPPING
+  PICKUP
+}
+
 model Order {
-  id            String         @id @default(cuid())
-  code          String         @unique
-  status        OrderStatus    @default(PENDIENTE)
-  paymentMethod PaymentMethod?
-  total         Float
-  shippingCost  Float          @default(0)
-  address       String?
-  notes         String?
-  culqiChargeId String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  userId        String
-  items         OrderItem[]
-  user          User           @relation(fields: [userId], references: [id])
+  id             String         @id @default(cuid())
+  code           String         @unique
+  status         OrderStatus    @default(PENDIENTE)
+  deliveryMethod DeliveryMethod @default(SHIPPING)
+  paymentMethod  PaymentMethod?
+  total          Float
+  shippingCost   Float          @default(0)
+  firstName      String
+  lastName       String
+  phone          String
+  address        String
+  reference      String?
+  ubigeo         String // Guardamos el código de 6 dígitos
+  country        String         @default("Perú")
+  document       String // DNI o RUC
+  culqiChargeId  String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  userId         String
+  items          OrderItem[]
+  user           User           @relation(fields: [userId], references: [id])
 
   @@map("orders")
 }
@@ -211,19 +241,20 @@ model OrderItem {
 model Sale {
   id            String        @id @default(cuid())
   code          String        @unique
+  nroVenta      Int?
   date          DateTime      @default(now())
   paymentMethod PaymentMethod
+  status        SaleStatus    @default(COMPLETADA)
   total         Float
   destination   String?
   notes         String?
   createdAt     DateTime      @default(now())
   storeId       String
-  vendedorId    String?
-  status        SaleStatus    @default(COMPLETADA)
-  nroVenta      Int?
-  items         SaleItem[]
-  store         Store         @relation(fields: [storeId], references: [id])
-  vendedor      User?         @relation("VendedorSales", fields: [vendedorId], references: [id])
+
+  vendedorId String?
+  items      SaleItem[]
+  store      Store      @relation(fields: [storeId], references: [id])
+  vendedor   User?      @relation("VendedorSales", fields: [vendedorId], references: [id])
 
   @@unique([date, nroVenta])
   @@map("sales")

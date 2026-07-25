@@ -32,7 +32,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
 
   const { users, totalPages, totalFiltered, globalCount } = await getUsers(
     currentPage,
-    5, 
+    5,
     search,
     role,
     status
@@ -54,8 +54,8 @@ export default async function AdminUsersPage({ searchParams }: Props) {
       <UserFilters />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        
-        {/* COLUMNA IZQUIERDA: Ajustamos el z-index aquí */}
+
+        {/* COLUMNA IZQUIERDA */}
         <div className="lg:col-span-1">
           <div className="card p-6 sticky top-6 z-10 shadow-sm border border-gray-100 bg-white rounded-xl">
             <h2 className="font-heading text-lg font-bold mb-4 text-gray-800">Crear nuevo usuario</h2>
@@ -79,40 +79,46 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {users.length > 0 ? (
-                    users.map((u) => (
-                      <tr
-                        key={u.id}
-                        className={`hover:bg-gray-50/50 transition-colors ${
-                          !u.isActive ? "bg-gray-50/60 opacity-80" : ""
-                        }`}
-                      >
-                        <td className="px-6 py-4">
-                          <p className="font-bold text-gray-800">{u.name}</p>
-                          <p className="text-[10px] text-gray-400">
-                            {new Date(u.createdAt).toLocaleDateString()}
-                          </p>
-                        </td>
-                        <td className="px-6 py-4 text-gray-600">{u.email}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${ROLE_COLORS[u.role]}`}>
-                            {u.role}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            u.isActive 
-                              ? "bg-green-100 text-green-800" 
+                    users.map((u) => {
+                      // Construimos el nombre completo o un fallback decorativo
+                      const fullName = [u.firstName, u.lastName].filter(Boolean).join(" ");
+                      const displayName = fullName || "Usuario sin nombre";
+
+                      return (
+                        <tr
+                          key={u.id}
+                          className={`hover:bg-gray-50/50 transition-colors ${!u.isActive ? "bg-gray-50/60 opacity-80" : ""
+                            }`}
+                        >
+                          <td className="px-6 py-4">
+                            <p className={`font-bold ${fullName ? "text-gray-800" : "text-gray-400 italic font-normal"}`}>
+                              {displayName}
+                            </p>
+                            <p className="text-[10px] text-gray-400">
+                              {new Date(u.createdAt).toLocaleDateString()}
+                            </p>
+                          </td>
+                          <td className="px-6 py-4 text-gray-600">{u.email}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${ROLE_COLORS[u.role]}`}>
+                              {u.role}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${u.isActive
+                              ? "bg-green-100 text-green-800"
                               : "bg-red-100 text-red-800"
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${u.isActive ? "bg-green-500" : "bg-red-500"}`} />
-                            {u.isActive ? "Activo" : "Inactivo"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <ToggleUserStatus id={u.id} isActive={u.isActive} />
-                        </td>
-                      </tr>
-                    ))
+                              }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${u.isActive ? "bg-green-500" : "bg-red-500"}`} />
+                              {u.isActive ? "Activo" : "Inactivo"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <ToggleUserStatus id={u.id} isActive={u.isActive} />
+                          </td>
+                        </tr>
+                      );
+                    })
                   ) : (
                     <tr>
                       <td colSpan={5} className="px-6 py-20 text-center">
@@ -132,9 +138,9 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               <Pagination totalPages={totalPages} />
             </div>
           </div>
-          
+
           <div className="flex flex-col items-center sm:flex-row sm:justify-center px-2 gap-2">
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+            <p className="text-gray-400 font-bold text-[11px] uppercase tracking-widest">
               Mostrando {users.length} de {totalFiltered} resultados encontrados
             </p>
           </div>

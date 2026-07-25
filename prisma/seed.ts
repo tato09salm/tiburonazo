@@ -125,28 +125,46 @@ async function main() {
     });
     storeMap[name] = s.id;
   }
-  
+
   // 3. Admin user
   console.log("👤 Creando usuarios...");
   const adminPass = await bcrypt.hash("admin123", 10);
   await prisma.user.upsert({
     where: { email: "admin@tiburonazo.pe" },
     update: {},
-    create: { name: "Administrador", email: "admin@tiburonazo.pe", password: adminPass, role: "ADMIN" },
+    create: {
+      firstName: "Admin",
+      lastName: "Tiburonazo",
+      email: "admin@tiburonazo.pe",
+      password: adminPass,
+      role: "ADMIN"
+    },
   });
 
   const vendedorPass = await bcrypt.hash("vendedor123", 10);
   await prisma.user.upsert({
     where: { email: "vendedor@tiburonazo.pe" },
     update: {},
-    create: { name: "Sr. Andree", email: "vendedor@tiburonazo.pe", password: vendedorPass, role: "VENDEDOR" },
+    create: {
+      firstName: "Andree",
+      lastName: "Vendedor",
+      email: "vendedor@tiburonazo.pe",
+      password: vendedorPass,
+      role: "VENDEDOR"
+    },
   });
 
   const clientePass = await bcrypt.hash("cliente123", 10);
   await prisma.user.upsert({
     where: { email: "cliente@tiburonazo.pe" },
     update: {},
-    create: { name: "Cliente Demo", email: "cliente@tiburonazo.pe", password: clientePass, role: "CLIENTE" },
+    create: {
+      firstName: "Cliente",
+      lastName: "Demo",
+      email: "cliente@tiburonazo.pe",
+      password: clientePass,
+      role: "CLIENTE"
+    },
   });
 
   // 4. Colores y Tallas
@@ -228,7 +246,7 @@ async function main() {
           code: `INV-INIT-${v.id}`,
           type: MoveType.ENTRADA,
           quantity: v.stock,
-          stockAfter: v.stock, 
+          stockAfter: v.stock,
           reason: "INICIAL",
           variantId: v.id,
           date: new Date("2026-02-24"),
