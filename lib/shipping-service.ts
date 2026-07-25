@@ -1,6 +1,23 @@
-import { getUbigeoData } from "ubigeo-fns";
+import shippingRates from "@/data/olva.json";
 
-const ORIGIN_UBIGEO = "130101"; // Trujillo
+const DEFAULT_COST = 20.0;
+const OVERWEIGHT_COST = 65.0;
+
+type WeightTier = "0.5" | "1" | "2" | "3" | "5";
+const WEIGHT_TIERS: { maxWeight: number; key: WeightTier }[] = [
+  { maxWeight: 0.5, key: "0.5" },
+  { maxWeight: 1, key: "1" },
+  { maxWeight: 2, key: "2" },
+  { maxWeight: 3, key: "3" },
+  { maxWeight: 5, key: "5" },
+];
+
+function getWeightTierKey(weight: number): WeightTier | null {
+  for (const tier of WEIGHT_TIERS) {
+    if (weight <= tier.maxWeight) return tier.key;
+  }
+  return null;
+}
 
 export interface ShippingRates {
   totalWeight: number;
@@ -8,22 +25,11 @@ export interface ShippingRates {
 }
 
 export async function calculateShippingCost({ totalWeight, destUbigeo }: ShippingRates): Promise<number> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const dest = getUbigeoData(destUbigeo);
-      if (!dest) return resolve(20); 
+  const entry = shippingRates[destUbigeo as keyof typeof shippingRates];
+  if (!entry) return DEFAULT_COST;
 
-      let basePrice = 0;
-      if (destUbigeo === ORIGIN_UBIGEO) {
-        basePrice = 10.0; 
-      } else if (destUbigeo.startsWith("13")) {
-        basePrice = 15.0; 
-      } else {
-        basePrice = 20.0; 
-      }
+  const tierKey = getWeightTierKey(totalWeight);
+  if (!tierKey) return OVERWEIGHT_COST;
 
-      const weightExtra = totalWeight > 1 ? (totalWeight - 1) * 2.5 : 0;
-      resolve(basePrice + weightExtra);
-    }, 600);
-  });
+  return entry[tierKey] as number;
 }

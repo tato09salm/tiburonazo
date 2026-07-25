@@ -83,3 +83,14 @@ export async function setDefaultAddress(id: string) {
 
     revalidatePath("/cuenta");
 }
+
+export async function deleteAddress(id: string) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("No autorizado");
+
+    await prisma.address.delete({
+        where: { id, userId: session.user.id }
+    });
+
+    revalidatePath("/cuenta");
+}

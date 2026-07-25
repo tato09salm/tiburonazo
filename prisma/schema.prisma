@@ -195,27 +195,33 @@ model InventoryMove {
   @@map("inventory_moves")
 }
 
+enum DeliveryMethod {
+  SHIPPING
+  PICKUP
+}
+
 model Order {
-  id            String         @id @default(cuid())
-  code          String         @unique
-  status        OrderStatus    @default(PENDIENTE)
-  paymentMethod PaymentMethod?
-  total         Float
-  shippingCost  Float          @default(0)
-  firstName     String
-  lastName      String
-  phone         String
-  address       String
-  reference     String?
-  ubigeo        String // Guardamos el código de 6 dígitos
-  country       String         @default("Perú")
-  document      String // DNI o RUC
-  culqiChargeId String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  userId        String
-  items         OrderItem[]
-  user          User           @relation(fields: [userId], references: [id])
+  id             String         @id @default(cuid())
+  code           String         @unique
+  status         OrderStatus    @default(PENDIENTE)
+  deliveryMethod DeliveryMethod @default(SHIPPING)
+  paymentMethod  PaymentMethod?
+  total          Float
+  shippingCost   Float          @default(0)
+  firstName      String
+  lastName       String
+  phone          String
+  address        String
+  reference      String?
+  ubigeo         String // Guardamos el código de 6 dígitos
+  country        String         @default("Perú")
+  document       String // DNI o RUC
+  culqiChargeId  String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  userId         String
+  items          OrderItem[]
+  user           User           @relation(fields: [userId], references: [id])
 
   @@map("orders")
 }
