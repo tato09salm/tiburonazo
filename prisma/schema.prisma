@@ -13,6 +13,7 @@ model User {
   lastName  String?
   email     String    @unique
   password  String
+  image     String?
   role      Role      @default(CLIENTE)
   phone     String?
   isActive  Boolean   @default(true)
@@ -21,6 +22,7 @@ model User {
   addresses Address[]
   orders    Order[]
   sales     Sale[]    @relation("VendedorSales")
+  accounts  Account[]
 
   @@map("users")
 }
@@ -275,6 +277,25 @@ model SaleItem {
 enum SaleStatus {
   COMPLETADA
   ANULADA
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
 enum Role {
