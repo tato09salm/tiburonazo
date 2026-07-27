@@ -54,7 +54,7 @@ export default async function DashboardPage() {
                 <div key={sale.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
                   <div>
                     <p className="text-sm font-semibold text-gray-800">{sale.code}</p>
-                    <p className="text-xs text-gray-400">{sale.store.name} · {sale.vendedor?.name ?? "—"}</p>
+                    <p className="text-xs text-gray-400">{sale.store.name} · {sale.vendedor ? `${sale.vendedor.firstName ?? ""} ${sale.vendedor.lastName ?? ""}`.trim() || "—" : "—"}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-[#11ABC4]">{formatPrice(sale.total)}</p>

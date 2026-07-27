@@ -23,7 +23,14 @@ export function ProductCardComponent({ product }: Props) {
   const hasDiscount = defaultVariant?.oldPrice && defaultVariant.oldPrice > defaultVariant.price;
   const inStock = product.variants.some((v) => v.stock > 0);
 
-  const colors = Array.from(new Set(product.variants.map(v => v.color?.hex).filter(Boolean)));
+  const colorSwatches = Array.from(
+    new Map(
+      product.variants
+        .map(v => v.color)
+        .filter((c): c is NonNullable<typeof product.variants[number]["color"]> => c !== null)
+        .map(c => [c.id, { hex: c.hex, swatchUrl: c.swatchUrl }])
+    ).values()
+  );
   const firstColorName = defaultVariant?.color?.name || "Único";
   const firstSizeLabel = defaultVariant?.size?.label || "Único";
 
@@ -135,17 +142,25 @@ export function ProductCardComponent({ product }: Props) {
           <p className="text-xs text-gray-500">{product.brand.name}</p>
         )}
 
-        {colors.length > 0 && (
+        {colorSwatches.length > 0 && (
           <div className="flex gap-1 mt-1">
-            {colors.slice(0, 4).map((hex, i) => (
-              <div 
-                key={i} 
-                className="w-2.5 h-2.5 rounded-full border border-gray-200" 
-                style={{ backgroundColor: hex as string }}
-              />
+            {colorSwatches.slice(0, 4).map((c, i) => (
+              c.swatchUrl ? (
+                <div
+                  key={i}
+                  className="w-2.5 h-2.5 rounded-full border border-gray-200 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${c.swatchUrl})` }}
+                />
+              ) : (
+                <div
+                  key={i}
+                  className="w-2.5 h-2.5 rounded-full border border-gray-200"
+                  style={{ backgroundColor: (c.hex ?? "#EEE") as string }}
+                />
+              )
             ))}
-            {colors.length > 4 && (
-              <span className="text-[10px] text-gray-400">+{colors.length - 4}</span>
+            {colorSwatches.length > 4 && (
+              <span className="text-[10px] text-gray-400">+{colorSwatches.length - 4}</span>
             )}
           </div>
         )}

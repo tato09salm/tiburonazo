@@ -62,6 +62,7 @@ export function ProductInfo({ product, selectedVariant, onVariantChange, resetGa
           <div className="flex gap-3 flex-wrap">
             {uniqueColors.map((color) => {
               const isSelected = selectedVariant?.colorId === color.id;
+              const hasSwatch = !!color.swatchUrl;
               const light = isLightColor(color.hex);
               return (
                 <button
@@ -79,17 +80,37 @@ export function ProductInfo({ product, selectedVariant, onVariantChange, resetGa
                     isSelected ? "border-[#11ABC4] scale-110 shadow-md" : "border-transparent hover:border-gray-200"
                   )}
                 >
-                  <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", light && "border border-gray-100")} style={{ backgroundColor: color.hex || "#EEE" }}>
-                    <Image
-                      src="/logo2.png"
-                      alt="logo"
-                      width={90}
-                      height={44}
-                      className={cn("w-[90%] h-auto object-contain transition-all duration-300",
-                        isSelected ? "opacity-100 scale-100" : "opacity-30 scale-75",
-                        light ? "brightness-0" : "brightness-0 invert")}
-                    />
-                  </div>
+                  {hasSwatch ? (
+                    <div
+                      className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-100 bg-cover bg-center"
+                      style={{ backgroundImage: `url(${color.swatchUrl})` }}
+                    >
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Image
+                          src="/logo2.png"
+                          alt="logo"
+                          width={90}
+                          height={44}
+                          className={cn("w-[90%] h-auto object-contain transition-all duration-300 drop-shadow-sm",
+                            isSelected ? "opacity-100 scale-100" : "opacity-60 scale-75",
+                            "brightness-0 invert"
+                          )}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", light && "border border-gray-100")} style={{ backgroundColor: color.hex || "#EEE" }}>
+                      <Image
+                        src="/logo2.png"
+                        alt="logo"
+                        width={90}
+                        height={44}
+                        className={cn("w-[90%] h-auto object-contain transition-all duration-300",
+                          isSelected ? "opacity-100 scale-100" : "opacity-30 scale-75",
+                          light ? "brightness-0" : "brightness-0 invert")}
+                      />
+                    </div>
+                  )}
                 </button>
               );
             })}

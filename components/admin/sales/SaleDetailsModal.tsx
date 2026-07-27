@@ -284,7 +284,7 @@ function generatePdfHtml(sale: any): string {
       </div>
       <div class="meta-item">
         <p class="meta-label">Vendedor</p>
-        <p class="meta-value">${sale.vendedor?.name ?? "—"}</p>
+        <p class="meta-value">${sale.vendedor ? `${sale.vendedor.firstName ?? ""} ${sale.vendedor.lastName ?? ""}`.trim() || "—" : "—"}</p>
       </div>
       <div class="meta-item">
         <p class="meta-label">Nro. Venta</p>
@@ -420,7 +420,7 @@ export function SaleDetailsModal({ sale, onClose }: Props) {
           {[
             { label: "Fecha", value: new Date(sale.date).toLocaleDateString("es-PE", { day: "2-digit", month: "long", year: "numeric", timeZone: "UTC" }) },
             { label: "Tienda", value: sale.store.name },
-            { label: "Vendedor", value: sale.vendedor?.name ?? "—" },
+            { label: "Vendedor", value: sale.vendedor ? `${sale.vendedor.firstName ?? ""} ${sale.vendedor.lastName ?? ""}`.trim() || "—" : "—" },
             { label: "Nro. Venta", value: sale.nroVenta ? String(sale.nroVenta).padStart(2, "0") : "—" },
             { label: "Destino", value: sale.destination ?? "—" },
           ].map(({ label, value }) => (

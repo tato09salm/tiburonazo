@@ -23,7 +23,7 @@ export interface ProductVariant {
   sku: string;
   colorId: string | null; 
   sizeId: string | null;  
-  color: { id: string; name: string; hex: string | null } | null;
+  color: { id: string; name: string; hex: string | null; swatchUrl?: string | null; sourceImageUrl?: string | null; cropX?: number | null; cropY?: number | null; cropRadius?: number | null } | null;
   size: { id: string; label: string; category?: string | null; sortOrder?: number } | null;
   model: string | null;
   price: number;

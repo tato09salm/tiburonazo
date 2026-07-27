@@ -21,7 +21,7 @@ export async function getDashboardStats() {
         { date: "desc" },
         { nroVenta: "desc" }
       ],
-      include: { store: true, vendedor: { select: { name: true } }, items: { include: { variant: { include: { product: { select: { title: true } } } } } } },
+      include: { store: true, vendedor: { select: { firstName: true, lastName: true } }, items: { include: { variant: { include: { product: { select: { title: true } } } } } } },
     }),
   ]);
 
@@ -324,7 +324,7 @@ export async function getSales(params?: {
       take,
       include: {
         store: { select: { name: true } },
-        vendedor: { select: { name: true } },
+        vendedor: { select: { firstName: true, lastName: true } },
         items: {
           include: {
             variant: {
