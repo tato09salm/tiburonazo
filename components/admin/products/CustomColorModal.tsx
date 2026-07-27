@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { X, Upload, GalleryHorizontalEnd, Save, Loader2, Image as ImageIcon, Move, ZoomIn, ZoomOut, Check } from "lucide-react";
+import { X, Upload, GalleryHorizontalEnd, Save, Loader2, Image as ImageIcon, Move, ZoomIn, ZoomOut, Check, AlertTriangle } from "lucide-react";
 import Image from "next/image";
 import { createColor, getColors } from "@/actions/color.actions";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/lib/color-swatch";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface ProductImage {
   id?: string;
@@ -55,6 +56,7 @@ export function CustomColorModal({
   const [radius, setRadius] = useState(40);
 
   const [colorName, setColorName] = useState("");
+  const [nameError, setNameError] = useState(false);
   const [previewSwatch, setPreviewSwatch] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -75,6 +77,7 @@ export function CustomColorModal({
       setCenterY(0);
       setRadius(40);
       setColorName(defaultNamePrefix ? `${defaultNamePrefix}-` : "");
+      setNameError(false);
       setPreviewSwatch("");
       setSaving(false);
     }
@@ -143,9 +146,18 @@ export function CustomColorModal({
 
   const imgLoaded = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const el = e.currentTarget;
-    const rect = el.getBoundingClientRect();
-    setDisplaySize({ w: rect.width, h: rect.height });
+    setSourceImageEl(el);
+    setDisplaySize({ w: el.clientWidth, h: el.clientHeight });
   };
+
+  useEffect(() => {
+    if (!sourceImageEl || !isOpen) return;
+    const handle = () => {
+      setDisplaySize({ w: sourceImageEl.clientWidth, h: sourceImageEl.clientHeight });
+    };
+    window.addEventListener("resize", handle);
+    return () => window.removeEventListener("resize", handle);
+  }, [sourceImageEl, isOpen]);
 
   const displayToNatural = useCallback((dx: number, dy: number) => {
     if (!sourceImageEl || displaySize.w === 0) return { x: 0, y: 0 };
@@ -163,8 +175,9 @@ export function CustomColorModal({
 
   const radiusToDisplay = useCallback(() => {
     if (!sourceImageEl) return radius;
-    const ratio = Math.min(displaySize.w / sourceImageEl.naturalWidth, displaySize.h / sourceImageEl.naturalHeight);
-    return radius * ratio;
+    const ratioX = displaySize.w / sourceImageEl.naturalWidth;
+    const ratioY = displaySize.h / sourceImageEl.naturalHeight;
+    return radius * Math.min(ratioX, ratioY);
   }, [radius, sourceImageEl, displaySize]);
 
   const onMouseDownOnCircle = (e: React.MouseEvent) => {
@@ -198,11 +211,9 @@ export function CustomColorModal({
   useEffect(() => {
     if (!isOpen) return;
     const onMove = (e: MouseEvent) => {
-      if (!draggingRef.current || !imgContainerRef.current || !sourceImageEl) return;
-      const rect = imgContainerRef.current.getBoundingClientRect();
-      const imgEl = imgContainerRef.current.querySelector("img");
-      if (!imgEl) return;
-      const imgRect = imgEl.getBoundingClientRect();
+      if (!draggingRef.current || !sourceImageEl) return;
+      const imgRect = sourceImageEl.getBoundingClientRect();
+      if (imgRect.width === 0 || imgRect.height === 0) return;
 
       const start = dragStartRef.current;
       const ddx = e.clientX - start.x;
@@ -211,40 +222,66 @@ export function CustomColorModal({
       if (draggingRef.current === "move") {
         let ndx = start.cx + ddx;
         let ndy = start.cy + ddy;
-        const minX = 0, minY = 0;
-        const maxX = imgRect.width;
-        const maxY = imgRect.height;
-        ndx = Math.max(minX, Math.min(maxX, ndx));
-        ndy = Math.max(minY, Math.min(maxY, ndy));
-        const nat = displayToNatural(ndx - (imgRect.left - rect.left), ndy - (imgRect.top - rect.top));
-        const r = radius;
-        nat.x = Math.max(r, Math.min(sourceImageEl.naturalWidth - r, nat.x));
-        nat.y = Math.max(r, Math.min(sourceImageEl.naturalHeight - r, nat.y));
+        const rDisplay = radiusToDisplay();
+        ndx = Math.max(rDisplay, Math.min(imgRect.width - rDisplay, ndx));
+        ndy = Math.max(rDisplay, Math.min(imgRect.height - rDisplay, ndy));
+        const nat = displayToNatural(ndx, ndy);
         setCenterX(nat.x);
         setCenterY(nat.y);
       } else if (draggingRef.current === "resize") {
         const delta = (ddx + ddy) / 2;
         let newRDisplay = Math.max(10, start.r + delta);
-        const ratio = Math.min(displaySize.w / sourceImageEl.naturalWidth, displaySize.h / sourceImageEl.naturalHeight);
+        const ratioX = displaySize.w / sourceImageEl.naturalWidth;
+        const ratioY = displaySize.h / sourceImageEl.naturalHeight;
+        const ratio = Math.min(ratioX, ratioY);
+        if (ratio <= 0) return;
         let newR = newRDisplay / ratio;
         newR = Math.max(5, newR);
-        newR = Math.min(newR, centerX, sourceImageEl.naturalWidth - centerX, centerY, sourceImageEl.naturalHeight - centerY);
+        const maxR = Math.min(centerX, sourceImageEl.naturalWidth - centerX, centerY, sourceImageEl.naturalHeight - centerY);
+        newR = Math.min(newR, Math.max(5, maxR));
         setRadius(newR);
       }
     };
     const onUp = () => {
       draggingRef.current = null;
     };
+    const onWheel = (e: WheelEvent) => {
+      if (!sourceImageEl) return;
+      const imgEl = sourceImageEl;
+      const rect = imgEl.getBoundingClientRect();
+      if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return;
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? 1.08 : 0.92;
+      setRadius((r) => {
+        let next = r * factor;
+        next = Math.max(5, next);
+        const maxR = Math.min(centerX, imgEl.naturalWidth - centerX, centerY, imgEl.naturalHeight - centerY);
+        return Math.min(next, Math.max(5, maxR));
+      });
+    };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
+    window.addEventListener("wheel", onWheel, { passive: false });
     return () => {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("wheel", onWheel);
     };
   }, [isOpen, centerX, centerY, radius, displaySize, sourceImageEl, displayToNatural, naturalToDisplay, radiusToDisplay]);
 
   const handleSave = async () => {
-    if (!colorName.trim() || !sourceImageEl) return;
+    if (!sourceImageEl) return;
+    if (!colorName.trim()) {
+      setNameError(true);
+      toast.error("Debes asignarle un nombre al color", {
+        position: "top-right",
+        description: "Ej: P001-magneta rayas blancas · Cebra blanco-negro · Flores rosas",
+        closeButton: true,
+        icon: <AlertTriangle size={16} />,
+        duration: 4500,
+      });
+      return;
+    }
     setSaving(true);
     try {
       const { blob } = generateCircularSwatch(sourceImageEl, centerX, centerY, radius, 300);
@@ -414,7 +451,7 @@ export function CustomColorModal({
             <div className="p-6 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
               <div className="space-y-3">
                 <div className="text-xs text-gray-500 flex items-center gap-2">
-                  <Move size={12} /> Arrastra el círculo para moverlo · Usa el control del borde para agrandar/achicar
+                  <Move size={12} /> Arrastra el círculo para moverlo · Scroll del mouse agranda/achica · Usa el control del borde para ajustar tamaño
                 </div>
                 <div
                   ref={imgContainerRef}
@@ -440,7 +477,7 @@ export function CustomColorModal({
                     />
                     <div
                       onMouseDown={onMouseDownOnCircle}
-                      className="absolute rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.3)] cursor-move"
+                      className="absolute rounded-full border-[3px] border-white shadow-[0_0_0_2px_rgba(0,0,0,0.35)] cursor-move bg-white/5"
                       style={{
                         left: circlePos.x - dRadius,
                         top: circlePos.y - dRadius,
@@ -448,13 +485,17 @@ export function CustomColorModal({
                         height: dRadius * 2,
                       }}
                     >
-                      <div className="absolute inset-0 rounded-full border border-white/40" />
+                      <div className="absolute inset-0 rounded-full border border-white/30 pointer-events-none" />
+                      <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 w-1 h-1 bg-white rounded-full shadow-sm pointer-events-none" />
+                      <div className="absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2 w-1 h-1 bg-white rounded-full shadow-sm pointer-events-none" />
+                      <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full shadow-sm pointer-events-none" />
+                      <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/2 w-1 h-1 bg-white rounded-full shadow-sm pointer-events-none" />
                       <div
                         onMouseDown={onMouseDownOnHandle}
-                        className="absolute -right-2 -bottom-2 w-5 h-5 bg-white border-2 border-[#11ABC4] rounded-full cursor-ew-resize shadow-md flex items-center justify-center"
-                        title="Redimensionar"
+                        className="absolute -right-3 -bottom-3 w-7 h-7 bg-white border-[3px] border-[#11ABC4] rounded-full cursor-ew-resize shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
+                        title="Redimensionar (también podés usar scroll sobre la imagen)"
                       >
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#11ABC4]" />
+                        <div className="w-2 h-2 rounded-full bg-[#11ABC4]" />
                       </div>
                     </div>
                   </div>
@@ -465,7 +506,7 @@ export function CustomColorModal({
                     type="button"
                     onClick={() => setRadius((r) => Math.max(5, r * 0.9))}
                     className="btn-secondary px-3 py-1.5 text-xs flex items-center gap-1"
-                    title="Reducir círculo"
+                    title="Reducir círculo (también scroll hacia abajo)"
                   >
                     <ZoomOut size={14} /> Achicar
                   </button>
@@ -473,11 +514,11 @@ export function CustomColorModal({
                     type="button"
                     onClick={() => setRadius((r) => {
                       if (!sourceImageEl) return r;
-                      const maxR = Math.min(r * 1.1, centerX, sourceImageEl.naturalWidth - centerX, centerY, sourceImageEl.naturalHeight - centerY);
-                      return maxR;
+                      const maxR = Math.min(centerX, sourceImageEl.naturalWidth - centerX, centerY, sourceImageEl.naturalHeight - centerY);
+                      return Math.min(r * 1.1, Math.max(5, maxR));
                     })}
                     className="btn-secondary px-3 py-1.5 text-xs flex items-center gap-1"
-                    title="Agrandar círculo"
+                    title="Agrandar círculo (también scroll hacia arriba)"
                   >
                     <ZoomIn size={14} /> Agrandar
                   </button>
@@ -513,14 +554,27 @@ export function CustomColorModal({
                   </label>
                   <input
                     value={colorName}
-                    onChange={(e) => setColorName(e.target.value)}
+                    onChange={(e) => {
+                      setColorName(e.target.value);
+                      if (nameError && e.target.value.trim()) setNameError(false);
+                    }}
+                    onBlur={() => colorName.trim() === "" && setNameError(true)}
                     placeholder="Ej: P001-magneta rayas blancas, Cebra blanco-negro, Flores rosas fondo blanco..."
-                    className="input h-10 text-sm"
+                    className={cn(
+                      "input h-10 text-sm",
+                      nameError && "border-red-400 ring-2 ring-red-200 focus:ring-red-400"
+                    )}
                     autoFocus
                   />
-                  <p className="text-[10px] text-gray-400">
-                    Incluye el código del producto + descripción visual. El nombre debe ser único.
-                  </p>
+                  {nameError ? (
+                    <p className="text-[11px] font-semibold text-red-600 flex items-center gap-1">
+                      ⚠️ Debes asignarle un nombre al color (ej: P001-magneta rayas blancas).
+                    </p>
+                  ) : (
+                    <p className="text-[10px] text-gray-400">
+                      Incluye el código del producto + descripción visual. El nombre debe ser único.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -547,8 +601,21 @@ export function CustomColorModal({
                 </button>
                 <button
                   type="button"
-                  onClick={handleSave}
-                  disabled={saving || !colorName.trim()}
+                  onClick={() => {
+                    if (!colorName.trim()) {
+                      setNameError(true);
+                      toast.error("Debes asignarle un nombre al color", {
+                        position: "top-right",
+                        description: "Ej: P001-magneta rayas blancas · Cebra blanco-negro · Flores rosas",
+                        closeButton: true,
+                        icon: <AlertTriangle size={16} />,
+                        duration: 4500,
+                      });
+                      return;
+                    }
+                    handleSave();
+                  }}
+                  disabled={saving}
                   className="btn-primary text-sm px-5 py-2 flex items-center gap-2 font-semibold"
                 >
                   {saving ? (

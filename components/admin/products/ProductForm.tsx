@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { BrandManager } from "./BrandManager";
 import { CustomColorModal } from "./CustomColorModal";
 import Image from "next/image";
+import { toast } from "sonner";
 
 interface Category { id: string; name: string }
 interface Color { id: string; name: string; hex?: string | null; swatchUrl?: string | null }
@@ -89,7 +90,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
   const pendingVariantImageIdxRef = useRef<number | null>(null);
   const isEdit = !!product?.id;
 
-  const defaultSectionIds = sections.length ? [sections[0].id] : [];
+  const defaultSectionIds: string[] = [];
   const [colors, setColors] = useState<Color[]>(initialColors);
   const [isCustomColorModalOpen, setIsCustomColorModalOpen] = useState(false);
   const [customColorForVariant, setCustomColorForVariant] = useState<number | null>(null);
@@ -126,7 +127,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
           model: v.model ?? "",
           oldPrice: v.oldPrice,
           isOutlet: v.isOutlet ?? false,
-          sectionIds: v.sections?.map((s) => s.id) ?? [...defaultSectionIds],
+          sectionIds: v.sections?.map((s) => s.id) ?? [],
           imageKeys: merged,
           isAutoSku: false,
         };
@@ -530,10 +531,26 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
         throw new Error("Los SKUs deben ser únicos");
       }
 
-      for (const v of variants) {
-        if (!v.sectionIds.length) {
-          throw new Error(`La variante ${v.sku || "(sin SKU)"} debe tener al menos una sección seleccionada`);
-        }
+      const variantsSinSeccion = variants
+        .map((v, idx) => ({ v, idx }))
+        .filter(({ v }) => !v.sectionIds.length);
+
+      if (variantsSinSeccion.length) {
+        const lista = variantsSinSeccion
+          .map(({ v, idx }) => `Variante #${idx + 1}${v.sku ? ` (${v.sku})` : ""}`)
+          .join(" · ");
+        const msg = `Falta asignar sección en: ${lista}`;
+        toast.error(msg, {
+          position: "top-right",
+          description: variantsSinSeccion.length === 1
+            ? "Hacé clic en '+ sección' dentro de esa fila y seleccioná al menos una (Hombre / Mujer / Niño, etc.)."
+            : `Hay ${variantsSinSeccion.length} variantes sin sección. Usá el botón '+ sección' de cada una para asignarlas.`,
+          closeButton: true,
+          duration: 6000,
+        });
+        setError(msg);
+        setLoading(false);
+        return;
       }
 
       const imagesToSave = images.map((img, idx) => ({
@@ -1197,10 +1214,25 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
 
           {error && <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl">{error}</div>}
 
-          <button type="submit" disabled={loading || uploading} className="btn-primary w-full md:w-auto md:px-10 flex items-center justify-center gap-2 py-3 md:ml-auto">
-            {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-            {loading ? "Guardando..." : isEdit ? "Actualizar producto" : "Crear producto"}
-          </button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 sm:justify-end">
+            <button
+              type="button"
+              onClick={() => router.push("/admin/products")}
+              className="w-full sm:w-auto md:px-10 flex items-center justify-center gap-2 py-3 font-semibold text-white rounded-xl shadow-sm active:scale-95 transition-all duration-200"
+              style={{
+                backgroundColor: "#EF4444",
+                borderRadius: "0.75rem",
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#DC2626"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#EF4444"; }}
+            >
+              Cancelar
+            </button>
+            <button type="submit" disabled={loading || uploading} className="btn-primary w-full md:w-auto md:px-10 flex items-center justify-center gap-2 py-3">
+              {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+              {loading ? "Guardando..." : isEdit ? "Actualizar producto" : "Crear producto"}
+            </button>
+          </div>
         </div>
       </form>
 
