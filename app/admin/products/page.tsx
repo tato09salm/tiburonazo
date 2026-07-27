@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Plus, Pencil } from "lucide-react";
 import type { Metadata } from "next";
 import { ToggleProductStatus } from "@/components/admin/products/ToggleProductStatus";
+import { DeleteProductButton } from "@/components/admin/products/DeleteProductButton";
 import Image from "next/image";
 import { ProductFilters } from "@/components/admin/products/ProductFilters";
 
@@ -94,6 +95,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
                         <Link href={`/admin/products/${p.id}/edit`} className="inline-flex items-center gap-1.5 text-xs text-[#11ABC4] hover:bg-[#CCECFB] px-3 py-1.5 rounded-lg transition-colors font-semibold">
                           <Pencil size={13} /> Editar
                         </Link>
+                        <DeleteProductButton productId={p.id} productTitle={p.title} />
                       </div>
                     </td>
                   </tr>

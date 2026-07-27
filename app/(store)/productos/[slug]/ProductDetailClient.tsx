@@ -107,7 +107,15 @@ export function ProductDetailClient({ product, relatedProducts }: Props) {
                 <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                   {product.brand && <SpecItem label="Marca" value={product.brand.name} />}
                   <SpecItem label="Material" value={product.material || "Premium"} />
-                  <SpecItem label="Género" value={product.gender} />
+                  <SpecItem 
+                    label="Sección" 
+                    value={
+                      selectedVariant?.sections?.length
+                        ? selectedVariant.sections.map(s => s.name).join(" / ")
+                        : "Unisex"
+                    } 
+                  />
+                  {selectedVariant?.isOutlet && <SpecItem label="Colección" value="Outlet" />}
                 </div>
               </div>
             </div>

@@ -1,5 +1,4 @@
-import { prisma } from "@/lib/prisma";
-import { getAdminInitialData } from "@/actions/product.actions";
+import { getAdminInitialData, getProductForEdit } from "@/actions/product.actions";
 import { ProductForm } from "@/components/admin/products/ProductForm";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -11,14 +10,7 @@ export const metadata: Metadata = { title: "Editar Producto - Admin" };
 export default async function EditProductPage({ params }: Props) {
   const { id } = await params;
   const [product, initialData] = await Promise.all([
-    prisma.product.findUnique({
-      where: { id },
-      include: { 
-        variants: true, 
-        images: { orderBy: { order: "asc" } },
-        sections: true
-      },
-    }),
+    getProductForEdit(id),
     getAdminInitialData(),
   ]);
 

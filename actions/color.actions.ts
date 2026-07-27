@@ -9,7 +9,15 @@ export async function getColors() {
   });
 }
 
-export async function createColor(data: { name: string; hex?: string }) {
+export async function createColor(data: {
+  name: string;
+  hex?: string;
+  swatchUrl?: string;
+  sourceImageUrl?: string;
+  cropX?: number;
+  cropY?: number;
+  cropRadius?: number;
+}) {
   const color = await prisma.color.create({
     data,
   });
@@ -17,7 +25,18 @@ export async function createColor(data: { name: string; hex?: string }) {
   return color;
 }
 
-export async function updateColor(id: string, data: { name: string; hex?: string }) {
+export async function updateColor(
+  id: string,
+  data: {
+    name: string;
+    hex?: string;
+    swatchUrl?: string | null;
+    sourceImageUrl?: string | null;
+    cropX?: number | null;
+    cropY?: number | null;
+    cropRadius?: number | null;
+  }
+) {
   const color = await prisma.color.update({
     where: { id },
     data,
@@ -28,14 +47,15 @@ export async function updateColor(id: string, data: { name: string; hex?: string
 
 export async function deleteColor(id: string) {
   try {
-    // Verificar si el color tiene variantes asociadas
     const colorWithVariants = await prisma.color.findUnique({
       where: { id },
-      include: { _count: { select: { variants: true } } }
+      include: { _count: { select: { variants: true } } },
     });
 
     if (colorWithVariants && colorWithVariants._count.variants > 0) {
-      throw new Error(`No se puede eliminar el color porque tiene ${colorWithVariants._count.variants} variantes de productos asociadas.`);
+      throw new Error(
+        `No se puede eliminar el color porque tiene ${colorWithVariants._count.variants} variantes de productos asociadas.`
+      );
     }
 
     await prisma.color.delete({

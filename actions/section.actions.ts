@@ -13,17 +13,22 @@ export async function getSections() {
 export async function getActiveSections() {
   if (!(prisma as any).section) return [];
   
-  return await prisma.section.findMany({
+  const sections = await prisma.section.findMany({
     where: { isActive: true },
     include: {
-      products: {
+      variants: {
         where: { isActive: true },
-        select: {
-          category: {
+        include: {
+          product: {
             select: {
-              id: true,
-              name: true,
-              slug: true,
+              isActive: true,
+              category: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                }
+              }
             }
           }
         }
@@ -31,6 +36,11 @@ export async function getActiveSections() {
     },
     orderBy: { order: "asc" },
   });
+
+  return sections.map(section => ({
+    ...section,
+    variants: section.variants.filter(v => v.product?.isActive),
+  }));
 }
 
 export async function createSection(data: {
@@ -97,8 +107,7 @@ export async function updateSection(
 }
 
 export async function deleteSection(id: string) {
-  // Verificar si la sección tiene productos vinculados
-  const productCount = await prisma.product.count({
+  const variantCount = await prisma.productVariant.count({
     where: {
       sections: {
         some: { id }
@@ -106,7 +115,7 @@ export async function deleteSection(id: string) {
     }
   });
 
-  if (productCount > 0) {
+  if (variantCount > 0) {
     throw new Error("Esta sección está en uso");
   }
 

@@ -5,15 +5,17 @@ import { ProductCardComponent } from "./product-card";
 import { ProductGridSkeleton } from "@/components/common/Skeleton";
 import { InfiniteScroll } from "./infinite-scroll";
 import { useCallback } from "react";
-import { Gender } from "@prisma/client";
 
 interface Props {
   categorySlug?: string;
   sectionSlug?: string;
-  gender?: Gender;
+  gender?: string;
   search?: string;
   minPrice?: number;
   maxPrice?: number;
+  brandId?: string;
+  outlet?: boolean;
+  featured?: boolean;
 }
 
 export function ProductGrid(props: Props) {

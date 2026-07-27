@@ -15,6 +15,15 @@ interface Section {
   slug: string;
   order: number;
   isActive: boolean;
+  variants?: Array<{
+    product?: {
+      category?: {
+        id: string;
+        name: string;
+        slug: string;
+      }
+    }
+  }>;
   products?: Array<{
     category: {
       id: string;
@@ -62,24 +71,41 @@ export function Header({ initialSections = [] }: Props) {
         { label: "Niño", href: "/productos?section=nino", sub: [] },
         { label: "Bebé", href: "/productos?section=bebe", sub: [] },
         { label: "Accesorios", href: "/categoria/lentes", sub: [] },
-        { label: "Outlet", href: "/productos?section=outlet", sub: [] },
+        { label: "Outlet", href: "/productos?outlet=true", sub: [] },
       ];
     }
 
     return initialSections.map(s => {
       const categoriesMap = new Map<string, { label: string, href: string }>();
-      s.products?.forEach(p => {
-        if (!categoriesMap.has(p.category.id)) {
-          categoriesMap.set(p.category.id, {
-            label: p.category.name,
-            href: `/productos?category=${p.category.slug}&section=${s.slug}`
-          });
-        }
-      });
+
+      if (Array.isArray(s.products) && s.products.length) {
+        s.products.forEach(p => {
+          if (!categoriesMap.has(p.category.id)) {
+            categoriesMap.set(p.category.id, {
+              label: p.category.name,
+              href: `/productos?category=${p.category.slug}&section=${s.slug}`
+            });
+          }
+        });
+      } else if (Array.isArray(s.variants) && s.variants.length) {
+        s.variants.forEach(v => {
+          const cat = v.product?.category;
+          if (cat && !categoriesMap.has(cat.id)) {
+            categoriesMap.set(cat.id, {
+              label: cat.name,
+              href: `/productos?category=${cat.slug}&section=${s.slug}`
+            });
+          }
+        });
+      }
+
+      const href = s.slug?.toLowerCase() === "outlet"
+        ? `/productos?outlet=true`
+        : `/productos?section=${s.slug}`;
 
       return {
         label: s.name,
-        href: `/productos?section=${s.slug}`,
+        href,
         sub: Array.from(categoriesMap.values())
       };
     });
