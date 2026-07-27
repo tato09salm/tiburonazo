@@ -1,7 +1,3 @@
-"use client";
-
-import { useId } from "react";
-
 interface WaterEffectProps {
   waveColor?: string;
   gradientFrom?: string;
@@ -28,8 +24,6 @@ export function WaterEffect({
   gradientFrom = "transparent",
   gradientTo = "rgba(17, 171, 196, 0.08)",
 }: WaterEffectProps) {
-  const uid = useId();
-
   return (
     <>
       <style>{`

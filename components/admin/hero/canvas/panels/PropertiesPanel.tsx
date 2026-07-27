@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import type { CanvasElement, CanvasTextElement, CanvasImageElement, CanvasButtonElement } from "../types";
 import { UrlPicker } from "./UrlPicker";
 import { FontSelector } from "./FontSelector";
@@ -9,7 +10,7 @@ interface Props {
   onChange: (id: string, attrs: Partial<CanvasElement>) => void;
 }
 
-export function PropertiesPanel({ element, onChange }: Props) {
+export const PropertiesPanel = memo(function PropertiesPanel({ element, onChange }: Props) {
   if (!element) {
     return (
       <div className="p-4 text-center text-gray-400 text-sm">
@@ -325,4 +326,4 @@ export function PropertiesPanel({ element, onChange }: Props) {
       )}
     </div>
   );
-}
+});

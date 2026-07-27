@@ -48,8 +48,8 @@ export function HeroSlider({ slides }: HeroSliderProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
   const [isPaused, setIsPaused] = useState(false);
-  const autoplayRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
+  const pauseRef = useRef(false);
+  pauseRef.current = isPaused;
   useEffect(() => {
     if (!emblaApi) return;
     setScrollSnaps(emblaApi.scrollSnapList());
@@ -62,29 +62,29 @@ export function HeroSlider({ slides }: HeroSliderProps) {
   useEffect(() => {
     if (!emblaApi || slides.length < 2) return;
 
-    const startAutoplay = () => {
-      const duration = slides[selectedIndex]?.displayDuration || 5;
-      autoplayRef.current = setInterval(() => {
-        if (!isPaused) emblaApi.scrollNext();
+    let id: ReturnType<typeof setTimeout>;
+
+    const tick = () => {
+      const duration = slides[emblaApi.selectedScrollSnap()]?.displayDuration || 5;
+      id = setTimeout(() => {
+        if (!pauseRef.current && !document.hidden) {
+          emblaApi.scrollNext();
+        }
+        tick();
       }, duration * 1000);
     };
 
-    const stopAutoplay = () => {
-      if (autoplayRef.current) {
-        clearInterval(autoplayRef.current);
-        autoplayRef.current = null;
-      }
-    };
+    tick();
 
-    stopAutoplay();
-    startAutoplay();
-
-    return stopAutoplay;
-  }, [emblaApi, slides, isPaused, selectedIndex]);
+    return () => clearTimeout(id);
+  }, [emblaApi, slides]);
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
   const scrollTo = useCallback((index: number) => emblaApi?.scrollTo(index), [emblaApi]);
+
+  const handleMouseEnter = useCallback(() => setIsPaused(true), []);
+  const handleMouseLeave = useCallback(() => setIsPaused(false), []);
 
   if (!slides.length) {
     return (
@@ -127,8 +127,8 @@ export function HeroSlider({ slides }: HeroSliderProps) {
   return (
     <section
       className="relative w-full overflow-hidden"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       role="region"
       aria-roledescription="carousel"
       aria-label="Hero slider - promociones y colecciones"

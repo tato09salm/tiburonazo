@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { BannerRenderer } from "@/components/banner/BannerRenderer";
 import { CanvasToolbar } from "./panels/CanvasToolbar";
 import { PropertiesPanel } from "./panels/PropertiesPanel";
+import { BgUploader } from "./BgUploader";
 import { CANVAS_WIDTH, CANVAS_HEIGHT, generateId } from "./types";
 import type { CanvasElement, CanvasSlideData, CanvasBackground } from "./types";
+import { buildData, autoFitTextHeight, autoFitButtonHeight } from "@/lib/canvas-utils";
 import { toast } from "sonner";
 
 interface Props {
@@ -13,99 +15,63 @@ interface Props {
   onChange: (data: CanvasSlideData) => void;
 }
 
-function BgUploader({ currentUrl, onUrl }: { currentUrl?: string; onUrl: (url: string) => void }) {
-  const [uploading, setUploading] = useState(false);
-
-  const handleUpload = async (file: File) => {
-    setUploading(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("folder", "slides");
-    try {
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (res.ok) onUrl(data.url);
-    } catch {}
-    setUploading(false);
-  };
-
-  return (
-    <div>
-      {currentUrl ? (
-        <div className="relative group">
-          <div className="w-full h-16 rounded-lg overflow-hidden bg-gray-100">
-            <img src={currentUrl} alt="" className="w-full h-full object-cover" />
-          </div>
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
-            <label className="px-2 py-1 bg-white rounded text-xs cursor-pointer hover:bg-gray-100">
-              Cambiar
-              <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} />
-            </label>
-            <button onClick={() => onUrl("")} className="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600">
-              Quitar
-            </button>
-          </div>
-        </div>
-      ) : (
-        <label className="flex items-center justify-center h-16 rounded-lg border-2 border-dashed border-slate-300 cursor-pointer hover:border-[#11ABC4] hover:bg-[#11ABC4]/5 transition-all text-xs text-gray-400">
-          {uploading ? "Subiendo..." : "Subir imagen de fondo"}
-          <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} />
-        </label>
-      )}
-    </div>
-  );
-}
-
-function buildData(bg: CanvasBackground, els: CanvasElement[]): CanvasSlideData {
-  return { width: CANVAS_WIDTH, height: CANVAS_HEIGHT, background: bg, elements: els };
-}
-
 type Device = "desktop" | "tablet" | "mobile";
+
+const DEVICES: { key: Device; label: string }[] = [
+  { key: "desktop", label: "Desktop" },
+  { key: "tablet", label: "Tablet" },
+  { key: "mobile", label: "Mobile" },
+];
+
+const INITIAL_BG: CanvasBackground = { type: "color", color: "#1a1a2e" };
 
 export function CanvasEditor({ initialData, onChange }: Props) {
   const [elements, setElements] = useState<CanvasElement[]>(
-    initialData?.elements?.length ? initialData.elements : []
+    () => (initialData?.elements?.length ? initialData.elements : [])
   );
   const [background, setBackground] = useState<CanvasBackground>(
-    initialData?.background || { type: "color", color: "#1a1a2e" }
+    () => initialData?.background || INITIAL_BG
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [device, setDevice] = useState<Device>("desktop");
 
-  const selectedElement = elements.find((el) => el.id === selectedId) || null;
+  const selectedElement = useMemo(
+    () => elements.find((el) => el.id === selectedId) || null,
+    [elements, selectedId]
+  );
+
+  const data = useMemo(
+    () => buildData(background, elements),
+    [background, elements]
+  );
 
   const handleElementChange = useCallback(
     (id: string, attrs: Partial<CanvasElement>) => {
+      let changed = false;
       const updated = elements.map((el) => {
         if (el.id !== id) return el;
+        changed = true;
         const upd = { ...el } as any;
         Object.assign(upd, attrs);
 
-        const isText = el.type === "text" || el.type === "button";
-
-        // Auto-fit height when width, text, or fontSize changes
         const a = attrs as any;
+        const isText = el.type === "text" || el.type === "button";
         if (isText && (a.width !== undefined || a.text !== undefined || a.fontSize !== undefined)) {
           if (el.type === "button") {
-            // Buttons are single-line; only auto-fit when width changes (keep height stable for text/font edits)
             if (a.width !== undefined) {
-              const fs = upd.fontSize || 16;
-              upd.height = Math.max(30, Math.round(fs * 1.5 + 12));
+              upd.height = autoFitButtonHeight(upd.fontSize || 16);
             }
           } else {
-            const fs = upd.fontSize || 16;
-            const lh = upd.lineHeight || 1.2;
-            const text = upd.text || "";
-            const cpl = Math.max(1, Math.round(upd.width / (fs * 0.6)));
-            const lines = Math.max(1, Math.ceil(text.length / cpl));
-            upd.height = Math.max(30, Math.round(lines * fs * lh + 12));
+            upd.height = autoFitTextHeight(
+              upd.width, upd.fontSize || 16, upd.lineHeight || 1.2, upd.text || ""
+            );
           }
         }
-
         return upd as CanvasElement;
       });
+      if (!changed) return;
       setElements(updated);
       onChange(buildData(background, updated));
     },
@@ -162,30 +128,26 @@ export function CanvasEditor({ initialData, onChange }: Props) {
     }
     setEditingId(null);
     setEditText("");
-  }, [editingId, editText, elements, handleElementChange]);
+  }, [editingId, editText, handleElementChange]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (editingId) return;
-      if (e.key === "Delete" || e.key === "Backspace") {
-        const tag = (e.target as HTMLElement).tagName;
-        if (tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT") {
-          e.preventDefault();
-          deleteSelected();
-        }
+      const tag = (e.target as HTMLElement).tagName;
+      if ((e.key === "Delete" || e.key === "Backspace") && tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT") {
+        e.preventDefault();
+        deleteSelected();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [editingId, deleteSelected]);
 
-  const data: CanvasSlideData = { width: CANVAS_WIDTH, height: CANVAS_HEIGHT, background, elements };
-
-  const devices: { key: Device; label: string }[] = [
-    { key: "desktop", label: "Desktop" },
-    { key: "tablet", label: "Tablet" },
-    { key: "mobile", label: "Mobile" },
-  ];
+  const handleSelectBgType = useCallback((t: "color" | "image" | "none") => {
+    if (t === "color") handleBgChange({ type: "color", color: background.color || "#1a1a2e" });
+    else if (t === "image") handleBgChange({ type: "image", imageUrl: background.imageUrl || "" });
+    else handleBgChange({ type: "none" });
+  }, [handleBgChange, background.color, background.imageUrl]);
 
   return (
     <div className="flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden">
@@ -195,7 +157,7 @@ export function CanvasEditor({ initialData, onChange }: Props) {
         onDuplicateSelected={duplicateSelected}
         hasSelection={!!selectedId}
       >
-        {devices.map((d) => (
+        {DEVICES.map((d) => (
           <button
             key={d.key}
             type="button"
@@ -211,7 +173,6 @@ export function CanvasEditor({ initialData, onChange }: Props) {
 
       <div className="flex" style={{ height: "calc(100vh - 280px)" }}>
         <div className="flex-1 bg-[#f0f4f8] flex flex-col items-center p-4 overflow-hidden gap-3">
-          {/* BannerRenderer — same component used in store */}
           <div className="flex-1 flex items-center justify-center w-full min-h-0">
             <BannerRenderer
               data={data}
@@ -237,11 +198,7 @@ export function CanvasEditor({ initialData, onChange }: Props) {
                 <button
                   key={t}
                   type="button"
-                  onClick={() => {
-                    if (t === "color") handleBgChange({ type: "color", color: background.color || "#1a1a2e" });
-                    else if (t === "image") handleBgChange({ type: "image", imageUrl: background.imageUrl || "" });
-                    else handleBgChange({ type: "none" });
-                  }}
+                  onClick={() => handleSelectBgType(t)}
                   className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                     background.type === t
                       ? "border-[#11ABC4] bg-[#11ABC4]/10 text-[#11ABC4]"
@@ -254,30 +211,19 @@ export function CanvasEditor({ initialData, onChange }: Props) {
             </div>
             {background.type === "color" && (
               <div className="flex gap-2">
-                <input
-                  type="color"
-                  value={background.color || "#1a1a2e"}
+                <input type="color" value={background.color || "#1a1a2e"}
                   onChange={(e) => handleBgChange({ ...background, color: e.target.value })}
-                  className="w-8 h-8 rounded cursor-pointer border border-slate-200 shrink-0"
-                />
-                <input
-                  type="text"
-                  value={background.color || ""}
+                  className="w-8 h-8 rounded cursor-pointer border border-slate-200 shrink-0" />
+                <input type="text" value={background.color || ""}
                   onChange={(e) => handleBgChange({ ...background, color: e.target.value })}
-                  className="input text-sm py-1 flex-1"
-                  placeholder="#1a1a2e"
-                />
+                  className="input text-sm py-1 flex-1" placeholder="#1a1a2e" />
               </div>
             )}
             {background.type === "image" && (
               <>
-                <BgUploader
-                  currentUrl={background.imageUrl}
-                  onUrl={(url) => handleBgChange({ ...background, imageUrl: url })}
-                />
-                <p className="text-[10px] text-gray-400 text-center leading-tight">
-                  Recomendado: 1440×720px
-                </p>
+                <BgUploader currentUrl={background.imageUrl}
+                  onUrl={(url) => handleBgChange({ ...background, imageUrl: url })} />
+                <p className="text-[10px] text-gray-400 text-center leading-tight">Recomendado: 1440×720px</p>
               </>
             )}
           </div>
