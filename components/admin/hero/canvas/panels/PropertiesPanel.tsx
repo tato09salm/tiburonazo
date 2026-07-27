@@ -1,8 +1,8 @@
 "use client";
 
 import type { CanvasElement, CanvasTextElement, CanvasImageElement, CanvasButtonElement } from "../types";
-import { DEFAULT_FONTS } from "../types";
 import { UrlPicker } from "./UrlPicker";
+import { FontSelector } from "./FontSelector";
 
 interface Props {
   element: CanvasElement | null;
@@ -88,6 +88,17 @@ export function PropertiesPanel({ element, onChange }: Props) {
             className="w-full mt-1"
           />
         </div>
+        <div>
+          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={element.visible}
+              onChange={(e) => update({ visible: e.target.checked })}
+              className="rounded border-slate-300 text-[#11ABC4] focus:ring-[#11ABC4]"
+            />
+            Visible
+          </label>
+        </div>
       </div>
 
       {/* Text specific */}
@@ -103,15 +114,10 @@ export function PropertiesPanel({ element, onChange }: Props) {
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Fuente</label>
-            <select
+            <FontSelector
               value={(element as any).fontFamily}
-              onChange={(e) => update({ fontFamily: e.target.value } as any)}
-              className="input text-sm py-1.5"
-            >
-              {DEFAULT_FONTS.map((f) => (
-                <option key={f} value={f}>{f}</option>
-              ))}
-            </select>
+              onChange={(font) => update({ fontFamily: font } as any)}
+            />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
@@ -258,6 +264,25 @@ export function PropertiesPanel({ element, onChange }: Props) {
                   className="input text-sm py-1 flex-1"
                 />
               </div>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Alineación</label>
+            <div className="flex gap-1">
+              {(["left", "center", "right"] as const).map((a) => (
+                <button
+                  key={a}
+                  type="button"
+                  onClick={() => update({ textAlign: a } as any)}
+                  className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                    (element as any).textAlign === a
+                      ? "border-[#11ABC4] bg-[#11ABC4]/10 text-[#11ABC4]"
+                      : "border-slate-200 text-gray-500"
+                  }`}
+                >
+                  {a === "left" ? "Izq" : a === "center" ? "Centro" : "Der"}
+                </button>
+              ))}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">

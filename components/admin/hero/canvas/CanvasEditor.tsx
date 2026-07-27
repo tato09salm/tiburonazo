@@ -1,31 +1,16 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Stage, Layer, Transformer, Rect, Image as KonvaImage } from "react-konva";
-import useImage from "use-image";
-import type { KonvaEventObject } from "konva/lib/Node";
-import { TextElement } from "./elements/TextElement";
-import { ImageElement } from "./elements/ImageElement";
-import { ButtonElement } from "./elements/ButtonElement";
+import { BannerRenderer } from "@/components/banner/BannerRenderer";
 import { CanvasToolbar } from "./panels/CanvasToolbar";
 import { PropertiesPanel } from "./panels/PropertiesPanel";
 import { CANVAS_WIDTH, CANVAS_HEIGHT, generateId } from "./types";
 import type { CanvasElement, CanvasSlideData, CanvasBackground } from "./types";
-import { createPortal } from "react-dom";
+import { toast } from "sonner";
 
 interface Props {
   initialData?: CanvasSlideData | null;
   onChange: (data: CanvasSlideData) => void;
-}
-
-function BgImage({ url }: { url: string }) {
-  const [image] = useImage(url);
-  if (!image) return null;
-  return <KonvaImage image={image} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} />;
-}
-
-function BgColor({ color }: { color: string }) {
-  return <Rect width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill={color} />;
 }
 
 function BgUploader({ currentUrl, onUrl }: { currentUrl?: string; onUrl: (url: string) => void }) {
@@ -75,6 +60,8 @@ function buildData(bg: CanvasBackground, els: CanvasElement[]): CanvasSlideData 
   return { width: CANVAS_WIDTH, height: CANVAS_HEIGHT, background: bg, elements: els };
 }
 
+type Device = "desktop" | "tablet" | "mobile";
+
 export function CanvasEditor({ initialData, onChange }: Props) {
   const [elements, setElements] = useState<CanvasElement[]>(
     initialData?.elements?.length ? initialData.elements : []
@@ -83,53 +70,42 @@ export function CanvasEditor({ initialData, onChange }: Props) {
     initialData?.background || { type: "color", color: "#1a1a2e" }
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [stageScale, setStageScale] = useState(1);
-  const stageRef = useRef<any>(null);
-  const transformerRef = useRef<any>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const resize = () => {
-      if (containerRef.current) {
-        const w = containerRef.current.clientWidth;
-        setStageScale(w / CANVAS_WIDTH);
-      }
-    };
-    resize();
-    const observer = new ResizeObserver(resize);
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!stageRef.current || !transformerRef.current) return;
-    if (selectedId) {
-      const node = stageRef.current.findOne(`#${selectedId}`);
-      if (node) {
-        transformerRef.current.nodes([node]);
-        transformerRef.current.getLayer()?.batchDraw();
-        return;
-      }
-    }
-    transformerRef.current.nodes([]);
-    transformerRef.current.getLayer()?.batchDraw();
-  }, [selectedId, elements]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [device, setDevice] = useState<Device>("desktop");
 
   const selectedElement = elements.find((el) => el.id === selectedId) || null;
 
   const handleElementChange = useCallback(
     (id: string, attrs: Partial<CanvasElement>) => {
-      const updated = elements.map((el) => (el.id === id ? ({ ...el, ...attrs } as CanvasElement) : el));
-      setElements(updated);
-      onChange(buildData(background, updated));
-    },
-    [elements, background, onChange]
-  );
+      const updated = elements.map((el) => {
+        if (el.id !== id) return el;
+        const upd = { ...el } as any;
+        Object.assign(upd, attrs);
 
-  const handleTransformEnd = useCallback(
-    (id: string, attrs: { x: number; y: number; width: number; height: number; rotation: number }) => {
-      const updated = elements.map((el) => (el.id === id ? ({ ...el, ...attrs } as CanvasElement) : el));
+        const isText = el.type === "text" || el.type === "button";
+
+        // Auto-fit height when width, text, or fontSize changes
+        const a = attrs as any;
+        if (isText && (a.width !== undefined || a.text !== undefined || a.fontSize !== undefined)) {
+          if (el.type === "button") {
+            // Buttons are single-line; only auto-fit when width changes (keep height stable for text/font edits)
+            if (a.width !== undefined) {
+              const fs = upd.fontSize || 16;
+              upd.height = Math.max(30, Math.round(fs * 1.5 + 12));
+            }
+          } else {
+            const fs = upd.fontSize || 16;
+            const lh = upd.lineHeight || 1.2;
+            const text = upd.text || "";
+            const cpl = Math.max(1, Math.round(upd.width / (fs * 0.6)));
+            const lines = Math.max(1, Math.ceil(text.length / cpl));
+            upd.height = Math.max(30, Math.round(lines * fs * lh + 12));
+          }
+        }
+
+        return upd as CanvasElement;
+      });
       setElements(updated);
       onChange(buildData(background, updated));
     },
@@ -165,10 +141,6 @@ export function CanvasEditor({ initialData, onChange }: Props) {
     onChange(buildData(background, updated));
   }, [selectedId, elements, background, onChange]);
 
-  const handleStageClick = useCallback((e: KonvaEventObject<MouseEvent>) => {
-    if (e.target === e.target.getStage()) setSelectedId(null);
-  }, []);
-
   const handleBgChange = useCallback(
     (bg: CanvasBackground) => {
       setBackground(bg);
@@ -177,28 +149,20 @@ export function CanvasEditor({ initialData, onChange }: Props) {
     [elements, onChange]
   );
 
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editText, setEditText] = useState("");
-  const editRef = useRef<HTMLTextAreaElement>(null);
-
   const startEditing = useCallback((id: string) => {
     const el = elements.find((e) => e.id === id);
     if (!el || (el.type !== "text" && el.type !== "button")) return;
     setEditingId(id);
     setEditText(el.text || "");
-    setTimeout(() => {
-      editRef.current?.focus();
-      editRef.current?.select();
-    }, 0);
   }, [elements]);
 
   const finishEditing = useCallback(() => {
-    if (editingId && editText.trim()) {
-      handleElementChange(editingId, { text: editText.trim() });
+    if (editingId) {
+      handleElementChange(editingId, { text: editText || "" });
     }
     setEditingId(null);
     setEditText("");
-  }, [editingId, editText, handleElementChange]);
+  }, [editingId, editText, elements, handleElementChange]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -215,30 +179,13 @@ export function CanvasEditor({ initialData, onChange }: Props) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [editingId, deleteSelected]);
 
-  const renderElement = (el: CanvasElement) => {
-    const isSelected = el.id === selectedId;
-    const commonProps = {
-      element: el,
-      isSelected,
-      onSelect: () => setSelectedId(el.id),
-      onChange: (attrs: Partial<CanvasElement>) => handleElementChange(el.id, attrs),
-      onTransformEnd: (attrs: { x: number; y: number; width: number; height: number; rotation: number }) =>
-        handleTransformEnd(el.id, attrs),
-      onDblClick: el.type === "text" || el.type === "button" ? () => startEditing(el.id) : undefined,
-    };
+  const data: CanvasSlideData = { width: CANVAS_WIDTH, height: CANVAS_HEIGHT, background, elements };
 
-    switch (el.type) {
-      case "text":
-        return <TextElement key={el.id} {...commonProps} />;
-      case "image":
-      case "gif":
-        return <ImageElement key={el.id} {...commonProps} />;
-      case "button":
-        return <ButtonElement key={el.id} {...commonProps} />;
-      default:
-        return null;
-    }
-  };
+  const devices: { key: Device; label: string }[] = [
+    { key: "desktop", label: "Desktop" },
+    { key: "tablet", label: "Tablet" },
+    { key: "mobile", label: "Mobile" },
+  ];
 
   return (
     <div className="flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden">
@@ -247,83 +194,38 @@ export function CanvasEditor({ initialData, onChange }: Props) {
         onDeleteSelected={deleteSelected}
         onDuplicateSelected={duplicateSelected}
         hasSelection={!!selectedId}
-      />
+      >
+        {devices.map((d) => (
+          <button
+            key={d.key}
+            type="button"
+            onClick={() => setDevice(d.key)}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+              device === d.key ? "bg-[#11ABC4] text-white shadow-sm" : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            {d.label}
+          </button>
+        ))}
+      </CanvasToolbar>
 
       <div className="flex" style={{ height: "calc(100vh - 280px)" }}>
-        <div ref={containerRef} className="flex-1 bg-[#f0f4f8] flex items-center justify-center p-4 overflow-hidden">
-          <div className="relative shadow-2xl rounded-xl overflow-hidden" style={{ width: "100%", aspectRatio: `${CANVAS_WIDTH}/${CANVAS_HEIGHT}` }}>
-            {/* Stage Konva */}
-            <Stage
-              ref={stageRef}
-              width={CANVAS_WIDTH}
-              height={CANVAS_HEIGHT}
-              scaleX={stageScale}
-              scaleY={stageScale}
-              onClick={handleStageClick as any}
-              onTap={handleStageClick as any}
-            >
-              <Layer>
-                {background.type === "image" && background.imageUrl && (
-                  <BgImage url={background.imageUrl} />
-                )}
-                {background.type === "color" && background.color && (
-                  <BgColor color={background.color} />
-                )}
-                {elements
-                  .filter((el) => el.visible)
-                  .sort((a, b) => a.zIndex - b.zIndex)
-                  .map(renderElement)}
-                <Transformer
-                  ref={transformerRef}
-                  rotateEnabled
-                  borderStroke="#11ABC4"
-                  borderStrokeWidth={2}
-                  anchorFill="#11ABC4"
-                  anchorSize={8}
-                  anchorCornerRadius={2}
-                  enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
-                />
-              </Layer>
-            </Stage>
-            {/* Inline text editing overlay */}
-            {editingId && (() => {
-              const el = elements.find(e => e.id === editingId);
-              if (!el) return null;
-              const edScale = stageScale;
-              return (
-                <textarea
-                  ref={editRef}
-                  value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                  onBlur={finishEditing}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      finishEditing();
-                    }
-                    if (e.key === "Escape") {
-                      setEditingId(null);
-                      setEditText("");
-                    }
-                  }}
-                  className="absolute z-50 resize-none overflow-hidden bg-transparent border-2 border-[#11ABC4] rounded outline-none"
-                  style={{
-                    left: el.x * edScale,
-                    top: el.y * edScale,
-                    width: el.width * edScale,
-                    height: el.height * edScale,
-                    fontSize: ((el as any).fontSize || 24) * edScale,
-                    fontFamily: (el as any).fontFamily || "Inter, sans-serif",
-                    fontWeight: (el as any).fontWeight || "normal",
-                    fontStyle: (el as any).fontStyle || "normal",
-                    textAlign: (el as any).textAlign || "left",
-                    color: (el as any).textColor || "#ffffff",
-                    lineHeight: (el as any).lineHeight || 1.2,
-                    padding: "4px",
-                  }}
-                />
-              );
-            })()}
+        <div className="flex-1 bg-[#f0f4f8] flex flex-col items-center p-4 overflow-hidden gap-3">
+          {/* BannerRenderer — same component used in store */}
+          <div className="flex-1 flex items-center justify-center w-full min-h-0">
+            <BannerRenderer
+              data={data}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onElementChange={handleElementChange}
+              editingId={editingId}
+              editText={editText}
+              onEditTextChange={setEditText}
+              onFinishEditing={finishEditing}
+              onStartEditing={startEditing}
+              device={device}
+              className="shadow-2xl rounded-xl"
+            />
           </div>
         </div>
 
@@ -368,10 +270,15 @@ export function CanvasEditor({ initialData, onChange }: Props) {
               </div>
             )}
             {background.type === "image" && (
-              <BgUploader
-                currentUrl={background.imageUrl}
-                onUrl={(url) => handleBgChange({ ...background, imageUrl: url })}
-              />
+              <>
+                <BgUploader
+                  currentUrl={background.imageUrl}
+                  onUrl={(url) => handleBgChange({ ...background, imageUrl: url })}
+                />
+                <p className="text-[10px] text-gray-400 text-center leading-tight">
+                  Recomendado: 1440×720px
+                </p>
+              </>
             )}
           </div>
           <PropertiesPanel element={selectedElement} onChange={handleElementChange} />

@@ -6,7 +6,9 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HeroSlideContent } from "./HeroSlideContent";
-import { CanvasSlideRenderer } from "./CanvasSlideRenderer";
+import { BannerRenderer } from "@/components/banner/BannerRenderer";
+import { WaveDivider } from "@/components/ui/WaveDivider";
+import { WaterEffect } from "@/components/ui/WaterEffect";
 import type { CanvasSlideData } from "@/components/admin/hero/canvas/types";
 
 interface Slide {
@@ -145,9 +147,9 @@ export function HeroSlider({ slides }: HeroSliderProps) {
               aria-roledescription="slide"
               aria-label={`Slide ${idx + 1} de ${slides.length}`}
             >
-              <div className="h-[420px] md:h-[560px] lg:h-[720px] w-full">
+              <div className="w-full aspect-[2/1] max-h-[720px]">
                 {slide.canvasData ? (
-                  <CanvasSlideRenderer data={slide.canvasData} />
+                  <BannerRenderer data={slide.canvasData} />
                 ) : (
                   <HeroSlideContent
                     title={slide.title}
@@ -222,12 +224,11 @@ export function HeroSlider({ slides }: HeroSliderProps) {
         </div>
       )}
 
-      {/* Wave divider at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 pointer-events-none">
-        <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-          <path d="M0 60L60 50C120 40 240 20 360 15C480 10 600 20 720 25C840 30 960 30 1080 25C1200 20 1320 10 1380 5L1440 0V60H0Z" fill="#f8fbff" />
-        </svg>
-      </div>
+      {/* Water effect: gradient, bubbles, animated waves */}
+      <WaterEffect />
+
+      {/* Wave divider */}
+      <WaveDivider className="absolute bottom-0 left-0 right-0 z-10" />
     </section>
   );
 }

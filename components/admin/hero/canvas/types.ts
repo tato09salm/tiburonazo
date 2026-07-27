@@ -63,17 +63,15 @@ export interface CanvasSlideData {
   elements: CanvasElement[];
 }
 
-export const DEFAULT_FONTS = [
-  "Rajdhani",
-  "Nunito",
-  "Arial",
-  "Helvetica",
-  "Georgia",
-  "Times New Roman",
-  "Courier New",
-  "Verdana",
-  "Impact",
-];
+export const FONT_GROUPS: Record<string, string[]> = {
+  "Modernas": ["Inter", "Manrope", "Outfit", "Plus Jakarta Sans"],
+  "Geométricas": ["Montserrat", "Poppins", "Urbanist"],
+  "Legibilidad": ["DM Sans", "Lexend", "Nunito Sans"],
+  "Destacadas": ["Nunito", "Rajdhani"],
+  "Sistema": ["Arial", "Helvetica", "Georgia", "Times New Roman", "Courier New", "Verdana", "Impact"],
+};
+
+export const DEFAULT_FONTS = Object.values(FONT_GROUPS).flat();
 
 export const CANVAS_WIDTH = 1440;
 export const CANVAS_HEIGHT = 720;

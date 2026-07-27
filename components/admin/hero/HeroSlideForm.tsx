@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save } from "lucide-react";
+import { Save, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createHeroSlide, updateHeroSlide } from "@/actions/hero.actions";
 import { CanvasEditor } from "./canvas/CanvasEditor";
@@ -18,7 +18,6 @@ export function HeroSlideForm({ slide }: Props) {
   const router = useRouter();
   const [title, setTitle] = useState(slide?.title || "");
   const [isActive, setIsActive] = useState(slide?.isActive ?? true);
-  const [order, setOrder] = useState(slide?.order ?? 0);
   const [displayDuration, setDisplayDuration] = useState(slide?.displayDuration ?? 5);
   const [canvasData, setCanvasData] = useState<CanvasSlideData | null>(
     slide?.canvasData ? (slide.canvasData as unknown as CanvasSlideData) : null
@@ -52,7 +51,6 @@ export function HeroSlideForm({ slide }: Props) {
         buttonColor: "#11ABC4",
         contentPosition: "LEFT" as const,
         isActive,
-        order: Number(order),
         displayDuration: Number(displayDuration),
         canvasData: canvasData,
       };
@@ -88,15 +86,6 @@ export function HeroSlideForm({ slide }: Props) {
             placeholder="Ej: Colección Verano 2026"
           />
         </div>
-        <div className="w-24">
-          <label className="block text-xs font-medium text-gray-500 mb-1">Orden</label>
-          <input
-            type="number"
-            value={order}
-            onChange={(e) => setOrder(Number(e.target.value))}
-            className="input text-sm py-1.5"
-          />
-        </div>
         <div className="w-32">
           <label className="block text-xs font-medium text-gray-500 mb-1">Duración</label>
           <select
@@ -128,9 +117,16 @@ export function HeroSlideForm({ slide }: Props) {
         </div>
         <button
           type="button"
+          onClick={() => router.push("/admin/hero")}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border border-slate-200 text-gray-600 hover:bg-gray-50 transition-all"
+        >
+          <X size={16} /> Cancelar
+        </button>
+        <button
+          type="button"
           onClick={handleSave}
           disabled={saving}
-          className="btn-primary flex items-center gap-2 text-sm py-2.5 ml-auto"
+          className="btn-primary flex items-center gap-2 text-sm py-2.5"
         >
           {saving ? (
             <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />

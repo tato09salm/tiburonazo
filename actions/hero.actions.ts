@@ -21,7 +21,7 @@ const heroSlideSchema = z.object({
   buttonColor: z.string().default("#11ABC4"),
   contentPosition: z.enum(["LEFT", "CENTER", "RIGHT"]).default("LEFT"),
   isActive: z.boolean().default(true),
-  order: z.number().int().default(0),
+  order: z.number().int().optional(),
   displayDuration: z.number().int().min(3).max(10).default(5),
   canvasData: z.any().optional().nullable(),
 });

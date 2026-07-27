@@ -10,9 +10,10 @@ interface Props {
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
   hasSelection: boolean;
+  children?: React.ReactNode;
 }
 
-export function CanvasToolbar({ onAddElement, onDeleteSelected, onDuplicateSelected, hasSelection }: Props) {
+export function CanvasToolbar({ onAddElement, onDeleteSelected, onDuplicateSelected, hasSelection, children }: Props) {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const gifInputRef = useRef<HTMLInputElement>(null);
 
@@ -121,6 +122,15 @@ export function CanvasToolbar({ onAddElement, onDeleteSelected, onDuplicateSelec
       >
         <Trash2 size={16} /> Eliminar
       </button>
+
+      {children && (
+        <>
+          <div className="w-px h-6 bg-slate-200 mx-2" />
+          <div className="flex items-center gap-1 ml-auto">
+            {children}
+          </div>
+        </>
+      )}
     </div>
   );
 }
