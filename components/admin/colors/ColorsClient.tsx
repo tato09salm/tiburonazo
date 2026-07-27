@@ -92,9 +92,7 @@ export function ColorsClient({ initialColors }: Props) {
     }
   };
 
-  const confirmDelete = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const confirmDelete = async () => {
     if (!colorToDelete) return;
 
     setDeleting(true);

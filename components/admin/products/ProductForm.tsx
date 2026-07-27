@@ -413,7 +413,7 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
       const imagesToSave = images.map((img, idx) => ({
         url: img.url,
         order: idx,
-        colorId: img.colorId || undefined,
+        colorId: img.colorId ?? undefined,
         ...(img.id && { id: img.id }),
       }));
 
@@ -422,7 +422,7 @@ export function ProductForm({ categories, colors, sizes, brands: initialBrands, 
           title: form.title, 
           description: form.description, 
           material: form.material, 
-          linea: form.linea || null, 
+          linea: form.linea || undefined, 
           gender: form.gender as any, 
           isFeatured: form.isFeatured, 
           categoryId: form.categoryId,

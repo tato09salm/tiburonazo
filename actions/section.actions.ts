@@ -76,8 +76,8 @@ export async function updateSection(
       where: {
         id: { not: id },
         OR: [
-          ...(data.name ? [{ name: { equals: data.name, mode: "insensitive" } }] : []),
-          ...(data.slug ? [{ slug: { equals: data.slug, mode: "insensitive" } }] : [])
+          ...(data.name ? [{ name: { equals: data.name, mode: "insensitive" as const } }] : []),
+          ...(data.slug ? [{ slug: { equals: data.slug, mode: "insensitive" as const } }] : [])
         ]
       }
     });

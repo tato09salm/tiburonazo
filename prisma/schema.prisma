@@ -312,3 +312,36 @@ enum PaymentMethod {
   EFECTIVO
   TRANSFERENCIA
 }
+
+enum ContentPosition {
+  LEFT
+  CENTER
+  RIGHT
+}
+
+model HeroSlide {
+  id                String          @id @default(cuid())
+  title             String
+  subtitle          String?
+  description       String?
+  badge             String?
+  button1Text       String?
+  button1Url        String?
+  button2Text       String?
+  button2Url        String?
+  imageUrl          String?
+  gifUrl            String?
+  backgroundImageUrl String?
+  backgroundColor   String?
+  textColor         String          @default("#FFFFFF")
+  buttonColor       String          @default("#11ABC4")
+  contentPosition   ContentPosition @default(LEFT)
+  isActive          Boolean         @default(true)
+  order             Int             @default(0)
+  displayDuration   Int             @default(5)
+  canvasData        Json?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@map("hero_slides")
+}

@@ -210,7 +210,7 @@ export function Header({ initialSections = [] }: Props) {
                 <User size={26} />
               </button>
               <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-100 min-w-[160px] py-1 z-50 hidden group-hover:block">
-                <p className="px-4 py-2 text-xs text-gray-500 border-b">{session.user?.name}</p>
+                <p className="px-4 py-2 text-xs text-gray-500 border-b">{[session.user?.firstName, session.user?.lastName].filter(Boolean).join(" ")}</p>
                 {(session.user as any)?.role !== "CLIENTE" && (
                   <Link href="/admin/dashboard" className="block px-4 py-2 text-sm hover:bg-[#CCECFB] text-[#11ABC4] font-semibold">Admin Panel</Link>
                 )}

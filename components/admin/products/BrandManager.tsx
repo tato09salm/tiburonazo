@@ -105,9 +105,7 @@ export function BrandManager({ onClose, onRefresh, initialView = "list" }: Props
     setDeleteError(null);
   };
 
-  const confirmDelete = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const confirmDelete = async () => {
     if (!brandToDelete) return;
 
     setDeleting(true);

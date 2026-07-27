@@ -11,7 +11,7 @@ import {
 } from "@/lib/pdf/ventas-pdf";
 
 interface Props {
-  vendedores: { id: string; name: string }[];
+  vendedores: { id: string; firstName: string | null; lastName: string | null }[];
   salesForReports: any[];
 }
 
@@ -235,7 +235,7 @@ export function SalesFilters({ vendedores, salesForReports }: Props) {
               >
                 <option value="">Todos los vendedores</option>
                 {vendedores.map(v => (
-                  <option key={v.id} value={v.id}>{v.name}</option>
+                  <option key={v.id} value={v.id}>{[v.firstName, v.lastName].filter(Boolean).join(" ")}</option>
                 ))}
               </select>
             </div>
