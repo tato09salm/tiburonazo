@@ -743,8 +743,8 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 pb-20">
+        <div className="space-y-6 pb-6">
           <div className="card p-6 space-y-4">
             <h2 className="font-heading text-lg font-bold">Información general del producto</h2>
 
@@ -925,152 +925,157 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-10 gap-2 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">
-                      <div className="pl-1">SKU</div>
-                      <div className="pl-1">Color</div>
-                      <div className="pl-1">Talla</div>
-                      <div className="pl-1">Precio</div>
-                      <div className="pl-1 text-red-500">Oferta</div>
-                      <div className="pl-1">Modelo</div>
-                      <div className="pl-1">Stock</div>
-                      <div className="text-center">Outlet</div>
-                      <div className="pl-1">Secciones</div>
-                      <div className="pl-1">Imágenes</div>
-                    </div>
-
-                    <div className="grid grid-cols-10 gap-2 items-start">
-                      <div>
-                        <input value={v.sku} onChange={(e) => updateVariant(i, "sku", e.target.value)} placeholder="SKU *" className="input text-[11px] h-9 px-2 w-full" title="SKU" />
-                      </div>
-
-                      <div>
-                        <div className="flex gap-1 h-9 w-full">
-                          <div className="flex-1 relative min-w-0">
-                            {selectedColor && (
-                              <div className="absolute left-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border border-gray-300 shadow-sm z-10 bg-cover bg-center"
-                                style={selectedColor.swatchUrl
-                                  ? { backgroundImage: "url(" + selectedColor.swatchUrl + ")" }
-                                  : (selectedColor.name.toLowerCase() === "transparente"
-                                    ? { backgroundImage: "url('https://www.transparenttextures.com/patterns/carbon-fibre.png')", backgroundColor: "#f3f4f6" }
-                                    : { backgroundColor: selectedColor.hex || "#ffffff" })}
-                                title={selectedColor.name}
-                              />
-                            )}
-                            <select
-                              value={v.colorId ?? ""}
-                              onChange={(e) => updateVariant(i, "colorId", e.target.value || null)}
-                              className="input text-[11px] h-9 flex-1 w-full"
-                              style={{ paddingLeft: selectedColor ? "30px" : "8px" }}
-                              title="Color"
-                            >
-                              <option value="">Sin color</option>
-                              {colors.map(c => (
-                                <option key={c.id} value={c.id}>{c.name}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setCustomColorForVariant(i);
-                              setIsCustomColorModalOpen(true);
-                            }}
-                            className="btn-secondary h-9 px-2 flex items-center justify-center flex-shrink-0 border-dashed"
-                            title="Crear color personalizado (estampado, mezcla, cebra, flores, etc.)"
-                          >
-                            <Palette size={13} />
-                          </button>
+                    {/* ====== LAYOUT MÓVIL: LABEL + INPUT en cada fila ====== */}
+                    <div className="md:hidden space-y-3">
+                      {/* SKU */}
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">SKU</div>
+                        <div className="flex-1 min-w-0">
+                          <input value={v.sku} onChange={(e) => updateVariant(i, "sku", e.target.value)} placeholder="SKU *" className="input text-[11px] h-9 px-2 w-full" title="SKU" />
                         </div>
                       </div>
 
-                      <div>
-                        <select value={v.sizeId ?? ""} onChange={(e) => updateVariant(i, "sizeId", e.target.value || null)} className="input text-[11px] h-9 px-2 w-full" title="Talla">
-                          <option value="">Sin talla</option>
-                          {filteredSizes.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                        </select>
+                      {/* Color */}
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">Color</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex gap-1 h-9 w-full">
+                            <div className="flex-1 relative min-w-0">
+                              {selectedColor && (
+                                <div className="absolute left-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border border-gray-300 shadow-sm z-10 bg-cover bg-center"
+                                  style={selectedColor.swatchUrl
+                                    ? { backgroundImage: "url(" + selectedColor.swatchUrl + ")" }
+                                    : (selectedColor.name.toLowerCase() === "transparente"
+                                      ? { backgroundImage: "url('https://www.transparenttextures.com/patterns/carbon-fibre.png')", backgroundColor: "#f3f4f6" }
+                                      : { backgroundColor: selectedColor.hex || "#ffffff" })}
+                                  title={selectedColor.name}
+                                />
+                              )}
+                              <select
+                                value={v.colorId ?? ""}
+                                onChange={(e) => updateVariant(i, "colorId", e.target.value || null)}
+                                className="input text-[11px] h-9 flex-1 w-full"
+                                style={{ paddingLeft: selectedColor ? "30px" : "8px" }}
+                                title="Color"
+                              >
+                                <option value="">Sin color</option>
+                                {colors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                              </select>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => { setCustomColorForVariant(i); setIsCustomColorModalOpen(true); }}
+                              className="btn-secondary h-9 px-2 flex items-center justify-center flex-shrink-0 border-dashed"
+                              title="Crear color personalizado"
+                            >
+                              <Palette size={13} />
+                            </button>
+                          </div>
+                        </div>
                       </div>
 
-                      <div>
-                        <input type="number" value={v.price || ""} onChange={(e) => updateVariant(i, "price", e.target.value ? Number(e.target.value) : 0)} className="input text-[11px] h-9 px-2 w-full" min={0} step={0.01} placeholder="Precio" title="Precio" />
+                      {/* Talla */}
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">Talla</div>
+                        <div className="flex-1 min-w-0">
+                          <select value={v.sizeId ?? ""} onChange={(e) => updateVariant(i, "sizeId", e.target.value || null)} className="input text-[11px] h-9 px-2 w-full" title="Talla">
+                            <option value="">Sin talla</option>
+                            {filteredSizes.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                          </select>
+                        </div>
                       </div>
 
-                      <div>
-                        <input type="number" value={v.oldPrice ?? ""} onChange={(e) => updateVariant(i, "oldPrice", e.target.value || null)} className="input text-[11px] h-9 px-2 text-red-600 placeholder:text-red-300 w-full" min={0} step={0.01} placeholder="Oferta" title="Oferta" />
+                      {/* Precio + Oferta (misma fila) */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">Precio</div>
+                          <div className="flex-1 min-w-0">
+                            <input type="number" value={v.price || ""} onChange={(e) => updateVariant(i, "price", e.target.value ? Number(e.target.value) : 0)} className="input text-[11px] h-9 px-2 w-full" min={0} step={0.01} placeholder="Precio" title="Precio" />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 flex-shrink-0 text-[11px] font-bold text-red-500 uppercase tracking-wider pl-1">Oferta</div>
+                          <div className="flex-1 min-w-0">
+                            <input type="number" value={v.oldPrice ?? ""} onChange={(e) => updateVariant(i, "oldPrice", e.target.value || null)} className="input text-[11px] h-9 px-2 text-red-600 placeholder:text-red-300 w-full" min={0} step={0.01} placeholder="Oferta" title="Oferta" />
+                          </div>
+                        </div>
                       </div>
 
-                      <div>
-                        <input value={v.model ?? ""} onChange={(e) => updateVariant(i, "model", e.target.value || null)} placeholder="Modelo" className="input text-[11px] h-9 px-2 w-full" title="Modelo" />
+                      {/* Modelo */}
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">Modelo</div>
+                        <div className="flex-1 min-w-0">
+                          <input value={v.model ?? ""} onChange={(e) => updateVariant(i, "model", e.target.value || null)} placeholder="Modelo" className="input text-[11px] h-9 px-2 w-full" title="Modelo" />
+                        </div>
                       </div>
 
-                      <div>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          value={stockDraft[i] ?? "0"}
-                          onChange={(e) => {
-                            const raw = e.target.value.replace(/[^0-9-]/g, "");
-                            setStockDraft(prev => ({ ...prev, [i]: raw }));
-                          }}
-                          onBlur={() => {
-                            const raw = stockDraft[i] ?? "";
-                            let parsed = parseInt(raw.replace(/^0+(\d)/, "$1"), 10);
-                            if (raw.length === 0 || raw === "-" || Number.isNaN(parsed)) parsed = 0;
-                            if (parsed < 0) parsed = 0;
-                            const normalized = String(parsed);
-                            setStockDraft(prev => ({ ...prev, [i]: normalized }));
-                            updateVariant(i, "stock", parsed);
-                          }}
-                          className="input text-[11px] h-9 px-2 tracking-wide font-semibold w-full"
-                          placeholder="Stock"
-                          title="Stock"
-                          min={0}
-                        />
+                      {/* Stock + Outlet (misma fila) */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">Stock</div>
+                          <div className="flex-1 min-w-0">
+                            <input
+                              type="text" inputMode="numeric" pattern="[0-9]*"
+                              value={stockDraft[i] ?? "0"}
+                              onChange={(e) => setStockDraft(prev => ({ ...prev, [i]: e.target.value.replace(/[^0-9-]/g, "") }))}
+                              onBlur={() => {
+                                const raw = stockDraft[i] ?? "";
+                                let parsed = parseInt(raw.replace(/^0+(\d)/, "$1"), 10);
+                                if (raw.length === 0 || raw === "-" || Number.isNaN(parsed)) parsed = 0;
+                                if (parsed < 0) parsed = 0;
+                                const normalized = String(parsed);
+                                setStockDraft(prev => ({ ...prev, [i]: normalized }));
+                                updateVariant(i, "stock", parsed);
+                              }}
+                              className="input text-[11px] h-9 px-2 tracking-wide font-semibold w-full"
+                              placeholder="Stock" title="Stock" min={0}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">Outlet</div>
+                          <div className="flex-1 min-w-0 flex items-center h-9">
+                            <input
+                              type="checkbox"
+                              checked={v.isOutlet}
+                              onChange={(e) => updateVariant(i, "isOutlet", e.target.checked)}
+                              className="accent-[#11ABC4] w-4 h-4"
+                            />
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="flex items-center justify-center h-9 gap-2">
-                        <input
-                          type="checkbox"
-                          checked={v.isOutlet}
-                          onChange={(e) => updateVariant(i, "isOutlet", e.target.checked)}
-                          className="accent-[#11ABC4] w-4 h-4"
-                        />
-                      </div>
-
-                      <div>
+                      {/* Secciones (bloque igual que antes) */}
+                      <div className="border-t border-gray-200/70 pt-2">
+                        <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1 mb-1.5">Secciones</div>
                         <div className="flex flex-col gap-1.5 min-h-[36px]">
                           <div className="flex items-center gap-1 flex-wrap">
                             {sections.filter(s => v.sectionIds.includes(s.id)).map(s => (
-                              <button
-                                key={s.id}
-                                type="button"
-                                onClick={() => toggleVariantSection(i, s.id)}
-                                className="px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-[#11ABC4] text-white shadow-sm leading-tight"
-                                title={"Quitar " + s.name}
-                              >
+                              <button key={s.id} type="button" onClick={() => toggleVariantSection(i, s.id)}
+                                className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#11ABC4] text-white shadow-sm leading-tight">
                                 × {s.name}
                               </button>
                             ))}
+                            {v.sectionIds.length === 0 && (
+                              <span className="text-[10px] text-red-400 font-semibold">⚠ sin sección</span>
+                            )}
                           </div>
                           <details className="group/details relative inline-block w-fit">
-                            <summary className="list-none cursor-pointer px-2 py-1 rounded-md text-[10px] font-semibold border border-dashed border-gray-300 text-gray-500 hover:border-[#11ABC4] hover:text-[#11ABC4] leading-tight whitespace-nowrap w-fit">
+                            <summary className="list-none cursor-pointer px-2.5 py-1 rounded-md text-[11px] font-semibold border border-dashed border-gray-300 text-gray-500 hover:border-[#11ABC4] hover:text-[#11ABC4] leading-tight whitespace-nowrap w-fit">
                               + sección
                             </summary>
                             <div className="absolute z-[60] -top-1 left-0 translate-y-[-100%] mb-1 p-1.5 bg-white border border-gray-100 rounded-xl shadow-2xl grid grid-cols-2 gap-1 min-w-[180px] ring-1 ring-black/5">
                               {sections.map(s => {
                                 const active = v.sectionIds.includes(s.id);
                                 return (
-                                  <button
-                                    key={s.id}
-                                    type="button"
+                                  <button key={s.id} type="button"
                                     onClick={(e) => { (e.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open"); toggleVariantSection(i, s.id); }}
                                     className={cn(
-                                      "px-2 py-1 rounded-lg text-[10px] font-semibold border text-left truncate transition-colors",
+                                      "px-2 py-1 rounded-lg text-[11px] font-semibold border text-left truncate transition-colors",
                                       active
                                         ? "bg-[#11ABC4] text-white border-[#11ABC4]"
                                         : "bg-white text-gray-600 border-gray-200 hover:border-[#11ABC4] hover:text-[#11ABC4]"
-                                    )}
-                                  >
+                                    )}>
                                     {s.name}
                                   </button>
                                 );
@@ -1080,7 +1085,9 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                         </div>
                       </div>
 
-                      <div>
+                      {/* Imágenes (bloque igual que antes) */}
+                      <div className="border-t border-gray-200/70 pt-2">
+                        <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1 mb-1.5">Imágenes</div>
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
                             {variantImages.length === 0 && (
@@ -1095,11 +1102,9 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                                 <div key={ik} className="relative w-11 h-11 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 bg-white group/vimg">
                                   <Image src={img.url} alt={v.sku || `img-${idx}`} fill className="object-cover" />
                                   <button
-                                    type="button"
-                                    onClick={() => k && openRemoveImageFromVariant(i, k)}
+                                    type="button" onClick={() => k && openRemoveImageFromVariant(i, k)}
                                     className="absolute inset-0 bg-red-500/0 text-white/0 group-hover/vimg:bg-red-500/80 group-hover/vimg:text-white transition-colors flex items-center justify-center"
-                                    title="Quitar imagen"
-                                  >
+                                    title="Quitar imagen">
                                     <X size={12} />
                                   </button>
                                 </div>
@@ -1107,24 +1112,181 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                             })}
                           </div>
                           <div className="grid grid-cols-2 gap-1">
-                            <button
-                              type="button"
-                              onClick={() => openUploadForVariant(i)}
-                              disabled={uploading}
-                              className="text-[11px] px-2 py-1.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-[#11ABC4]/40 hover:text-[#11ABC4] transition-colors flex items-center justify-center gap-1 font-medium"
-                            >
-                              {uploading ? <Loader2 size={11} className="animate-spin" /> : <Upload size={11} />}
-                              Subir
+                            <button type="button" onClick={() => openUploadForVariant(i)} disabled={uploading}
+                              className="text-[11px] px-2 py-1.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-[#11ABC4]/40 hover:text-[#11ABC4] transition-colors flex items-center justify-center gap-1 font-medium">
+                              {uploading ? <Loader2 size={11} className="animate-spin" /> : <Upload size={11} />} Subir
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => setGalleryOpenForVariant(i)}
-                              className="text-[11px] px-2 py-1.5 rounded-lg bg-[#CCECFB]/30 border border-[#CCECFB] hover:bg-[#CCECFB]/60 text-[#11ABC4] transition-colors flex items-center justify-center gap-1 font-medium truncate"
-                              title="Usar imagen existente (puedes seleccionar varias)"
-                            >
+                            <button type="button" onClick={() => setGalleryOpenForVariant(i)}
+                              className="text-[11px] px-2 py-1.5 rounded-lg bg-[#CCECFB]/30 border border-[#CCECFB] hover:bg-[#CCECFB]/60 text-[#11ABC4] transition-colors flex items-center justify-center gap-1 font-medium truncate">
                               <GalleryHorizontalEnd size={11} className="flex-shrink-0" />
                               <span className="truncate">{variantImages.length > 0 ? "Galería (" + variantImages.length + ")" : "Galería"}</span>
                             </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ====== LAYOUT DESKTOP (md+) grid simétrico de 10 cols ====== */}
+                    <div className="hidden md:block">
+                      <div className="grid grid-cols-10 gap-2 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">
+                        <div className="pl-1">SKU</div>
+                        <div className="pl-1">Color</div>
+                        <div className="pl-1">Talla</div>
+                        <div className="pl-1">Precio</div>
+                        <div className="pl-1 text-red-500">Oferta</div>
+                        <div className="pl-1">Modelo</div>
+                        <div className="pl-1">Stock</div>
+                        <div className="text-center">Outlet</div>
+                        <div className="pl-1">Secciones</div>
+                        <div className="pl-1">Imágenes</div>
+                      </div>
+                      <div className="grid grid-cols-10 gap-2 items-start">
+                        <div>
+                          <input value={v.sku} onChange={(e) => updateVariant(i, "sku", e.target.value)} placeholder="SKU *" className="input text-[11px] h-9 px-2 w-full" title="SKU" />
+                        </div>
+                        <div>
+                          <div className="flex gap-1 h-9 w-full">
+                            <div className="flex-1 relative min-w-0">
+                              {selectedColor && (
+                                <div className="absolute left-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border border-gray-300 shadow-sm z-10 bg-cover bg-center"
+                                  style={selectedColor.swatchUrl
+                                    ? { backgroundImage: "url(" + selectedColor.swatchUrl + ")" }
+                                    : (selectedColor.name.toLowerCase() === "transparente"
+                                      ? { backgroundImage: "url('https://www.transparenttextures.com/patterns/carbon-fibre.png')", backgroundColor: "#f3f4f6" }
+                                      : { backgroundColor: selectedColor.hex || "#ffffff" })}
+                                  title={selectedColor.name}
+                                />
+                              )}
+                              <select value={v.colorId ?? ""} onChange={(e) => updateVariant(i, "colorId", e.target.value || null)}
+                                className="input text-[11px] h-9 flex-1 w-full"
+                                style={{ paddingLeft: selectedColor ? "30px" : "8px" }} title="Color">
+                                <option value="">Sin color</option>
+                                {colors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                              </select>
+                            </div>
+                            <button type="button" onClick={() => { setCustomColorForVariant(i); setIsCustomColorModalOpen(true); }}
+                              className="btn-secondary h-9 px-2 flex items-center justify-center flex-shrink-0 border-dashed"
+                              title="Crear color personalizado (estampado, mezcla, cebra, flores, etc.)">
+                              <Palette size={13} />
+                            </button>
+                          </div>
+                        </div>
+                        <div>
+                          <select value={v.sizeId ?? ""} onChange={(e) => updateVariant(i, "sizeId", e.target.value || null)}
+                            className="input text-[11px] h-9 px-2 w-full" title="Talla">
+                            <option value="">Sin talla</option>
+                            {filteredSizes.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <input type="number" value={v.price || ""} onChange={(e) => updateVariant(i, "price", e.target.value ? Number(e.target.value) : 0)}
+                            className="input text-[11px] h-9 px-2 w-full" min={0} step={0.01} placeholder="Precio" title="Precio" />
+                        </div>
+                        <div>
+                          <input type="number" value={v.oldPrice ?? ""} onChange={(e) => updateVariant(i, "oldPrice", e.target.value || null)}
+                            className="input text-[11px] h-9 px-2 text-red-600 placeholder:text-red-300 w-full"
+                            min={0} step={0.01} placeholder="Oferta" title="Oferta" />
+                        </div>
+                        <div>
+                          <input value={v.model ?? ""} onChange={(e) => updateVariant(i, "model", e.target.value || null)}
+                            placeholder="Modelo" className="input text-[11px] h-9 px-2 w-full" title="Modelo" />
+                        </div>
+                        <div>
+                          <input type="text" inputMode="numeric" pattern="[0-9]*"
+                            value={stockDraft[i] ?? "0"}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/[^0-9-]/g, "");
+                              setStockDraft(prev => ({ ...prev, [i]: raw }));
+                            }}
+                            onBlur={() => {
+                              const raw = stockDraft[i] ?? "";
+                              let parsed = parseInt(raw.replace(/^0+(\d)/, "$1"), 10);
+                              if (raw.length === 0 || raw === "-" || Number.isNaN(parsed)) parsed = 0;
+                              if (parsed < 0) parsed = 0;
+                              const normalized = String(parsed);
+                              setStockDraft(prev => ({ ...prev, [i]: normalized }));
+                              updateVariant(i, "stock", parsed);
+                            }}
+                            className="input text-[11px] h-9 px-2 tracking-wide font-semibold w-full"
+                            placeholder="Stock" title="Stock" min={0} />
+                        </div>
+                        <div className="flex items-center justify-center h-9 gap-2">
+                          <input type="checkbox" checked={v.isOutlet} onChange={(e) => updateVariant(i, "isOutlet", e.target.checked)}
+                            className="accent-[#11ABC4] w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="flex flex-col gap-1.5 min-h-[36px]">
+                            <div className="flex items-center gap-1 flex-wrap">
+                              {sections.filter(s => v.sectionIds.includes(s.id)).map(s => (
+                                <button key={s.id} type="button" onClick={() => toggleVariantSection(i, s.id)}
+                                  className="px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-[#11ABC4] text-white shadow-sm leading-tight"
+                                  title={"Quitar " + s.name}>
+                                  × {s.name}
+                                </button>
+                              ))}
+                              {v.sectionIds.length === 0 && (
+                                <span className="text-[10px] text-red-400 font-semibold">⚠ sin sección</span>
+                              )}
+                            </div>
+                            <details className="group/details relative inline-block w-fit">
+                              <summary className="list-none cursor-pointer px-2 py-1 rounded-md text-[10px] font-semibold border border-dashed border-gray-300 text-gray-500 hover:border-[#11ABC4] hover:text-[#11ABC4] leading-tight whitespace-nowrap w-fit">
+                                + sección
+                              </summary>
+                              <div className="absolute z-[60] -top-1 left-0 translate-y-[-100%] mb-1 p-1.5 bg-white border border-gray-100 rounded-xl shadow-2xl grid grid-cols-2 gap-1 min-w-[180px] ring-1 ring-black/5">
+                                {sections.map(s => {
+                                  const active = v.sectionIds.includes(s.id);
+                                  return (
+                                    <button key={s.id} type="button"
+                                      onClick={(e) => { (e.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open"); toggleVariantSection(i, s.id); }}
+                                      className={cn(
+                                        "px-2 py-1 rounded-lg text-[10px] font-semibold border text-left truncate transition-colors",
+                                        active
+                                          ? "bg-[#11ABC4] text-white border-[#11ABC4]"
+                                          : "bg-white text-gray-600 border-gray-200 hover:border-[#11ABC4] hover:text-[#11ABC4]"
+                                      )}>
+                                      {s.name}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </details>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
+                              {variantImages.length === 0 && (
+                                <div className="relative w-11 h-11 flex-shrink-0 rounded-lg overflow-hidden border border-dashed border-gray-200 bg-white/60 flex items-center justify-center text-gray-300">
+                                  <ImageIcon size={16} />
+                                </div>
+                              )}
+                              {variantImages.map((img, idx) => {
+                                const ik = img.id || img._key || String(idx);
+                                const k = img.id || img._key;
+                                return (
+                                  <div key={ik} className="relative w-11 h-11 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 bg-white group/vimg">
+                                    <Image src={img.url} alt={v.sku || `img-${idx}`} fill className="object-cover" />
+                                    <button type="button" onClick={() => k && openRemoveImageFromVariant(i, k)}
+                                      className="absolute inset-0 bg-red-500/0 text-white/0 group-hover/vimg:bg-red-500/80 group-hover/vimg:text-white transition-colors flex items-center justify-center"
+                                      title="Quitar imagen">
+                                      <X size={12} />
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <div className="grid grid-cols-2 gap-1">
+                              <button type="button" onClick={() => openUploadForVariant(i)} disabled={uploading}
+                                className="text-[11px] px-2 py-1.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-[#11ABC4]/40 hover:text-[#11ABC4] transition-colors flex items-center justify-center gap-1 font-medium">
+                                {uploading ? <Loader2 size={11} className="animate-spin" /> : <Upload size={11} />} Subir
+                              </button>
+                              <button type="button" onClick={() => setGalleryOpenForVariant(i)}
+                                className="text-[11px] px-2 py-1.5 rounded-lg bg-[#CCECFB]/30 border border-[#CCECFB] hover:bg-[#CCECFB]/60 text-[#11ABC4] transition-colors flex items-center justify-center gap-1 font-medium truncate"
+                                title="Usar imagen existente (puedes seleccionar varias)">
+                                <GalleryHorizontalEnd size={11} className="flex-shrink-0" />
+                                <span className="truncate">{variantImages.length > 0 ? "Galería (" + variantImages.length + ")" : "Galería"}</span>
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1214,11 +1376,11 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
 
           {error && <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl">{error}</div>}
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 sm:justify-end">
+          <div className="flex flex-row flex-nowrap items-stretch justify-stretch w-full gap-2 sm:gap-3 sm:justify-end mt-4">
             <button
               type="button"
               onClick={() => router.push("/admin/products")}
-              className="w-full sm:w-auto md:px-10 flex items-center justify-center gap-2 py-3 font-semibold text-white rounded-xl shadow-sm active:scale-95 transition-all duration-200"
+              className="flex-1 min-w-0 sm:flex-none sm:w-auto sm:min-w-[130px] md:px-8 flex items-center justify-center gap-1.5 py-3 font-semibold text-white rounded-xl shadow-sm active:scale-95 transition-all duration-200"
               style={{
                 backgroundColor: "#EF4444",
                 borderRadius: "0.75rem",
@@ -1226,11 +1388,13 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#DC2626"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#EF4444"; }}
             >
-              Cancelar
+              <span className="whitespace-nowrap">Cancelar</span>
             </button>
-            <button type="submit" disabled={loading || uploading} className="btn-primary w-full md:w-auto md:px-10 flex items-center justify-center gap-2 py-3">
-              {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-              {loading ? "Guardando..." : isEdit ? "Actualizar producto" : "Crear producto"}
+            <button type="submit" disabled={loading || uploading} className="btn-primary flex-1 min-w-0 sm:flex-none sm:w-auto sm:min-w-[170px] md:px-10 flex items-center justify-center gap-2 py-3 overflow-hidden">
+              {loading ? <Loader2 size={18} className="animate-spin flex-shrink-0" /> : <Save size={18} className="flex-shrink-0" />}
+              <span className="truncate text-sm whitespace-nowrap">
+                {loading ? "Guardando..." : isEdit ? "Actualizar producto" : "Crear producto"}
+              </span>
             </button>
           </div>
         </div>
