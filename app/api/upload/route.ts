@@ -17,34 +17,28 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;
+    const folder = (formData.get("folder") as string) || "products";
     if (!file) return NextResponse.json({ error: "No se encontró archivo" }, { status: 400 });
 
-    // ─── Local Upload Logic ──────────────────────────────────────────────────
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create unique filename using uuid package
     const fileExtension = file.name.split('.').pop();
     const fileName = `${uuidv4()}.${fileExtension}`;
-    
-    // Define path
-    const uploadDir = join(process.cwd(), "public", "uploads", "products");
-    
-    // Ensure directory exists
+
+    const uploadDir = join(process.cwd(), "public", "uploads", folder);
+
     try {
       await mkdir(uploadDir, { recursive: true });
     } catch (e) {}
 
     const filePath = join(uploadDir, fileName);
-    
-    // Write file
+
     await writeFile(filePath, buffer);
 
-    // Return public URL
-    const publicUrl = `/uploads/products/${fileName}`;
-    
+    const publicUrl = `/uploads/${folder}/${fileName}`;
+
     return NextResponse.json({ url: publicUrl });
-    // ─────────────────────────────────────────────────────────────────────────
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json({ error: "Error al procesar imagen" }, { status: 500 });

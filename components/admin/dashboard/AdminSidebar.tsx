@@ -5,7 +5,7 @@ import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, Package, Tag, BarChart3, ShoppingBag, Users,
   Warehouse, LogOut, Store, ChevronRight, Bookmark, Palette, Ruler,
-  Layers, Menu, X, ChevronLeft
+  Layers, Menu, X, ChevronLeft, Image as ImageIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -13,6 +13,7 @@ import { useState, useEffect } from "react";
 const NAV = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "VENDEDOR"] },
   { label: "Productos", href: "/admin/products", icon: Package, roles: ["ADMIN"] },
+  { label: "Hero Slider", href: "/admin/hero", icon: ImageIcon, roles: ["ADMIN"] },
   { label: "Categorías", href: "/admin/categories", icon: Tag, roles: ["ADMIN"] },
   { label: "Secciones", href: "/admin/sections", icon: Layers, roles: ["ADMIN"] },
   { label: "Marcas", href: "/admin/brands", icon: Bookmark, roles: ["ADMIN"] },

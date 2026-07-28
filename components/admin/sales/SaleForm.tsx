@@ -9,7 +9,7 @@ import { PaymentMethod } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
 interface Store { id: string; name: string }
-interface Vendedor { id: string; name: string }
+interface Vendedor { id: string; firstName: string | null; lastName: string | null }
 interface SaleItem { 
   variantId: string; 
   quantity: number; 
@@ -279,7 +279,7 @@ export function SaleForm({ stores, vendedores, currentUserId }: { stores: Store[
               className="input text-sm h-11 bg-gray-100 cursor-not-allowed"
             >
               <option value="">Seleccionar...</option>
-              {vendedores.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+              {vendedores.map((v) => <option key={v.id} value={v.id}>{[v.firstName, v.lastName].filter(Boolean).join(" ")}</option>)}
             </select>
           </div>
         </div>

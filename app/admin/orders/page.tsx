@@ -47,7 +47,7 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
                 <tr key={o.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3 font-mono text-xs text-gray-500">{o.code}</td>
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-800">{o.user.name}</p>
+                    <p className="font-medium text-gray-800">{[o.user.firstName, o.user.lastName].filter(Boolean).join(" ")}</p>
                     <p className="text-xs text-gray-400">{o.user.email}</p>
                   </td>
                   <td className="px-4 py-3 text-xs text-gray-500">{new Date(o.createdAt).toLocaleDateString("es-PE")}</td>

@@ -159,7 +159,7 @@ export async function getAdminOrders(page = 1) {
       take: limit,
       orderBy: { createdAt: "desc" },
       include: {
-        user: { select: { name: true, email: true } },
+        user: { select: { firstName: true, lastName: true, email: true } },
         items: {
           include: {
             variant: {

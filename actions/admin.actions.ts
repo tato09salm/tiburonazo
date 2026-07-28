@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { MoveType, Prisma } from "@prisma/client";
+import { PaymentMethod, MoveType, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { LOW_STOCK_THRESHOLD } from "@/lib/constants";
@@ -21,7 +21,7 @@ export async function getDashboardStats() {
         { date: "desc" },
         { nroVenta: "desc" }
       ],
-      include: { store: true, vendedor: { select: { name: true } }, items: { include: { variant: { include: { product: { select: { title: true } } } } } } },
+      include: { store: true, vendedor: { select: { firstName: true, lastName: true } }, items: { include: { variant: { include: { product: { select: { title: true } } } } } } },
     }),
   ]);
 
@@ -212,7 +212,7 @@ export async function createSale(data: {
             date: normalizedDate,
             storeId: data.storeId,
             vendedorId: data.vendedorId,
-            paymentMethod: data.paymentMethod,
+            paymentMethod: data.paymentMethod as PaymentMethod,
             destination: data.destination,
             notes: data.notes,
             total,
@@ -289,15 +289,15 @@ export async function getSales(params?: {
     }),
     ...(client && {
       OR: [
-        { notes: { contains: client, mode: 'insensitive' } },
-        { destination: { contains: client, mode: 'insensitive' } },
+        { notes: { contains: client, mode: 'insensitive' as const } },
+        { destination: { contains: client, mode: 'insensitive' as const } },
         {
           items: {
             some: {
               variant: {
                 OR: [
-                  { sku: { contains: client, mode: 'insensitive' } },
-                  { product: { title: { contains: client, mode: 'insensitive' } } }
+                  { sku: { contains: client, mode: 'insensitive' as const } },
+                  { product: { title: { contains: client, mode: 'insensitive' as const } } }
                 ]
               }
             }
@@ -324,7 +324,7 @@ export async function getSales(params?: {
       take,
       include: {
         store: { select: { name: true } },
-        vendedor: { select: { name: true } },
+        vendedor: { select: { firstName: true, lastName: true } },
         items: {
           include: {
             variant: {
@@ -502,8 +502,8 @@ export async function getVendedores() {
       role: { in: ["ADMIN", "VENDEDOR"] },
       isActive: true,
     },
-    select: { id: true, name: true },
-    orderBy: { name: "asc" },
+    select: { id: true, firstName: true, lastName: true },
+    orderBy: { firstName: "asc" },
   });
 }
 
