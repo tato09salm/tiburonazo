@@ -2,16 +2,17 @@
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { PRODUCTS_PER_PAGE } from "@/lib/constants";
-import { Gender } from "@prisma/client";
 
 interface Params {
   categorySlug?: string;
   sectionSlug?: string;
-  gender?: Gender;
+  gender?: string;
   search?: string;
   minPrice?: number;
   maxPrice?: number;
   brandId?: string;
+  outlet?: boolean;
+  featured?: boolean;
 }
 
 async function fetchProducts(params: Params & { page: number }) {
