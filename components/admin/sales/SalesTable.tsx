@@ -48,7 +48,7 @@ export function SalesTable({ sales, totalCount }: { sales: any[], totalCount: nu
                   <td className="px-6 py-4">
                     <div className="font-semibold text-gray-700">{s.store.name}</div>
                   </td>
-                  <td className="px-6 py-4 text-gray-500">{s.vendedor?.name ?? "—"}</td>
+                  <td className="px-6 py-4 text-gray-500">{s.vendedor ? `${s.vendedor.firstName ?? ""} ${s.vendedor.lastName ?? ""}`.trim() || "—" : "—"}</td>
                   <td className="px-6 py-4">
                     <span className="badge bg-[#CCECFB] text-[#11ABC4] font-bold text-[10px] uppercase">{s.paymentMethod}</span>
                   </td>

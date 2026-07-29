@@ -7,8 +7,15 @@ type SaleLike = {
   total: number;
   paymentMethod?: string;
   status?: string;
-  vendedor?: { name?: string | null } | null;
+  vendedor?: { firstName?: string | null; lastName?: string | null; name?: string | null } | null;
   store?: { name?: string | null } | null;
+};
+
+const vendedorName = (v: SaleLike["vendedor"]): string => {
+  if (!v) return "-";
+  if (v.name) return v.name;
+  const full = `${v.firstName ?? ""} ${v.lastName ?? ""}`.trim();
+  return full || "-";
 };
 
 type SalesFiltersLike = {
@@ -128,7 +135,7 @@ export function generateSalesPDFByRange(sales: SaleLike[], filters: SalesFilters
   const rows = sales.map((sale) => [
     sale.code || "-",
     formatDate(sale.date),
-    sale.vendedor?.name || "-",
+    vendedorName(sale.vendedor),
     sale.paymentMethod || "-",
     sale.status || "-",
     formatMoney(Number(sale.total ?? 0)),
@@ -157,7 +164,7 @@ export function generateSalesPDFByRange(sales: SaleLike[], filters: SalesFilters
 export function generateSalesPDFBySeller(sales: SaleLike[]) {
   const groups = new Map<string, { count: number; total: number }>();
   sales.forEach((sale) => {
-    const key = sale.vendedor?.name || "Sin vendedor";
+    const key = (() => { const n = vendedorName(sale.vendedor); return n === "-" ? "Sin vendedor" : n; })();
     const current = groups.get(key) ?? { count: 0, total: 0 };
     current.count += 1;
     current.total += Number(sale.total ?? 0);

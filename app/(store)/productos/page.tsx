@@ -27,6 +27,8 @@ export default async function ProductsPage({ searchParams }: Props) {
     search: params.search,
     minPrice: params.minPrice ? Number(params.minPrice) : undefined,
     maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
+    outlet: params.outlet === "true" ? true : undefined,
+    featured: params.featured === "true" ? true : undefined,
   };
 
   return (

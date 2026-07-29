@@ -1,16 +1,22 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, Pencil, Trash2, Search, Loader2, Save, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Loader2, Save, X, Palette } from "lucide-react";
 import { createColor, updateColor, deleteColor } from "@/actions/color.actions";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { CustomColorModal } from "@/components/admin/products/CustomColorModal";
 
 interface Color {
   id: string;
   name: string;
   hex?: string | null;
+  swatchUrl?: string | null;
+  sourceImageUrl?: string | null;
+  cropX?: number | null;
+  cropY?: number | null;
+  cropRadius?: number | null;
 }
 
 interface Props {
@@ -23,6 +29,7 @@ export function ColorsClient({ initialColors }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
   const [editingColor, setEditingColor] = useState<Color | null>(null);
   const [colorToDelete, setColorToDelete] = useState<Color | null>(null);
   const [name, setName] = useState("");
@@ -77,7 +84,7 @@ export function ColorsClient({ initialColors }: Props) {
     try {
       if (editingColor) {
         const updated = await updateColor(editingColor.id, { name, hex });
-        setColors(colors.map((c) => (c.id === updated.id ? updated : c)));
+        setColors(colors.map((c) => (c.id === updated.id ? { ...c, ...updated } : c)));
       } else {
         const created = await createColor({ name, hex });
         setColors([...colors, created].sort((a, b) => a.name.localeCompare(b.name)));
@@ -92,7 +99,13 @@ export function ColorsClient({ initialColors }: Props) {
     }
   };
 
-  const confirmDelete = async () => {
+  const handleCustomCreated = (color: Color) => {
+    setColors((prev) => [...prev, color].sort((a, b) => a.name.localeCompare(b.name)));
+  };
+
+  const confirmDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!colorToDelete) return;
 
     setDeleting(true);
@@ -115,14 +128,25 @@ export function ColorsClient({ initialColors }: Props) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-heading text-3xl font-bold text-gray-900">Gestionar Colores</h1>
-          <p className="text-gray-500 text-sm mt-1">{colors.length} colores registrados</p>
+          <p className="text-gray-500 text-sm mt-1">
+            {colors.length} colores registrados · Incluye colores HEX y colores personalizados con muestras de imagen
+          </p>
         </div>
-        <button
-          onClick={() => handleOpenModal()}
-          className="btn-primary flex items-center gap-2"
-        >
-          <Plus size={18} /> Agregar
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsCustomModalOpen(true)}
+            className="btn-secondary flex items-center gap-2 border-dashed"
+            title="Color basado en una imagen (estampados, mezclas, cebra, flores, etc.)"
+          >
+            <Palette size={16} /> + Color personalizado
+          </button>
+          <button
+            onClick={() => handleOpenModal()}
+            className="btn-primary flex items-center gap-2"
+          >
+            <Plus size={18} /> Color HEX
+          </button>
+        </div>
       </div>
 
       {/* Search */}
@@ -144,6 +168,7 @@ export function ColorsClient({ initialColors }: Props) {
             <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
               <tr>
                 <th className="px-6 py-3 text-left">Lista de colores</th>
+                <th className="px-6 py-3 text-left">Tipo</th>
                 <th className="px-6 py-3 text-left">Muestra</th>
                 <th className="px-6 py-3 text-right">Acciones</th>
               </tr>
@@ -151,53 +176,88 @@ export function ColorsClient({ initialColors }: Props) {
             <tbody className="divide-y divide-gray-50">
               {filteredColors.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
                     No se encontraron colores
                   </td>
                 </tr>
               ) : (
-                filteredColors.map((color) => (
-                  <tr key={color.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <span className="font-semibold text-gray-800">{color.name}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div 
-                          className={cn(
-                            "w-6 h-6 rounded-full border border-gray-200",
-                            color.name.toLowerCase() === "transparente" && "bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] bg-gray-100"
+                filteredColors.map((color) => {
+                  const isCustom = !!color.swatchUrl;
+                  return (
+                    <tr key={color.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <span className="font-semibold text-gray-800">{color.name}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {isCustom ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-100">
+                            <Palette size={11} /> Personalizado
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                            HEX
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          {isCustom ? (
+                            <div
+                              className={cn(
+                                "w-6 h-6 rounded-full border border-gray-200 bg-cover bg-center shadow-sm"
+                              )}
+                              style={{
+                                backgroundImage: `url(${color.swatchUrl})`,
+                              }}
+                              title={color.name}
+                            />
+                          ) : (
+                            <div
+                              className={cn(
+                                "w-6 h-6 rounded-full border border-gray-200",
+                                color.name.toLowerCase() === "transparente" && "bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] bg-gray-100"
+                              )}
+                              style={{
+                                backgroundColor:
+                                  color.name.toLowerCase() === "transparente"
+                                    ? undefined
+                                    : (color.hex || "#fff"),
+                              }}
+                            />
                           )}
-                          style={{ backgroundColor: color.name.toLowerCase() === "transparente" ? undefined : (color.hex || "#fff") }}
-                        />
-                        <span className="font-mono text-xs text-gray-400 uppercase">{color.hex || "N/A"}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => handleOpenModal(color)}
-                          className="inline-flex items-center gap-1.5 text-xs text-[#11ABC4] hover:bg-[#CCECFB] px-3 py-1.5 rounded-lg transition-colors font-semibold"
-                        >
-                          <Pencil size={14} /> Editar
-                        </button>
-                        <button
-                          onClick={() => handleOpenDeleteModal(color)}
-                          className="inline-flex items-center gap-1.5 text-xs text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors font-semibold"
-                        >
-                          <Trash2 size={14} /> Eliminar
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          <span className="font-mono text-xs text-gray-400 uppercase">
+                            {isCustom
+                              ? "Swatch imagen"
+                              : (color.hex || "N/A")}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleOpenModal(color)}
+                            className="inline-flex items-center gap-1.5 text-xs text-[#11ABC4] hover:bg-[#CCECFB] px-3 py-1.5 rounded-lg transition-colors font-semibold"
+                          >
+                            <Pencil size={14} /> Editar
+                          </button>
+                          <button
+                            onClick={() => handleOpenDeleteModal(color)}
+                            className="inline-flex items-center gap-1.5 text-xs text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors font-semibold"
+                          >
+                            <Trash2 size={14} /> Eliminar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Modal for Add/Edit */}
+      {/* Modal for Add/Edit simple HEX color */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
@@ -264,8 +324,17 @@ export function ColorsClient({ initialColors }: Props) {
         </div>
       )}
 
+      {/* Custom Color Modal (swatch based on image) */}
+      <CustomColorModal
+        isOpen={isCustomModalOpen}
+        onClose={() => setIsCustomModalOpen(false)}
+        onCreated={handleCustomCreated}
+        productImages={[]}
+        defaultNamePrefix=""
+      />
+
       {/* Modal for Delete Confirmation */}
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
         onConfirm={confirmDelete}

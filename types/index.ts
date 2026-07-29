@@ -1,6 +1,12 @@
-import { Gender, Role, OrderStatus, PaymentMethod, MoveType } from "@prisma/client";
+import { Role, OrderStatus, PaymentMethod, MoveType } from "@prisma/client";
 
-export type { Gender, Role, OrderStatus, PaymentMethod, MoveType };
+export type { Role, OrderStatus, PaymentMethod, MoveType };
+
+export interface Section {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 // ─── Product types ───────────────────────────────────────────────────────────
 
@@ -17,13 +23,15 @@ export interface ProductVariant {
   sku: string;
   colorId: string | null; 
   sizeId: string | null;  
-  color: { id: string; name: string; hex: string | null } | null;
+  color: { id: string; name: string; hex: string | null; swatchUrl?: string | null; sourceImageUrl?: string | null; cropX?: number | null; cropY?: number | null; cropRadius?: number | null } | null;
   size: { id: string; label: string; category?: string | null; sortOrder?: number } | null;
   model: string | null;
   price: number;
   oldPrice: number | null;
   stock: number;
   isActive: boolean;
+  isOutlet: boolean;
+  sections: Section[];
 }
 
 export interface ProductCard {
@@ -31,7 +39,6 @@ export interface ProductCard {
   code: string;
   title: string;
   slug: string;
-  gender: Gender;
   category: { name: string; slug: string };
   brand: { name: string } | null;
   images: ProductImage[];
@@ -39,6 +46,7 @@ export interface ProductCard {
   minPrice: number;
   maxPrice: number;
   linea?: string | null;
+  isFeatured?: boolean;
 }
 
 export interface ProductDetail extends ProductCard {
@@ -69,10 +77,12 @@ export interface CartItem {
 export interface ProductFilters {
   search?: string;
   categorySlug?: string;
-  gender?: Gender;
+  sectionSlug?: string;
+  gender?: string;
   minPrice?: number;
   maxPrice?: number;
   brand?: string;
+  outlet?: boolean;
   page?: number;
   limit?: number;
 }

@@ -128,3 +128,8 @@ export async function resetPassword(email: string, code: string, newPassword: st
     return { error: "No se pudo restablecer la contraseña" };
   }
 }
+
+export async function loginWithGoogle(redirectTo: string = "/") {
+  const { signIn } = await import("@/lib/auth");
+  await signIn("google", { redirectTo });
+}
