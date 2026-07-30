@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import { createSale, searchProductVariants } from "@/actions/admin.actions";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Loader2, Search, X, BarChart3, ShoppingBag } from "lucide-react";
+import { Plus, Trash2, Loader2, Search, X, BarChart3, ShoppingBag, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { PAYMENT_METHODS } from "@/lib/constants";
 import { PaymentMethod } from "@prisma/client";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Store { id: string; name: string }
 interface Vendedor { id: string; firstName: string | null; lastName: string | null }
@@ -189,7 +190,31 @@ export function SaleForm({ stores, vendedores, currentUserId }: { stores: Store[
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const validItems = items.filter((i) => i.variantId && i.quantity > 0 && i.price > 0);
-    if (!storeId || !destination || !validItems.length) return;
+
+    if (!storeId) {
+      toast.error("Selecciona una tienda", {
+        description: "Elige la sucursal donde se registra la venta.",
+        icon: <AlertTriangle className="w-4 h-4" />,
+        position: "top-right",
+      });
+      return;
+    }
+    if (!destination || !destination.trim()) {
+      toast.error("Ingresa el destino / cliente", {
+        description: "Este campo es obligatorio (nombre del cliente o lugar de entrega).",
+        icon: <AlertTriangle className="w-4 h-4" />,
+        position: "top-right",
+      });
+      return;
+    }
+    if (validItems.length === 0) {
+      toast.error("Agrega al menos un producto", {
+        description: "Busca y añade artículos al carrito de la venta.",
+        icon: <AlertTriangle className="w-4 h-4" />,
+        position: "top-right",
+      });
+      return;
+    }
     setShowConfirmModal(true);
   }
 
@@ -198,36 +223,48 @@ export function SaleForm({ stores, vendedores, currentUserId }: { stores: Store[
     setShowConfirmModal(false);
     setLoading(true);
     try {
-      await createSale({ 
-        storeId, 
+      await createSale({
+        storeId,
         vendedorId: vendedorId || undefined,
         date,
-        paymentMethod, 
-        destination, 
-        notes, 
-        items: validItems.map((i) => ({ ...i, quantity: Number(i.quantity), price: Number(i.price) })) 
+        paymentMethod,
+        destination,
+        notes,
+        items: validItems.map((i) => ({ ...i, quantity: Number(i.quantity), price: Number(i.price) }))
       });
 
-      // Guardar en historial de destinos
       if (destination.trim()) {
         const newHistory = [
           destination.trim(),
           ...destinationHistory.filter(h => h.toLowerCase() !== destination.trim().toLowerCase())
-        ].slice(0, 5); // Guardar solo los últimos 5
+        ].slice(0, 5);
         setDestinationHistory(newHistory);
         localStorage.setItem("destination_history", JSON.stringify(newHistory));
       }
+
+      toast.success("Venta registrada correctamente", {
+        description: "Redirigiendo al historial de ventas...",
+        icon: <CheckCircle2 className="w-4 h-4 text-emerald-600" />,
+        position: "top-right",
+      });
 
       setSuccess(true);
       setItems([]);
       setSearchQuery("");
       setNotes("");
       setDestination("");
-      setTimeout(() => { 
-        setSuccess(false); 
+      setTimeout(() => {
+        setSuccess(false);
         router.push("/admin/sales");
-        router.refresh(); 
+        router.refresh();
       }, 1500);
+    } catch (error: any) {
+      const msg = error?.message || "No se pudo registrar la venta. Inténtalo nuevamente.";
+      toast.error("No se pudo registrar la venta", {
+        description: msg,
+        icon: <AlertTriangle className="w-4 h-4" />,
+        position: "top-right",
+      });
     } finally {
       setLoading(false);
     }

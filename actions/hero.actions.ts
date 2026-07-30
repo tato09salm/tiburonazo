@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { ContentPosition, Prisma } from "@prisma/client";
 
 const heroSlideSchema = z.object({
   title: z.string().min(1, "El título es obligatorio"),
@@ -19,32 +20,53 @@ const heroSlideSchema = z.object({
   backgroundColor: z.string().optional().nullable(),
   textColor: z.string().default("#FFFFFF"),
   buttonColor: z.string().default("#11ABC4"),
-  contentPosition: z.enum(["LEFT", "CENTER", "RIGHT"]).default("LEFT"),
+  contentPosition: z.nativeEnum(ContentPosition).default(ContentPosition.LEFT),
   isActive: z.boolean().default(true),
   order: z.number().int().optional(),
   displayDuration: z.number().int().min(3).max(10).default(5),
-  canvasData: z.any().optional().nullable(),
+  canvasData: z.custom<Prisma.JsonValue>((v) => v === null || typeof v === "object" || typeof v === "string" || typeof v === "number" || typeof v === "boolean").optional().nullable(),
 });
 
 export type HeroSlideInput = z.infer<typeof heroSlideSchema>;
 
+const TABLE_MISSING_TOKEN = "does not exist in the current database";
+
+function isMissingTableError(err: unknown) {
+  if (!err) return false;
+  const msg = (err as { message?: string }).message ?? String(err);
+  return msg.includes(TABLE_MISSING_TOKEN);
+}
+
 export async function getHeroSlides() {
-  const slides = await prisma.heroSlide.findMany({
-    orderBy: { order: "asc" },
-  });
-  return slides;
+  try {
+    return await prisma.heroSlide.findMany({
+      orderBy: { order: "asc" },
+    });
+  } catch (err) {
+    if (isMissingTableError(err)) return [];
+    throw err;
+  }
 }
 
 export async function getActiveHeroSlides() {
-  const slides = await prisma.heroSlide.findMany({
-    where: { isActive: true },
-    orderBy: { order: "asc" },
-  });
-  return slides;
+  try {
+    return await prisma.heroSlide.findMany({
+      where: { isActive: true },
+      orderBy: { order: "asc" },
+    });
+  } catch (err) {
+    if (isMissingTableError(err)) return [];
+    throw err;
+  }
 }
 
 export async function getHeroSlideById(id: string) {
-  return prisma.heroSlide.findUnique({ where: { id } });
+  try {
+    return await prisma.heroSlide.findUnique({ where: { id } });
+  } catch (err) {
+    if (isMissingTableError(err)) return null;
+    throw err;
+  }
 }
 
 export async function createHeroSlide(data: HeroSlideInput) {
@@ -74,9 +96,14 @@ export async function updateHeroSlide(id: string, data: HeroSlideInput) {
 }
 
 export async function deleteHeroSlide(id: string) {
-  await prisma.heroSlide.delete({ where: { id } });
-  revalidatePath("/admin/hero");
-  revalidatePath("/");
+  try {
+    await prisma.heroSlide.delete({ where: { id } });
+    revalidatePath("/admin/hero");
+    revalidatePath("/");
+  } catch (err) {
+    if (isMissingTableError(err)) return;
+    throw err;
+  }
 }
 
 export async function duplicateHeroSlide(id: string) {
@@ -105,7 +132,7 @@ export async function duplicateHeroSlide(id: string) {
       isActive: false,
       order: (maxOrder._max.order ?? 0) + 1,
       displayDuration: original.displayDuration,
-      canvasData: original.canvasData as any,
+      canvasData: original.canvasData satisfies Prisma.JsonValue | null,
     },
   });
 
@@ -113,23 +140,33 @@ export async function duplicateHeroSlide(id: string) {
 }
 
 export async function toggleHeroSlideStatus(id: string) {
-  const slide = await prisma.heroSlide.findUnique({ where: { id } });
-  if (!slide) throw new Error("Slide no encontrado");
+  try {
+    const slide = await prisma.heroSlide.findUnique({ where: { id } });
+    if (!slide) throw new Error("Slide no encontrado");
 
-  await prisma.heroSlide.update({
-    where: { id },
-    data: { isActive: !slide.isActive },
-  });
+    await prisma.heroSlide.update({
+      where: { id },
+      data: { isActive: !slide.isActive },
+    });
 
-  revalidatePath("/admin/hero");
-  revalidatePath("/");
+    revalidatePath("/admin/hero");
+    revalidatePath("/");
+  } catch (err) {
+    if (isMissingTableError(err)) return;
+    throw err;
+  }
 }
 
 export async function reorderHeroSlides(ids: string[]) {
-  const updates = ids.map((id, index) =>
-    prisma.heroSlide.update({ where: { id }, data: { order: index } })
-  );
-  await prisma.$transaction(updates);
-  revalidatePath("/admin/hero");
-  revalidatePath("/");
+  try {
+    const updates = ids.map((id, index) =>
+      prisma.heroSlide.update({ where: { id }, data: { order: index } })
+    );
+    await prisma.$transaction(updates);
+    revalidatePath("/admin/hero");
+    revalidatePath("/");
+  } catch (err) {
+    if (isMissingTableError(err)) return;
+    throw err;
+  }
 }

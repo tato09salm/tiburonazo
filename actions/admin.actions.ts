@@ -192,6 +192,38 @@ export async function createSale(data: {
   while (retries > 0) {
     try {
       const sale = await prisma.$transaction(async (tx) => {
+        // Validación previa: stock suficiente, variantes activas y producto activo
+        const variantIds = data.items.map(i => i.variantId);
+        const variants = await tx.productVariant.findMany({
+          where: { id: { in: variantIds } },
+          include: { product: { select: { isActive: true, title: true, code: true } } }
+        });
+        const byId = new Map(variants.map(v => [v.id, v]));
+
+        for (const item of data.items) {
+          const v = byId.get(item.variantId);
+          const label = v ? (v.product?.title || v.product?.code || v.sku || v.id) : item.variantId;
+          if (!v) {
+            throw new Error(`Variante no encontrada: ${label}`);
+          }
+          if (v.isActive === false) {
+            throw new Error(`La variante "${label}" está inactiva.`);
+          }
+          if (v.product?.isActive === false) {
+            throw new Error(`El producto "${label}" está inactivo.`);
+          }
+          if (typeof v.stock !== "number" || v.stock < item.quantity) {
+            const available = typeof v.stock === "number" ? v.stock : 0;
+            throw new Error(`Stock insuficiente para "${label}". Solicitado: ${item.quantity}, disponible: ${available}.`);
+          }
+          if (item.price <= 0) {
+            throw new Error(`Precio inválido (S/ 0.00) en "${label}".`);
+          }
+          if (item.quantity <= 0) {
+            throw new Error(`Cantidad inválida en "${label}".`);
+          }
+        }
+
         // 2. Buscar el máximo nroVenta para esa fecha exacta
         // Usamos aggregate para mayor precisión sobre el campo nroVenta
         const result = await tx.sale.aggregate({
@@ -512,6 +544,8 @@ export async function searchProductVariants(query: string) {
 
   return prisma.productVariant.findMany({
     where: {
+      isActive: true,
+      product: { isActive: true },
       OR: [
         { sku: { contains: query, mode: "insensitive" } },
         { model: { contains: query, mode: "insensitive" } },
@@ -524,8 +558,6 @@ export async function searchProductVariants(query: string) {
           },
         },
       ],
-      isActive: true,
-      product: { isActive: true },
     },
     include: {
       product: {
