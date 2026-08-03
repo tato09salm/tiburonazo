@@ -1,9 +1,10 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from "@prisma/client";
+
 const prisma = new PrismaClient();
 
 async function test() {
-  const sectionSlug = 'NIÑO';
-  const categorySlug = 'ropa-de-bano'; 
+  const sectionSlug = "NIÑO";
+  const categorySlug = "ropa-de-bano";
 
   const where = {
     isActive: true,
@@ -13,14 +14,16 @@ async function test() {
         OR: [
           { slug: { equals: sectionSlug, mode: "insensitive" } },
           { id: sectionSlug },
-          { name: { equals: sectionSlug, mode: "insensitive" } }
-        ]
-      }
-    }
+          { name: { equals: sectionSlug, mode: "insensitive" } },
+        ],
+      },
+    },
   };
 
   const count = await prisma.product.count({ where });
-  console.log(`Products with section=${sectionSlug} AND category=${categorySlug}: ${count}`);
+  console.log(
+    `Products with section=${sectionSlug} AND category=${categorySlug}: ${count}`,
+  );
 
   const allInSection = await prisma.product.count({
     where: {
@@ -30,11 +33,11 @@ async function test() {
           OR: [
             { slug: { equals: sectionSlug, mode: "insensitive" } },
             { id: sectionSlug },
-            { name: { equals: sectionSlug, mode: "insensitive" } }
-          ]
-        }
-      }
-    }
+            { name: { equals: sectionSlug, mode: "insensitive" } },
+          ],
+        },
+      },
+    },
   });
   console.log(`Total products in section ${sectionSlug}: ${allInSection}`);
 
