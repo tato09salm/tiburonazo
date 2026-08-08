@@ -620,9 +620,9 @@ export async function getAdminProducts(page = 1, search = "", categoryId = "", s
         category: { select: { name: true } },
         brand: { select: { name: true } },
         variants: {
-          select: {
-            stock: true,
-            price: true,
+          include: {
+            color: { select: { id: true, name: true } },
+            size: { select: { id: true, label: true } },
             productImage: { select: { id: true, url: true } },
             images: {
               orderBy: { order: "asc" },

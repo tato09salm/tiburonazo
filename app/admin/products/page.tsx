@@ -5,6 +5,7 @@ import { Plus, Pencil } from "lucide-react";
 import type { Metadata } from "next";
 import { ToggleProductStatus } from "@/components/admin/products/ToggleProductStatus";
 import { DeleteProductButton } from "@/components/admin/products/DeleteProductButton";
+import { ProductVariantsButton } from "@/components/admin/products/ProductVariantsModal";
 import Image from "next/image";
 import { ProductFilters } from "@/components/admin/products/ProductFilters";
 
@@ -92,6 +93,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex gap-1.5">
                         <ToggleProductStatus productId={p.id} isActive={p.isActive} />
+                        <ProductVariantsButton product={p as any} />
                         <Link href={`/admin/products/${p.id}/edit`} className="inline-flex items-center gap-1.5 text-xs text-[#11ABC4] hover:bg-[#CCECFB] px-3 py-1.5 rounded-lg transition-colors font-semibold">
                           <Pencil size={13} /> Editar
                         </Link>
