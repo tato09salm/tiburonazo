@@ -7,7 +7,7 @@ export const OrderSummary = ({ items, total, shippingCost, isCalculating, step, 
 
   return (
     <aside className="lg:col-span-1">
-      <div className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100 sticky top-24">
+      <div className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100 sticky top-16">
         <h2 className="text-lg font-bold mb-6">Resumen</h2>
         
         {/* Lista de productos... */}
@@ -55,17 +55,10 @@ export const OrderSummary = ({ items, total, shippingCost, isCalculating, step, 
           </div>
         </div>
 
-        {step === 1 ? (
+        {step === 1 && (
           <button form={formId} type="submit" disabled={isCalculating} className="btn-primary w-full mt-6 py-4 rounded-2xl flex items-center justify-center gap-3">
             Continuar al pago <ArrowRight size={18} />
           </button>
-        ) : (
-          <div className="mt-6 p-3 bg-gray-50 rounded-xl border border-gray-100 text-center">
-            <p className="text-[10px] uppercase font-bold text-gray-400 mb-1">Método de Pago</p>
-            <p className="text-xs font-black flex items-center justify-center gap-2 uppercase">
-              <CreditCard size={14} /> {paymentMethod.replace("_", " ")}
-            </p>
-          </div>
         )}
       </div>
     </aside>

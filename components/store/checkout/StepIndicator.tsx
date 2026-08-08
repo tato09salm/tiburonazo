@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 export const StepIndicator = ({ currentStep }: { currentStep: number }) => {
   const steps = ["Carrito", "Entrega", "Pago"];
   return (
-    <div className="flex items-center justify-center mb-10">
+    <div className="flex items-center justify-center mb-6">
       {steps.map((step, idx) => (
         <div key={step} className="flex items-center">
           <div className="flex flex-col items-center">

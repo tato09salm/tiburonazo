@@ -48,7 +48,7 @@ export default function CheckoutPage() {
     const [, startTransition] = useTransition();
 
     const [currentStep, setCurrentStep] = useState<number>(1);
-    const [paymentMethod, setPaymentMethod] = useState<string>("CULQI");
+    const [paymentMethod, setPaymentMethod] = useState<string>("CARD");
     const [addresses, setAddresses] = useState<DBAddress[]>([]);
     const [shippingCost, setShippingCost] = useState<number>(0);
     const [isCalculating, setIsCalculating] = useState<boolean>(false);
@@ -164,7 +164,7 @@ export default function CheckoutPage() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 pt-2 pb-8">
             <StepIndicator currentStep={currentStep} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">

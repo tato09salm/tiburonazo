@@ -239,8 +239,9 @@ model Order {
   ubigeo         String // Guardamos el código de 6 dígitos
   country        String         @default("Perú")
   document       String // DNI o RUC
-  culqiChargeId  String?
-  createdAt      DateTime       @default(now())
+  culqiChargeId       String?
+  mercadopagoPaymentId String?
+  createdAt           DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   userId         String
   items          OrderItem[]
@@ -349,6 +350,7 @@ enum OrderStatus {
 
 enum PaymentMethod {
   CULQI
+  MERCADO_PAGO
   YAPE
   PLIN
   EFECTIVO
