@@ -47,7 +47,7 @@ export function ProductCardComponent({ product }: Props) {
       image: mainImage,
       color: firstColorName as string,
       size: firstSizeLabel as string,
-      model: defaultVariant.model,
+      diseno: defaultVariant.diseno,
       price: defaultVariant.price,
       quantity: 1,
       stock: defaultVariant.stock,

@@ -192,7 +192,7 @@ interface VariantInput {
   sku: string;
   colorId?: string;
   sizeId?: string;
-  model?: string;
+  diseno?: string;
   price: number;
   oldPrice?: number;
   stock: number;
@@ -264,6 +264,7 @@ export async function createProduct(data: {
   description?: string;
   material?: string;
   linea?: string;
+  modelo?: string;
   weight?: number;
   categoryId: string;
   brandId?: string | null;
@@ -283,6 +284,7 @@ export async function createProduct(data: {
           description: data.description,
           material: data.material,
           linea: data.linea || null,
+          modelo: data.modelo || null,
           weight: data.weight,
           category: { connect: { id: data.categoryId } },
           brand: data.brandId ? { connect: { id: data.brandId } } : undefined,
@@ -304,7 +306,7 @@ export async function createProduct(data: {
             sku: v.sku,
             colorId: v.colorId || null,
             sizeId: v.sizeId || null,
-            model: v.model || null,
+            diseno: v.diseno || null,
             price: v.price,
             oldPrice: v.oldPrice ?? null,
             stock: v.stock,
@@ -352,8 +354,9 @@ export async function updateProduct(
   data: Partial<{
     title: string;
     description: string;
-    material: string;
-    linea: string;
+    material: string | null;
+    linea: string | null;
+    modelo: string | null;
     isActive: boolean;
     isFeatured: boolean;
     categoryId: string;
@@ -368,6 +371,7 @@ export async function updateProduct(
       const updateData: any = {
         ...rest,
         linea: rest.linea || null,
+        modelo: rest.modelo || null,
       };
 
       if (categoryId) {
@@ -505,7 +509,7 @@ export async function upsertVariant(
     sku: string;
     colorId?: string;
     sizeId?: string;
-    model?: string;
+    diseno?: string;
     price: number;
     oldPrice?: number;
     stock: number;

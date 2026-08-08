@@ -25,11 +25,11 @@ export function slugify(text: string): string {
     .trim();
 }
 
-export function generateSKU(productCode: string, variant: { color?: string; size?: string; model?: string }): string {
+export function generateSKU(productCode: string, variant: { color?: string; size?: string; diseno?: string }): string {
   const parts = [productCode];
   if (variant.color) parts.push(variant.color.substring(0, 3).toUpperCase());
   if (variant.size) parts.push(String(variant.size));
-  if (variant.model) parts.push(variant.model.substring(0, 4).toUpperCase());
+  if (variant.diseno) parts.push(variant.diseno.substring(0, 4).toUpperCase());
   return parts.join("-");
 }
 

@@ -167,7 +167,7 @@ export function ProductInfo({ product, selectedVariant, onVariantChange, resetGa
                 image: product.images.find(img => img.colorId === selectedVariant.colorId)?.url || product.images[0].url,
                 color: selectedVariant.color?.name || null,
                 size: selectedVariant.size?.label || null,
-                model: selectedVariant.model,
+                diseno: selectedVariant.diseno,
                 price: selectedVariant.price,
                 quantity,
                 stock,

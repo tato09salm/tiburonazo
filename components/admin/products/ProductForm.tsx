@@ -22,7 +22,7 @@ interface Variant {
   sku: string;
   colorId: string | null;
   sizeId: string | null;
-  model: string | null;
+  diseno: string | null;
   price: number;
   oldPrice: number | null;
   stock: number;
@@ -51,6 +51,7 @@ interface ProductData {
   description?: string | null;
   material?: string | null;
   linea?: string | null;
+  modelo?: string | null;
   weight?: number | null;
   categoryId?: string;
   brandId?: string | null;
@@ -74,7 +75,7 @@ const emptyVariant = (code: string = "", defaultSectionIds: string[] = []): Vari
   sku: code.trim().toUpperCase().replace(/\s+/g, "-"),
   colorId: null,
   sizeId: null,
-  model: null,
+  diseno: null,
   price: 0,
   oldPrice: null,
   stock: 0,
@@ -101,6 +102,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
     description: product?.description ?? "",
     material: product?.material ?? "",
     linea: product?.linea ?? "",
+    modelo: product?.modelo ?? "",
     weight: product?.weight ?? "",
     categoryId: product?.categoryId ?? "",
     brandId: product?.brandId ?? "",
@@ -124,7 +126,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
           ...v,
           colorId: v.colorId ?? null,
           sizeId: v.sizeId ?? null,
-          model: v.model ?? "",
+          diseno: v.diseno ?? "",
           oldPrice: v.oldPrice,
           isOutlet: v.isOutlet ?? false,
           sectionIds: v.sections?.map((s) => s.id) ?? [],
@@ -269,8 +271,8 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
       if (size) parts.push(size.label);
     }
 
-    if (variant.model) {
-      parts.push(variant.model);
+    if (variant.diseno) {
+      parts.push(variant.diseno);
     }
 
     return parts
@@ -290,7 +292,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
       if (key === "sku") {
         newVariant.isAutoSku = false;
         newVariant.sku = String(val || "").toUpperCase().replace(/\s+/g, "-");
-      } else if (["colorId", "sizeId", "model"].includes(key)) {
+      } else if (["colorId", "sizeId", "diseno"].includes(key)) {
         if (newVariant.isAutoSku) {
           newVariant.sku = generateSKU(newVariant, form.code);
         }
@@ -422,7 +424,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
 
   function openRemoveImageFromVariant(variantIdx: number, imageKey: string) {
     const img = images.find(im => im.id === imageKey || im._key === imageKey);
-    const trueKey = img ? (img.id || img._key) : imageKey;
+    const trueKey = (img ? (img.id || img._key) : null) || imageKey;
     const usingCount = variants.reduce((s, v) => s + (v.imageKeys.some(k => k === trueKey || (img ? (k === img.id || k === img._key) : false)) ? 1 : 0), 0);
     setVariantImageToDelete({ variantIdx, imageKey: trueKey, usingCount, isShared: usingCount > 1 });
     setIsVariantImageDeleteModalOpen(true);
@@ -490,8 +492,8 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
         if (!matched) return null;
         const color = v.colorId ? colors.find(c => c.id === v.colorId)?.name : null;
         const size = v.sizeId ? sizes.find(s => s.id === v.sizeId)?.label : null;
-        const model = v.model;
-        const parts = [color, size, model].filter(Boolean);
+        const diseno = v.diseno;
+        const parts = [color, size, diseno].filter(Boolean);
         return `#${idx + 1}${parts.length ? " (" + parts.join(" · ") + ")" : ""}`;
       })
       .filter((s): s is string => !!s);
@@ -567,6 +569,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
           description: form.description,
           material: form.material,
           linea: form.linea || null,
+          modelo: form.modelo || null,
           isFeatured: form.isFeatured,
           categoryId: form.categoryId,
           brandId: form.brandId || null,
@@ -588,7 +591,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
             sku: v.sku,
             colorId: v.colorId || undefined,
             sizeId: v.sizeId || undefined,
-            model: v.model || undefined,
+            diseno: v.diseno || undefined,
             price: Number(v.price),
             oldPrice: v.oldPrice ? Number(v.oldPrice) : undefined,
             stock: Number(v.stock),
@@ -626,7 +629,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
             sku: v.sku,
             colorId: v.colorId || undefined,
             sizeId: v.sizeId || undefined,
-            model: v.model || undefined,
+            diseno: v.diseno || undefined,
             price: Number(v.price),
             oldPrice: v.oldPrice ? Number(v.oldPrice) : undefined,
             stock: Number(v.stock),
@@ -845,18 +848,23 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
               <textarea value={form.description} onChange={update("description")} className="input min-h-[80px] resize-none" placeholder="Descripción del producto..." />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Material</label>
-                <input value={form.material} onChange={update("material")} className="input" placeholder="Licra, Poliéster..." />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Línea</label>
-                <input value={form.linea} onChange={update("linea")} className="input" placeholder="Verano 2026..." />
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Modelo</label>
+                <input value={form.modelo} onChange={update("modelo")} className="input" placeholder="Ej: M123, Modelo X..." />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Peso (kg)</label>
-                <input type="number" step="0.01" value={form.weight} onChange={update("weight")} className="input" placeholder="0.150" />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={form.weight}
+                  onChange={update("weight")}
+                  onWheel={(e) => e.currentTarget.blur()}
+                  onKeyDown={(e) => { if (e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault(); }}
+                  className="input"
+                  placeholder="0.150"
+                />
               </div>
             </div>
 
@@ -882,7 +890,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                       ...emptyVariant(form.code, last?.sectionIds ?? defaultSectionIds),
                       colorId: last?.colorId ?? null,
                       sizeId: last?.sizeId ?? null,
-                      model: last?.model ?? null,
+                      diseno: last?.diseno ?? null,
                       price: last?.price ?? 0,
                       oldPrice: last?.oldPrice ?? null,
                       imageKeys: [...(last?.imageKeys ?? [])],
@@ -990,22 +998,44 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                         <div className="flex items-center gap-2">
                           <div className="w-16 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">Precio</div>
                           <div className="flex-1 min-w-0">
-                            <input type="number" value={v.price || ""} onChange={(e) => updateVariant(i, "price", e.target.value ? Number(e.target.value) : 0)} className="input text-[11px] h-9 px-2 w-full" min={0} step={0.01} placeholder="Precio" title="Precio" />
+                            <input
+                              type="number"
+                              value={v.price || ""}
+                              onChange={(e) => updateVariant(i, "price", e.target.value ? Number(e.target.value) : 0)}
+                              onWheel={(e) => e.currentTarget.blur()}
+                              onKeyDown={(e) => { if (e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault(); }}
+                              className="input text-[11px] h-9 px-2 w-full"
+                              min={0}
+                              step={0.01}
+                              placeholder="Precio"
+                              title="Precio"
+                            />
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="w-16 flex-shrink-0 text-[11px] font-bold text-red-500 uppercase tracking-wider pl-1">Oferta</div>
                           <div className="flex-1 min-w-0">
-                            <input type="number" value={v.oldPrice ?? ""} onChange={(e) => updateVariant(i, "oldPrice", e.target.value || null)} className="input text-[11px] h-9 px-2 text-red-600 placeholder:text-red-300 w-full" min={0} step={0.01} placeholder="Oferta" title="Oferta" />
+                            <input
+                              type="number"
+                              value={v.oldPrice ?? ""}
+                              onChange={(e) => updateVariant(i, "oldPrice", e.target.value || null)}
+                              onWheel={(e) => e.currentTarget.blur()}
+                              onKeyDown={(e) => { if (e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault(); }}
+                              className="input text-[11px] h-9 px-2 text-red-600 placeholder:text-red-300 w-full"
+                              min={0}
+                              step={0.01}
+                              placeholder="Oferta"
+                              title="Oferta"
+                            />
                           </div>
                         </div>
                       </div>
 
-                      {/* Modelo */}
+                      {/* Diseño */}
                       <div className="flex items-center gap-2">
-                        <div className="w-20 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">Modelo</div>
+                        <div className="w-20 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">Diseño</div>
                         <div className="flex-1 min-w-0">
-                          <input value={v.model ?? ""} onChange={(e) => updateVariant(i, "model", e.target.value || null)} placeholder="Modelo" className="input text-[11px] h-9 px-2 w-full" title="Modelo" />
+                          <input value={v.diseno ?? ""} onChange={(e) => updateVariant(i, "diseno", e.target.value || null)} placeholder="Diseño" className="input text-[11px] h-9 px-2 w-full" title="Diseño" />
                         </div>
                       </div>
 
@@ -1134,7 +1164,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                         <div className="pl-1">Talla</div>
                         <div className="pl-1">Precio</div>
                         <div className="pl-1 text-red-500">Oferta</div>
-                        <div className="pl-1">Modelo</div>
+                        <div className="pl-1">Diseño</div>
                         <div className="pl-1">Stock</div>
                         <div className="text-center">Outlet</div>
                         <div className="pl-1">Secciones</div>
@@ -1179,17 +1209,36 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                           </select>
                         </div>
                         <div>
-                          <input type="number" value={v.price || ""} onChange={(e) => updateVariant(i, "price", e.target.value ? Number(e.target.value) : 0)}
-                            className="input text-[11px] h-9 px-2 w-full" min={0} step={0.01} placeholder="Precio" title="Precio" />
+                          <input
+                            type="number"
+                            value={v.price || ""}
+                            onChange={(e) => updateVariant(i, "price", e.target.value ? Number(e.target.value) : 0)}
+                            onWheel={(e) => e.currentTarget.blur()}
+                            onKeyDown={(e) => { if (e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault(); }}
+                            className="input text-[11px] h-9 px-2 w-full"
+                            min={0}
+                            step={0.01}
+                            placeholder="Precio"
+                            title="Precio"
+                          />
                         </div>
                         <div>
-                          <input type="number" value={v.oldPrice ?? ""} onChange={(e) => updateVariant(i, "oldPrice", e.target.value || null)}
+                          <input
+                            type="number"
+                            value={v.oldPrice ?? ""}
+                            onChange={(e) => updateVariant(i, "oldPrice", e.target.value || null)}
+                            onWheel={(e) => e.currentTarget.blur()}
+                            onKeyDown={(e) => { if (e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault(); }}
                             className="input text-[11px] h-9 px-2 text-red-600 placeholder:text-red-300 w-full"
-                            min={0} step={0.01} placeholder="Oferta" title="Oferta" />
+                            min={0}
+                            step={0.01}
+                            placeholder="Oferta"
+                            title="Oferta"
+                          />
                         </div>
                         <div>
-                          <input value={v.model ?? ""} onChange={(e) => updateVariant(i, "model", e.target.value || null)}
-                            placeholder="Modelo" className="input text-[11px] h-9 px-2 w-full" title="Modelo" />
+                          <input value={v.diseno ?? ""} onChange={(e) => updateVariant(i, "diseno", e.target.value || null)}
+                            placeholder="Diseño" className="input text-[11px] h-9 px-2 w-full" title="Diseño" />
                         </div>
                         <div>
                           <input type="text" inputMode="numeric" pattern="[0-9]*"

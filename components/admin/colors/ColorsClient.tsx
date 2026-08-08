@@ -103,9 +103,9 @@ export function ColorsClient({ initialColors }: Props) {
     setColors((prev) => [...prev, color].sort((a, b) => a.name.localeCompare(b.name)));
   };
 
-  const confirmDelete = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const confirmDelete = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     if (!colorToDelete) return;
 
     setDeleting(true);

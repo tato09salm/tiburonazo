@@ -52,7 +52,7 @@ export function HeroSlideForm({ slide }: Props) {
         contentPosition: "LEFT" as const,
         isActive,
         displayDuration: Number(displayDuration),
-        canvasData: canvasData,
+        canvasData: canvasData as any,
       };
 
       if (slide) {

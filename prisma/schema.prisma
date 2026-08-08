@@ -106,6 +106,7 @@ model Product {
   categoryId  String
   brandId     String?
   linea       String?
+  modelo      String?
   images      ProductImage[]
   variants    ProductVariant[]
   brand       Brand?           @relation(fields: [brandId], references: [id])
@@ -117,7 +118,7 @@ model Product {
 model ProductVariant {
   id             String          @id @default(cuid())
   sku            String          @unique
-  model          String?
+  diseno         String?
   price          Float
   oldPrice       Float?
   stock          Int             @default(0)

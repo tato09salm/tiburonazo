@@ -25,7 +25,7 @@ export interface ProductVariant {
   sizeId: string | null;  
   color: { id: string; name: string; hex: string | null; swatchUrl?: string | null; sourceImageUrl?: string | null; cropX?: number | null; cropY?: number | null; cropRadius?: number | null } | null;
   size: { id: string; label: string; category?: string | null; sortOrder?: number } | null;
-  model: string | null;
+  diseno: string | null;
   price: number;
   oldPrice: number | null;
   stock: number;
@@ -46,6 +46,7 @@ export interface ProductCard {
   minPrice: number;
   maxPrice: number;
   linea?: string | null;
+  modelo?: string | null;
   isFeatured?: boolean;
 }
 
@@ -53,6 +54,7 @@ export interface ProductDetail extends ProductCard {
   description: string | null;
   material: string | null;
   linea: string | null;
+  modelo: string | null;
   weight: number | null;
 }
 
@@ -66,7 +68,7 @@ export interface CartItem {
   image: string;
   color: string | null;
   size: string | null;
-  model: string | null;
+  diseno: string | null;
   price: number;
   quantity: number;
   stock: number;

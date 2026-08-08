@@ -76,7 +76,11 @@ export async function createHeroSlide(data: HeroSlideInput) {
   const nextOrder = (maxOrder._max.order ?? -1) + 1;
 
   await prisma.heroSlide.create({
-    data: { ...parsed, order: parsed.order ?? nextOrder },
+    data: {
+      ...parsed,
+      order: parsed.order ?? nextOrder,
+      canvasData: parsed.canvasData === null ? Prisma.JsonNull : (parsed.canvasData as Prisma.InputJsonValue),
+    },
   });
 
   revalidatePath("/admin/hero");
@@ -88,7 +92,10 @@ export async function updateHeroSlide(id: string, data: HeroSlideInput) {
 
   await prisma.heroSlide.update({
     where: { id },
-    data: parsed,
+    data: {
+      ...parsed,
+      canvasData: parsed.canvasData === null ? Prisma.JsonNull : (parsed.canvasData as Prisma.InputJsonValue),
+    },
   });
 
   revalidatePath("/admin/hero");
@@ -132,7 +139,7 @@ export async function duplicateHeroSlide(id: string) {
       isActive: false,
       order: (maxOrder._max.order ?? 0) + 1,
       displayDuration: original.displayDuration,
-      canvasData: original.canvasData satisfies Prisma.JsonValue | null,
+      canvasData: original.canvasData === null ? Prisma.JsonNull : (original.canvasData as Prisma.InputJsonValue),
     },
   });
 
