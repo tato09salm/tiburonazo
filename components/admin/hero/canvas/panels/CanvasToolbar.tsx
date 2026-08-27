@@ -56,14 +56,14 @@ export function CanvasToolbar({ onAddElement, onDeleteSelected, onDuplicateSelec
       <button
         type="button"
         onClick={() => onAddElement(createDefaultText() as CanvasElement)}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-gray-600 hover:border-[#11ABC4] hover:text-[#11ABC4] hover:bg-[#11ABC4]/5 transition-all"
+        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-gray-600 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
       >
         <Type size={16} /> Texto
       </button>
       <button
         type="button"
         onClick={() => imageInputRef.current?.click()}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-gray-600 hover:border-[#11ABC4] hover:text-[#11ABC4] hover:bg-[#11ABC4]/5 transition-all"
+        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-gray-600 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
       >
         <ImageIcon size={16} /> Imagen
       </button>
@@ -81,7 +81,7 @@ export function CanvasToolbar({ onAddElement, onDeleteSelected, onDuplicateSelec
       <button
         type="button"
         onClick={() => gifInputRef.current?.click()}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-gray-600 hover:border-[#11ABC4] hover:text-[#11ABC4] hover:bg-[#11ABC4]/5 transition-all"
+        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-gray-600 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
       >
         GIF
       </button>
@@ -99,7 +99,7 @@ export function CanvasToolbar({ onAddElement, onDeleteSelected, onDuplicateSelec
       <button
         type="button"
         onClick={() => onAddElement(createDefaultButton() as CanvasElement)}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-gray-600 hover:border-[#11ABC4] hover:text-[#11ABC4] hover:bg-[#11ABC4]/5 transition-all"
+        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-gray-600 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
       >
         <MousePointer2 size={16} /> Botón
       </button>

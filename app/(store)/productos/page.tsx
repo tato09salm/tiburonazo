@@ -62,7 +62,7 @@ export default async function ProductsPage({ searchParams }: Props) {
               <label className="block text-sm font-semibold text-gray-700 mb-2">Sección</label>
               <div className="space-y-1.5">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="section" value="" defaultChecked={!activeSectionSlug} className="accent-[#11ABC4]" />
+                  <input type="radio" name="section" value="" defaultChecked={!activeSectionSlug} className="accent-primary" />
                   <span className="text-sm">Todas</span>
                 </label>
                 {sections.map((s) => (
@@ -76,7 +76,7 @@ export default async function ProductsPage({ searchParams }: Props) {
                         activeSectionSlug?.toLowerCase() === s.name.toLowerCase() ||
                         activeSectionSlug?.toLowerCase() === s.id.toLowerCase()
                       } 
-                      className="accent-[#11ABC4]" 
+                      className="accent-primary" 
                     />
                     <span className="text-sm">{s.name}</span>
                   </label>
@@ -111,7 +111,7 @@ export default async function ProductsPage({ searchParams }: Props) {
             <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
               <SlidersHorizontal size={16} /> Filtrar
             </button>
-            <a href="/productos" className="block text-center text-sm text-gray-400 hover:text-[#11ABC4]">Limpiar filtros</a>
+            <a href="/productos" className="block text-center text-sm text-gray-400 hover:text-primary">Limpiar filtros</a>
           </form>
         </aside>
 

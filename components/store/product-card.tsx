@@ -112,7 +112,7 @@ export function ProductCardComponent({ product }: Props) {
             disabled={!inStock}
             className={cn(
               "p-2 rounded-xl shadow-md transition-all duration-200 text-white",
-              added ? "bg-green-500" : "bg-[#11ABC4] hover:bg-[#0d8fa6]",
+              added ? "bg-green-500" : "bg-primary hover:bg-primary-dark",
               !inStock && "opacity-50 cursor-not-allowed"
             )}
             title="Agregar al carrito"
@@ -120,7 +120,7 @@ export function ProductCardComponent({ product }: Props) {
             <ShoppingCart size={16} />
           </button>
           <div
-            className="p-2 rounded-xl bg-white shadow-md text-[#11ABC4] hover:bg-[#CCECFB] transition-all duration-200"
+            className="p-2 rounded-xl bg-white shadow-md text-primary hover:bg-light transition-all duration-200"
             title="Ver producto"
           >
             <Eye size={16} />
@@ -130,7 +130,7 @@ export function ProductCardComponent({ product }: Props) {
 
       {/* Info */}
       <div className="p-3 flex flex-col flex-1 gap-1 z-10 pointer-events-none">
-        <p className="text-xs text-[#11ABC4] font-semibold uppercase tracking-wide">
+        <p className="text-xs text-primary font-semibold uppercase tracking-wide">
           {product.category.name}
         </p>
         <h3 className="font-semibold text-sm leading-tight line-clamp-2 text-gray-800">

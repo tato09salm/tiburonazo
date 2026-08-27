@@ -31,7 +31,7 @@ export function PriceDisplay({ price, oldPrice, size = "md", className }: PriceD
           </span>
         </>
       ) : (
-        <span className={cn("text-[#11ABC4]", sizeMap[size]?.current)}>
+        <span className={cn("text-primary", sizeMap[size]?.current)}>
           {formatPrice(price)}
         </span>
       )}

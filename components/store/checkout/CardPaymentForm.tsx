@@ -171,7 +171,7 @@ export const CardPaymentForm = ({ total, onPaymentResult, onBack, onValidityChan
     let formatted = rawVal;
     if (rawVal.length >= 3) {
       formatted = `${rawVal.slice(0, 2)}/${rawVal.slice(2)}`;
-    } else if (rawVal.length === 2 && e.nativeEvent.inputType !== "deleteContentBackward") {
+    } else if (rawVal.length === 2 && (e.nativeEvent as InputEvent).inputType !== "deleteContentBackward") {
       formatted = `${rawVal}/`;
     }
 
@@ -442,7 +442,7 @@ export const CardPaymentForm = ({ total, onPaymentResult, onBack, onValidityChan
           className={`w-full px-4 py-3 text-sm rounded-xl border transition-all outline-none uppercase ${
             touched.cardholderName && errors.cardholderName
               ? "border-red-500 bg-red-50/20 focus:ring-2 focus:ring-red-200"
-              : "border-gray-200 focus:border-[#11ABC4] focus:ring-2 focus:ring-[#11ABC4]/20"
+              : "border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
           }`}
           disabled={loading}
         />
@@ -467,7 +467,7 @@ export const CardPaymentForm = ({ total, onPaymentResult, onBack, onValidityChan
             className={`w-full px-4 py-3 text-sm rounded-xl border transition-all outline-none font-mono ${
               touched.cardNumber && errors.cardNumber
                 ? "border-red-500 bg-red-50/20 focus:ring-2 focus:ring-red-200"
-                : "border-gray-200 focus:border-[#11ABC4] focus:ring-2 focus:ring-[#11ABC4]/20"
+                : "border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
             }`}
             disabled={loading}
           />
@@ -496,7 +496,7 @@ export const CardPaymentForm = ({ total, onPaymentResult, onBack, onValidityChan
             className={`w-full px-4 py-3 text-sm rounded-xl border transition-all outline-none font-mono ${
               touched.expirationDate && errors.expirationDate
                 ? "border-red-500 bg-red-50/20 focus:ring-2 focus:ring-red-200"
-                : "border-gray-200 focus:border-[#11ABC4] focus:ring-2 focus:ring-[#11ABC4]/20"
+                : "border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
             }`}
             disabled={loading}
           />
@@ -525,7 +525,7 @@ export const CardPaymentForm = ({ total, onPaymentResult, onBack, onValidityChan
               className={`w-full px-4 py-3 text-sm rounded-xl border transition-all outline-none font-mono ${
                 touched.securityCode && errors.securityCode
                   ? "border-red-500 bg-red-50/20 focus:ring-2 focus:ring-red-200"
-                  : "border-gray-200 focus:border-[#11ABC4] focus:ring-2 focus:ring-[#11ABC4]/20"
+                  : "border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
               }`}
               disabled={loading}
             />
@@ -560,7 +560,7 @@ export const CardPaymentForm = ({ total, onPaymentResult, onBack, onValidityChan
           className={`w-full px-4 py-3 text-sm rounded-xl border transition-all outline-none ${
             touched.email && errors.email
               ? "border-red-500 bg-red-50/20 focus:ring-2 focus:ring-red-200"
-              : "border-gray-200 focus:border-[#11ABC4] focus:ring-2 focus:ring-[#11ABC4]/20"
+              : "border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
           }`}
           disabled={loading}
         />
@@ -578,7 +578,7 @@ export const CardPaymentForm = ({ total, onPaymentResult, onBack, onValidityChan
           <select
             value={identificationType}
             onChange={(e) => setIdentificationType(e.target.value)}
-            className="w-full px-3 py-3 text-sm rounded-xl border border-gray-200 focus:border-[#11ABC4] focus:ring-2 focus:ring-[#11ABC4]/20 outline-none bg-white font-medium"
+            className="w-full px-3 py-3 text-sm rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white font-medium"
             disabled={loading || identificationTypes.length === 0}
           >
             {identificationTypes.map((type) => (
@@ -605,7 +605,7 @@ export const CardPaymentForm = ({ total, onPaymentResult, onBack, onValidityChan
             className={`w-full px-4 py-3 text-sm rounded-xl border transition-all outline-none ${
               touched.identificationNumber && errors.identificationNumber
                 ? "border-red-500 bg-red-50/20 focus:ring-2 focus:ring-red-200"
-                : "border-gray-200 focus:border-[#11ABC4] focus:ring-2 focus:ring-[#11ABC4]/20"
+                : "border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
             }`}
             disabled={loading}
           />
@@ -622,7 +622,7 @@ export const CardPaymentForm = ({ total, onPaymentResult, onBack, onValidityChan
           <select
             value={selectedInstallments}
             onChange={(e) => setSelectedInstallments(e.target.value)}
-            className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 focus:border-[#11ABC4] focus:ring-2 focus:ring-[#11ABC4]/20 outline-none bg-white font-medium"
+            className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white font-medium"
             disabled={loading}
           >
             {installments.map((inst) => (

@@ -19,7 +19,7 @@ export const OrderSummary = ({ items, total, shippingCost, isCalculating, step, 
               </div>
               <div className="flex-1 min-w-0 text-xs">
                 <p className="font-bold truncate">{item.title}</p>
-                <p className="font-black text-[#11ABC4]">{formatPrice(item.price * item.quantity)}</p>
+                <p className="font-black text-primary">{formatPrice(item.price * item.quantity)}</p>
               </div>
             </div>
           ))}
@@ -37,7 +37,7 @@ export const OrderSummary = ({ items, total, shippingCost, isCalculating, step, 
               Envío
             </span>
             {isCalculating ? (
-              <Loader2 size={14} className="animate-spin text-[#11ABC4]" />
+              <Loader2 size={14} className="animate-spin text-primary" />
             ) : deliveryMethod === "PICKUP" ? (
               <span className="text-green-600 font-bold uppercase text-[10px] bg-green-50 px-2 py-0.5 rounded">Gratis</span>
             ) : shippingCost ? (
@@ -49,7 +49,7 @@ export const OrderSummary = ({ items, total, shippingCost, isCalculating, step, 
 
           <div className="flex justify-between items-center pt-4 mt-2 border-t">
             <span className="font-bold text-gray-900">Total</span>
-            <span className="text-3xl font-black text-[#11ABC4] tracking-tighter">
+            <span className="text-3xl font-black text-primary tracking-tighter">
               {formatPrice(finalTotal)}
             </span>
           </div>

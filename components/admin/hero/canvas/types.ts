@@ -64,6 +64,7 @@ export interface CanvasSlideData {
 }
 
 export const FONT_GROUPS: Record<string, string[]> = {
+  "Display": ["Bebas Neue"],
   "Modernas": ["Inter", "Manrope", "Outfit", "Plus Jakarta Sans"],
   "Geométricas": ["Montserrat", "Poppins", "Urbanist"],
   "Legibilidad": ["DM Sans", "Lexend", "Nunito Sans"],
@@ -96,7 +97,7 @@ export function createDefaultText(): CanvasTextElement {
     visible: true,
     locked: false,
     text: "Texto",
-    fontFamily: "Rajdhani",
+    fontFamily: "Bebas Neue",
     fontSize: 48,
     fontWeight: "700",
     fontStyle: "",

@@ -52,7 +52,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="h-screen w-full bg-[#f8fbff] text-slate-800 flex overflow-hidden">
+    <div className="h-screen w-full bg-bg text-slate-800 flex overflow-hidden">
       <div className="w-full h-full grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
         {/* Left Form Column */}
         <div className="lg:col-span-5 xl:col-span-4 bg-white p-6 sm:p-8 lg:p-10 flex flex-col justify-between border-r border-slate-100 shadow-sm overflow-y-auto">
@@ -109,7 +109,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value.toLowerCase())}
                   required
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#11ABC4] focus:ring-1 focus:ring-[#11ABC4] transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                   placeholder="you@example.com"
                   autoComplete="email"
                 />
@@ -121,7 +121,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowForgotModal(true)}
-                    className="text-xs text-[#11ABC4] hover:underline transition-colors font-medium"
+                    className="text-xs text-primary hover:underline transition-colors font-medium"
                   >
                     ¿Olvidaste la contraseña?
                   </button>
@@ -132,7 +132,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3.5 pr-10 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#11ABC4] focus:ring-1 focus:ring-[#11ABC4] transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3.5 pr-10 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                     placeholder="••••••••"
                     autoComplete="current-password"
                   />
@@ -156,7 +156,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#11ABC4] hover:bg-[#0d8fa6] text-white font-semibold py-2.5 px-4 rounded-xl transition-all text-sm mt-4 flex items-center justify-center gap-2 shadow-md shadow-[#11ABC4]/20"
+                className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 px-4 rounded-xl transition-all text-sm mt-4 flex items-center justify-center gap-2 shadow-md shadow-primary/20"
               >
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -169,7 +169,7 @@ export default function LoginPage() {
             {/* Register link */}
             <p className="text-center text-xs text-slate-500 mt-5">
               ¿No tienes cuenta?{" "}
-              <Link href="/registro" className="text-[#11ABC4] hover:underline font-bold">
+              <Link href="/registro" className="text-primary hover:underline font-bold">
                 Regístrate
               </Link>
             </p>
@@ -181,23 +181,23 @@ export default function LoginPage() {
         </div>
 
         {/* Right Testimonial Section */}
-        <div className="hidden lg:col-span-7 xl:col-span-8 bg-[#EEF8FC] p-10 lg:p-16 lg:flex flex-col justify-center relative overflow-hidden">
+        <div className="hidden lg:col-span-7 xl:col-span-8 bg-light p-10 lg:p-16 lg:flex flex-col justify-center relative overflow-hidden">
           {/* Decorative soft circles */}
-          <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-[#CCECFB]/60 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#00D4DD]/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-light/60 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-secondary/15 rounded-full blur-3xl pointer-events-none" />
 
           <div className="max-w-xl mx-auto space-y-6 relative z-10">
-            <Quote className="w-14 h-14 text-[#11ABC4]/40" />
+            <Quote className="w-14 h-14 text-primary/40" />
             <blockquote className="text-2xl lg:text-3xl font-bold text-slate-800 leading-relaxed tracking-tight font-heading">
               "Me encantan los equipamientos de Tiburonazo. Calidad top, envíos rápidos y una atención impecable. Es todo lo que necesito."
             </blockquote>
             <div className="flex items-center gap-4 pt-2">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#11ABC4] to-[#00D4DD] flex items-center justify-center font-bold text-white text-lg shadow-md shadow-[#11ABC4]/20">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center font-bold text-white text-lg shadow-md shadow-primary/20">
                 CS
               </div>
               <div>
                 <p className="font-bold text-slate-900 text-sm sm:text-base">Carlos Sánchez</p>
-                <p className="text-xs text-[#0d8fa6] font-medium">@carlos_natacion</p>
+                <p className="text-xs text-primary-dark font-medium">@carlos_natacion</p>
               </div>
             </div>
           </div>

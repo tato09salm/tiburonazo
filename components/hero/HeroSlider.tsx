@@ -88,10 +88,10 @@ export function HeroSlider({ slides }: HeroSliderProps) {
 
   if (!slides.length) {
     return (
-      <section className="relative h-[420px] md:h-[560px] lg:h-[720px] w-full overflow-hidden bg-gradient-to-br from-[#0a1628] via-[#0d2a3a] to-[#0d8fa6]">
+      <section className="relative h-[420px] md:h-[560px] lg:h-[720px] w-full overflow-hidden bg-gradient-to-br from-[#0a1628] via-[#0d2a3a] to-primary-dark">
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 left-10 w-96 h-96 rounded-full bg-[#11ABC4] blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-[500px] h-[500px] rounded-full bg-[#00D4DD] blur-3xl" />
+          <div className="absolute top-10 left-10 w-96 h-96 rounded-full bg-primary blur-3xl" />
+          <div className="absolute bottom-10 right-10 w-[500px] h-[500px] rounded-full bg-secondary blur-3xl" />
           <div className="absolute top-1/2 left-1/3 w-64 h-64 rounded-full bg-blue-500 blur-3xl" />
         </div>
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMxMUFCQzQiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE4YzEuNjU3IDAgMy0xLjM0MyAzLTNzLTEuMzQzLTMtMy0zLTMgMS4zNDMtMyAzIDEuMzQzIDMgMyAzem0wIDM2YzEuNjU3IDAgMy0xLjM0MyAzLTNzLTEuMzQzLTMtMy0zLTMgMS4zNDMtMyAzIDEuMzQzIDMgMyAzeiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
@@ -100,16 +100,16 @@ export function HeroSlider({ slides }: HeroSliderProps) {
             <span className="inline-block bg-white/10 backdrop-blur-md border border-white/20 text-white/80 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 uppercase tracking-widest animate-fade-in">
               Tiburonazo
             </span>
-            <h1 className="font-brand text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-tight mb-4">
+            <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-tight mb-4">
               NADA SIN <br />
-              <span className="text-[#11ABC4]">LÍMITES</span>
+              <span className="text-primary">LÍMITES</span>
             </h1>
             <p className="text-gray-300 text-lg mb-8 max-w-lg mx-auto">
               Equípate con lo mejor en ropa de natación, accesorios y más.
             </p>
             <Link
               href="/productos"
-              className="inline-flex items-center gap-2 font-bold px-8 py-3 rounded-xl bg-[#11ABC4] text-white text-base transition-all hover:bg-[#0d8fa6] hover:shadow-lg hover:scale-105 active:scale-95"
+              className="inline-flex items-center gap-2 font-bold px-8 py-3 rounded-xl bg-primary text-white text-base transition-all hover:bg-primary-dark hover:shadow-lg hover:scale-105 active:scale-95"
             >
               Ver colección <ArrowRight size={18} />
             </Link>

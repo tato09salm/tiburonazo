@@ -65,7 +65,7 @@ export function PersonalDataView({ userData }: Props) {
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="flex items-center gap-2 text-xs font-bold text-[#11ABC4] bg-[#CCECFB]/50 hover:bg-[#CCECFB] px-4 py-2 rounded-xl transition-all"
+                    className="flex items-center gap-2 text-xs font-bold text-primary bg-light/50 hover:bg-light px-4 py-2 rounded-xl transition-all"
                 >
                     <Edit2 size={13} /> Editar datos
                 </button>

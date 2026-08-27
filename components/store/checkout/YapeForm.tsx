@@ -93,7 +93,7 @@ export const YapeForm = ({ total, onPaymentResult, onBack, onValidityChange }: Y
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, "").slice(0, 9))}
           placeholder="912345678"
-          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#11ABC4] focus:ring-2 focus:ring-[#11ABC4]/20 outline-none text-sm font-mono"
+          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm font-mono"
           disabled={loading}
         />
       </div>
@@ -108,7 +108,7 @@ export const YapeForm = ({ total, onPaymentResult, onBack, onValidityChange }: Y
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
             placeholder="123456"
-            className="w-full px-4 py-3 pr-10 rounded-xl border border-gray-200 focus:border-[#11ABC4] focus:ring-2 focus:ring-[#11ABC4]/20 outline-none text-sm font-mono"
+            className="w-full px-4 py-3 pr-10 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm font-mono"
             disabled={loading}
           />
           <button

@@ -238,7 +238,7 @@ export function SaleForm({ stores, vendedores, currentUserId }: { stores: Store[
       {/* Columna 1: Datos de Venta */}
       <div className="card p-6 space-y-4 shadow-sm border-gray-100">
         <h2 className="font-heading text-lg font-bold flex items-center gap-2 border-b pb-3 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-[#CCECFB] text-[#11ABC4] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-light text-primary flex items-center justify-center">
             <BarChart3 size={18} />
           </div>
           Datos de la Venta
@@ -303,7 +303,7 @@ export function SaleForm({ stores, vendedores, currentUserId }: { stores: Store[
                   Historial reciente
                 </div>
                 {destinationHistory.map((h, i) => (
-                  <div key={i} className="flex items-center group/item hover:bg-[#CCECFB] border-b border-gray-50 last:border-0">
+                  <div key={i} className="flex items-center group/item hover:bg-light border-b border-gray-50 last:border-0">
                     <button
                       key={i}
                       type="button"
@@ -313,7 +313,7 @@ export function SaleForm({ stores, vendedores, currentUserId }: { stores: Store[
                       }}
                       className="flex-1 text-left px-3 py-2.5 text-xs transition-colors flex items-center gap-2 group"
                     >
-                      <div className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-[#11ABC4]" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-primary" />
                       {h}
                     </button>
                     <button
@@ -345,7 +345,7 @@ export function SaleForm({ stores, vendedores, currentUserId }: { stores: Store[
       <div className="card p-6 space-y-4 shadow-sm border-gray-100 flex flex-col h-full">
         <div className="flex items-center justify-between border-b pb-3 mb-4">
           <h2 className="font-heading text-lg font-bold flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#CCECFB] text-[#11ABC4] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-light text-primary flex items-center justify-center">
               <ShoppingBag size={18} />
             </div>
             Productos
@@ -394,7 +394,7 @@ export function SaleForm({ stores, vendedores, currentUserId }: { stores: Store[
                     key={v.id}
                     type="button"
                     onClick={() => selectVariant(v)}
-                    className="w-full text-left px-4 py-3 hover:bg-[#CCECFB] border-b border-gray-50 last:border-0 flex items-center gap-4 transition-colors"
+                    className="w-full text-left px-4 py-3 hover:bg-light border-b border-gray-50 last:border-0 flex items-center gap-4 transition-colors"
                   >
                     <div className="w-12 h-12 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 relative border border-gray-200">
                       {(() => {
@@ -414,7 +414,7 @@ export function SaleForm({ stores, vendedores, currentUserId }: { stores: Store[
                         <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded truncate">{v.sku}</span>
                         {v.color && <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full" style={{ backgroundColor: v.color.hex || '#eee' }} /> {v.color.name}</span>}
                         {v.size && <span className="bg-gray-100 px-1.5 py-0.5 rounded">Talla: {v.size.label}</span>}
-                        <span className="text-[#11ABC4] font-bold text-xs ml-auto">S/ {v.price.toFixed(2)}</span>
+                        <span className="text-primary font-bold text-xs ml-auto">S/ {v.price.toFixed(2)}</span>
                       </div>
                     </div>
                   </button>
@@ -452,7 +452,7 @@ export function SaleForm({ stores, vendedores, currentUserId }: { stores: Store[
                         <span className="font-mono bg-gray-50 px-1.5 rounded">{item.sku}</span>
                         {item.colorName && <span>{item.colorName}</span>}
                         {item.sizeLabel && <span>Talla: {item.sizeLabel}</span>}
-                        <span className="text-[#11ABC4] font-bold">Stock: {item.stock}</span>
+                        <span className="text-primary font-bold">Stock: {item.stock}</span>
                       </div>
                     </div>
 
@@ -489,7 +489,7 @@ export function SaleForm({ stores, vendedores, currentUserId }: { stores: Store[
                       </div>
                       <div className="w-28">
                         <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Subtotal</label>
-                        <div className="h-10 flex items-center justify-end px-4 bg-[#CCECFB]/30 border border-[#CCECFB] rounded-xl text-sm font-black text-[#11ABC4]">
+                        <div className="h-10 flex items-center justify-end px-4 bg-light/30 border border-[#CCECFB] rounded-xl text-sm font-black text-primary">
                           S/ {(item.price * item.quantity).toFixed(2)}
                         </div>
                       </div>
@@ -527,11 +527,11 @@ export function SaleForm({ stores, vendedores, currentUserId }: { stores: Store[
               <span>Redondeo a favor: - S/ {(subtotal - total).toFixed(2)}</span>
             </div>
           )}
-          <div className="p-4 bg-[#CCECFB] rounded-2xl flex justify-between items-center shadow-inner">
-            <span className="text-sm font-bold text-[#11ABC4] uppercase tracking-wider">
+          <div className="p-4 bg-light rounded-2xl flex justify-between items-center shadow-inner">
+            <span className="text-sm font-bold text-primary uppercase tracking-wider">
               {paymentMethod === "EFECTIVO" ? "Total (Efectivo)" : "Total Final"}
             </span>
-            <span className="text-3xl font-black text-[#11ABC4]">S/ {total.toFixed(2)}</span>
+            <span className="text-3xl font-black text-primary">S/ {total.toFixed(2)}</span>
           </div>
 
           <button type="submit" disabled={loading || items.some(i => !i.variantId)} className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-sm transition-all shadow-lg ${success ? "bg-green-500 text-white" : "btn-primary hover:scale-[1.02] active:scale-[0.98]"}`}>
@@ -545,14 +545,14 @@ export function SaleForm({ stores, vendedores, currentUserId }: { stores: Store[
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-8 text-center">
-              <div className="w-20 h-20 bg-[#CCECFB] text-[#11ABC4] rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+              <div className="w-20 h-20 bg-light text-primary rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                 <ShoppingBag size={40} />
               </div>
               <h3 className="text-xl font-black text-gray-900 mb-3">¿Confirmar venta?</h3>
               <p className="text-gray-500 text-sm leading-relaxed mb-2">
                 ¿Estás seguro de que deseas procesar esta venta por un total de:
               </p>
-              <div className="text-2xl font-black text-[#11ABC4] bg-[#CCECFB]/30 py-2 rounded-2xl mb-4">
+              <div className="text-2xl font-black text-primary bg-light/30 py-2 rounded-2xl mb-4">
                 S/ {total.toFixed(2)}
               </div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -570,7 +570,7 @@ export function SaleForm({ stores, vendedores, currentUserId }: { stores: Store[
               <button
                 type="button"
                 onClick={processSale}
-                className="flex-1 h-12 text-sm font-bold text-white bg-[#11ABC4] hover:bg-[#0E8A9E] rounded-2xl shadow-lg shadow-[#11ABC4]/20 transition-all active:scale-95"
+                className="flex-1 h-12 text-sm font-bold text-white bg-primary hover:bg-[#0E8A9E] rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95"
               >
                 Sí, confirmar
               </button>

@@ -55,7 +55,7 @@ export function AccountTabs({ activeTab, activeSubtab, userData, orders, initial
                         <ShoppingBag size={18} />
                         Mis Pedidos
                         {orders.length > 0 && (
-                            <span className="ml-1 px-2 py-0.5 text-[11px] font-bold bg-[#CCECFB] text-[#11ABC4] rounded-md">
+                            <span className="ml-1 px-2 py-0.5 text-[11px] font-bold bg-light text-primary rounded-md">
                                 {orders.length}
                             </span>
                         )}

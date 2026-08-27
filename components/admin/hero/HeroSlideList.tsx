@@ -127,7 +127,7 @@ export function HeroSlideList({ initialSlides }: Props) {
                     className={cn(
                       "hover:bg-gray-50 transition-colors",
                       dragIdx === idx && "opacity-50 bg-blue-50",
-                      overIdx === idx && dragIdx !== idx && "border-t-2 border-[#11ABC4]"
+                      overIdx === idx && dragIdx !== idx && "border-t-2 border-primary"
                     )}
                   >
                     <td className="px-2 py-3 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
@@ -172,7 +172,7 @@ export function HeroSlideList({ initialSlides }: Props) {
                       <div className="flex items-center justify-end gap-1">
                         <Link
                           href={`/admin/hero/${slide.id}/edit`}
-                          className="p-2 rounded-lg text-gray-400 hover:bg-[#11ABC4]/10 hover:text-[#11ABC4] transition-colors"
+                          className="p-2 rounded-lg text-gray-400 hover:bg-primary/10 hover:text-primary transition-colors"
                           aria-label="Editar"
                         >
                           <Pencil size={16} />
@@ -212,7 +212,7 @@ export function HeroSlideList({ initialSlides }: Props) {
                 <tr>
                   <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
                     <p className="text-lg mb-2">No hay slides aún</p>
-                    <Link href="/admin/hero/new" className="text-[#11ABC4] hover:underline font-semibold">
+                    <Link href="/admin/hero/new" className="text-primary hover:underline font-semibold">
                       Crear primer slide
                     </Link>
                   </td>

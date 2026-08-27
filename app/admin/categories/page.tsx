@@ -21,7 +21,7 @@ export default async function AdminCategoriesPage() {
         {/* Form */}
         <div className="card p-6">
           <h2 className="font-heading text-lg font-bold mb-4 flex items-center gap-2">
-            <Tag size={18} className="text-[#11ABC4]" /> Nueva categoría
+            <Tag size={18} className="text-primary" /> Nueva categoría
           </h2>
           <CategoryForm parentCategories={categories} />
         </div>
@@ -36,7 +36,7 @@ export default async function AdminCategoriesPage() {
               <div key={cat.id} className="px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-[#CCECFB] flex items-center justify-center text-[#11ABC4]">
+                    <div className="w-9 h-9 rounded-xl bg-light flex items-center justify-center text-primary">
                       <FolderOpen size={16} />
                     </div>
                     <div>

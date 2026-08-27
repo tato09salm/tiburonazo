@@ -106,7 +106,7 @@ export function InventoryMoveForm({ onSuccess }: { onSuccess?: () => void }) {
 
         <select 
           {...register("reason")}
-          className="h-10 px-3 rounded-xl bg-white border border-gray-200 text-[11px] font-bold focus:ring-2 focus:ring-[#11ABC4]/10 appearance-none"
+          className="h-10 px-3 rounded-xl bg-white border border-gray-200 text-[11px] font-bold focus:ring-2 focus:ring-primary/10 appearance-none"
         >
           <option value="">Seleccionar motivo...</option>
           {REASONS[selectedType].map(r => (
@@ -141,7 +141,7 @@ export function InventoryMoveForm({ onSuccess }: { onSuccess?: () => void }) {
                   <h4 className="text-[11px] font-black text-gray-800 truncate">
                     {field.name}
                   </h4>
-                  <p className="text-[9px] text-[#11ABC4] font-mono font-bold uppercase tracking-tighter">
+                  <p className="text-[9px] text-primary font-mono font-bold uppercase tracking-tighter">
                     SKU: {field.sku}
                   </p>
                 </div>
@@ -152,7 +152,7 @@ export function InventoryMoveForm({ onSuccess }: { onSuccess?: () => void }) {
                     <input
                       type="number"
                       {...register(`items.${index}.quantity` as const, { valueAsNumber: true })}
-                      className="w-full h-8 pl-6 pr-2 rounded-lg bg-gray-50 border-none text-[11px] font-black focus:ring-2 focus:ring-[#11ABC4]/20"
+                      className="w-full h-8 pl-6 pr-2 rounded-lg bg-gray-50 border-none text-[11px] font-black focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                   <button 
@@ -176,7 +176,7 @@ export function InventoryMoveForm({ onSuccess }: { onSuccess?: () => void }) {
           <input 
             {...register("note")}
             placeholder="Notas u observaciones (opcional)..."
-            className="w-full pl-10 h-10 rounded-xl bg-gray-50 border-none text-[11px] focus:ring-2 focus:ring-[#11ABC4]/10 transition-all"
+            className="w-full pl-10 h-10 rounded-xl bg-gray-50 border-none text-[11px] focus:ring-2 focus:ring-primary/10 transition-all"
           />
         </div>
 
@@ -187,7 +187,7 @@ export function InventoryMoveForm({ onSuccess }: { onSuccess?: () => void }) {
             "w-full h-12 rounded-xl font-black text-[11px] tracking-[0.15em] transition-all flex items-center justify-center gap-2 shadow-xl shadow-gray-200",
             fields.length === 0 
               ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
-              : "bg-[#1a1a2e] text-white hover:bg-[#11ABC4] active:scale-[0.98]"
+              : "bg-[#1a1a2e] text-white hover:bg-primary active:scale-[0.98]"
           )}
         >
           {loading ? (

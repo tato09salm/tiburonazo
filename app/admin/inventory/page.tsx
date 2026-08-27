@@ -15,7 +15,7 @@ export default async function InventoryPage() {
 
       {/* HEADER*/}
       <div className="font-heading text-3xl font-bold text-gray-900 flex items-center gap-2">
-        <Warehouse size={28} className="text-[#11ABC4]" /> Inventario
+        <Warehouse size={28} className="text-primary" /> Inventario
       </div>
 
       {/* KPIs*/}
@@ -29,7 +29,7 @@ export default async function InventoryPage() {
         {/* TOOLBAR SUPERIOR DE LA TABLA */}
         <div className="px-6 py-5 border-b border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-cyan-50 text-[#11ABC4] rounded-xl">
+            <div className="p-2 bg-cyan-50 text-primary rounded-xl">
               <History size={18} />
             </div>
             <h3 className="font-bold text-gray-800 text-base">Movimientos</h3>
@@ -44,7 +44,7 @@ export default async function InventoryPage() {
               group
               /* TRANSICIÓN MEJORADA */
               transition-all duration-300 ease-in-out
-              hover:bg-[#11ABC4] hover:shadow-[#11ABC4]/20 hover:-translate-y-0.5
+              hover:bg-primary hover:shadow-primary/20 hover:-translate-y-0.5
               active:scale-95 active:translate-y-0
             ">
               <Plus

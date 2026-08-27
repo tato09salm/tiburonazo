@@ -131,7 +131,7 @@ export const PaymentSection = ({
 
   return (
     <div className="space-y-6">
-      <button onClick={onBack} className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-[#11ABC4] transition-colors">
+      <button onClick={onBack} className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-primary transition-colors">
         <ChevronLeft size={18} /> Editar datos de envío
       </button>
 
@@ -146,7 +146,7 @@ export const PaymentSection = ({
         <div
           className={cn(
             "bg-white rounded-xl transition-all overflow-hidden border",
-            openAccordion === "CARD" ? "border-[#11ABC4] ring-1 ring-[#11ABC4]" : "border-gray-200"
+            openAccordion === "CARD" ? "border-primary ring-1 ring-primary" : "border-gray-200"
           )}
         >
           <button
@@ -190,7 +190,7 @@ export const PaymentSection = ({
         <div
           className={cn(
             "bg-white rounded-xl transition-all overflow-hidden border",
-            openAccordion === "YAPE" ? "border-[#11ABC4] ring-1 ring-[#11ABC4]" : "border-gray-200"
+            openAccordion === "YAPE" ? "border-primary ring-1 ring-primary" : "border-gray-200"
           )}
         >
           <button
@@ -227,7 +227,7 @@ export const PaymentSection = ({
             type="button"
             onClick={handleGlobalSubmit}
             disabled={loading || !isFormValid}
-            className="w-full sm:w-1/4 py-3.5 rounded-xl font-bold text-white bg-[#11ABC4] hover:bg-[#0d8fa6] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-md shadow-[#11ABC4]/20 text-sm"
+            className="w-full sm:w-1/4 py-3.5 rounded-xl font-bold text-white bg-primary hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-md shadow-primary/20 text-sm"
           >
             {loading ? (
               <>
