@@ -79,7 +79,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
                     </td>
                     <td className="px-4 py-3 text-gray-500 font-mono whitespace-nowrap">{p.code}</td>
                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{p.category.name}</td>
-                    <td className="px-4 py-3 font-semibold text-[#11ABC4] whitespace-nowrap">{formatPrice(minPrice)}</td>
+                    <td className="px-4 py-3 font-semibold text-primary whitespace-nowrap">{formatPrice(minPrice)}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span className={`badge ${totalStock === 0 ? "bg-red-100 text-red-600" : totalStock < 5 ? "bg-orange-100 text-orange-600" : "bg-green-100 text-green-700"}`}>
                         {totalStock} uds.

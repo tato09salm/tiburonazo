@@ -95,7 +95,7 @@ export const PropertiesPanel = memo(function PropertiesPanel({ element, onChange
               type="checkbox"
               checked={element.visible}
               onChange={(e) => update({ visible: e.target.checked })}
-              className="rounded border-slate-300 text-[#11ABC4] focus:ring-[#11ABC4]"
+              className="rounded border-slate-300 text-primary focus:ring-primary"
             />
             Visible
           </label>
@@ -187,7 +187,7 @@ export const PropertiesPanel = memo(function PropertiesPanel({ element, onChange
                       onClick={() => update({ textAlign: a } as any)}
                       className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                         (element as CanvasTextElement).textAlign === a
-                          ? "border-[#11ABC4] bg-[#11ABC4]/10 text-[#11ABC4]"
+                          ? "border-primary bg-primary/10 text-primary"
                           : "border-slate-200 text-gray-500"
                       }`}
                     >
@@ -277,7 +277,7 @@ export const PropertiesPanel = memo(function PropertiesPanel({ element, onChange
                   onClick={() => update({ textAlign: a } as any)}
                   className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                     (element as any).textAlign === a
-                      ? "border-[#11ABC4] bg-[#11ABC4]/10 text-[#11ABC4]"
+                      ? "border-primary bg-primary/10 text-primary"
                       : "border-slate-200 text-gray-500"
                   }`}
                 >

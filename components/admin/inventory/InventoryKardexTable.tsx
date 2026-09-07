@@ -91,11 +91,11 @@ export function InventoryKardexTable({ initialMoves }: KardexProps) {
       <div className="px-6 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white border-b border-gray-100">
         <div className="flex flex-wrap items-center gap-3 flex-1">
           <div className="relative w-full md:w-64 group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#11ABC4] transition-colors" size={14} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={14} />
             <input
               type="text"
               placeholder="Buscar por producto o SKU..."
-              className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-transparent rounded-xl text-xs font-medium outline-none focus:border-[#11ABC4]/30 focus:ring-4 focus:ring-[#11ABC4]/10 transition-all duration-200"
+              className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-transparent rounded-xl text-xs font-medium outline-none focus:border-primary/30 focus:ring-4 focus:ring-primary/10 transition-all duration-200"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -125,7 +125,7 @@ export function InventoryKardexTable({ initialMoves }: KardexProps) {
           {/* BOTÓN EXPORTAR PDF */}
           <button
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] text-white rounded-xl text-[10px] font-black tracking-widest hover:bg-[#11ABC4] transition-all shadow-md active:scale-95"
+            className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] text-white rounded-xl text-[10px] font-black tracking-widest hover:bg-primary transition-all shadow-md active:scale-95"
           >
             <FileDown size={14} />
             PDF
@@ -139,7 +139,7 @@ export function InventoryKardexTable({ initialMoves }: KardexProps) {
                 className={cn(
                   "px-3 py-1 rounded-md text-[9px] font-black tracking-widest transition-all",
                   typeFilter === t
-                    ? "bg-white text-[#11ABC4] shadow-sm"
+                    ? "bg-white text-primary shadow-sm"
                     : "text-gray-400 hover:text-gray-600"
                 )}
               >

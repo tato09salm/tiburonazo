@@ -97,7 +97,7 @@ export function ForgotPasswordModal({ onClose }: Props) {
       <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in duration-300">
         <div className="p-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
           <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Key size={22} className="text-[#11ABC4]" />
+            <Key size={22} className="text-primary" />
             Recuperar Contraseña
           </h3>
           <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500">
@@ -109,7 +109,7 @@ export function ForgotPasswordModal({ onClose }: Props) {
           {step === "EMAIL" && (
             <form onSubmit={handleSendEmail} className="space-y-6">
               <div className="text-center space-y-2 mb-6">
-                <div className="w-16 h-16 bg-[#CCECFB] text-[#11ABC4] rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-light text-primary rounded-full flex items-center justify-center mx-auto mb-4">
                   <Mail size={32} />
                 </div>
                 <p className="text-gray-600 text-sm">
@@ -149,14 +149,14 @@ export function ForgotPasswordModal({ onClose }: Props) {
           {step === "CODE" && (
             <form onSubmit={handleValidateCode} className="space-y-6">
               <div className="text-center space-y-2 mb-6">
-                <div className="w-16 h-16 bg-[#CCECFB] text-[#11ABC4] rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-light text-primary rounded-full flex items-center justify-center mx-auto mb-4">
                   <ShieldCheck size={32} />
                 </div>
                 <p className="text-gray-600 text-sm">
                   Hemos enviado un código a <span className="font-bold text-gray-800">{email}</span>.
                 </p>
                 {timer > 0 ? (
-                  <p className="text-[#11ABC4] font-bold text-lg">Expira en: {formatTime(timer)}</p>
+                  <p className="text-primary font-bold text-lg">Expira en: {formatTime(timer)}</p>
                 ) : (
                   <p className="text-red-500 font-bold">El código ha expirado</p>
                 )}
@@ -204,7 +204,7 @@ export function ForgotPasswordModal({ onClose }: Props) {
           {step === "PASSWORD" && (
             <form onSubmit={handleResetPassword} className="space-y-6">
               <div className="text-center space-y-2 mb-6">
-                <div className="w-16 h-16 bg-[#CCECFB] text-[#11ABC4] rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-light text-primary rounded-full flex items-center justify-center mx-auto mb-4">
                   <Key size={32} />
                 </div>
                 <p className="text-gray-600 text-sm">

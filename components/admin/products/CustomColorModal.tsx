@@ -353,11 +353,11 @@ export function CustomColorModal({
                 className={cn(
                   "group relative border-2 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 text-center transition-all",
                   productImages.length > 0
-                    ? "border-gray-200 hover:border-[#11ABC4] hover:bg-[#CCECFB]/20"
+                    ? "border-gray-200 hover:border-primary hover:bg-light/20"
                     : "border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed"
                 )}
               >
-                <div className="w-16 h-16 rounded-2xl bg-[#CCECFB]/50 flex items-center justify-center text-[#11ABC4] group-hover:scale-110 transition-transform">
+                <div className="w-16 h-16 rounded-2xl bg-light/50 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                   <GalleryHorizontalEnd size={32} />
                 </div>
                 <div>
@@ -373,7 +373,7 @@ export function CustomColorModal({
               <label
                 className={cn(
                   "group relative border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 text-center cursor-pointer transition-all",
-                  "border-gray-200 hover:border-[#11ABC4] hover:bg-[#CCECFB]/20"
+                  "border-gray-200 hover:border-primary hover:bg-light/20"
                 )}
               >
                 <input
@@ -388,7 +388,7 @@ export function CustomColorModal({
                     <Loader2 size={32} className="animate-spin text-gray-400" />
                   </div>
                 ) : (
-                  <div className="w-16 h-16 rounded-2xl bg-[#CCECFB]/50 flex items-center justify-center text-[#11ABC4] group-hover:scale-110 transition-transform">
+                  <div className="w-16 h-16 rounded-2xl bg-light/50 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                     <Upload size={32} />
                   </div>
                 )}
@@ -416,7 +416,7 @@ export function CustomColorModal({
                       key={img.id || img._key || idx}
                       type="button"
                       onClick={() => handleGalleryPick(img.url)}
-                      className="relative group border-2 border-gray-100 hover:border-[#11ABC4] rounded-2xl overflow-hidden bg-gray-50 transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                      className="relative group border-2 border-gray-100 hover:border-primary rounded-2xl overflow-hidden bg-gray-50 transition-all hover:-translate-y-0.5 hover:shadow-lg"
                     >
                       <div className="relative aspect-square w-full">
                         <Image
@@ -425,8 +425,8 @@ export function CustomColorModal({
                           fill
                           className="object-cover"
                         />
-                        <div className="absolute inset-0 bg-[#11ABC4]/0 group-hover:bg-[#11ABC4]/10 flex items-center justify-center transition-colors">
-                          <div className="opacity-0 group-hover:opacity-100 bg-[#11ABC4] text-white rounded-full p-3 shadow-lg transition-all">
+                        <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 flex items-center justify-center transition-colors">
+                          <div className="opacity-0 group-hover:opacity-100 bg-primary text-white rounded-full p-3 shadow-lg transition-all">
                             <Check size={22} />
                           </div>
                         </div>
@@ -492,10 +492,10 @@ export function CustomColorModal({
                       <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/2 w-1 h-1 bg-white rounded-full shadow-sm pointer-events-none" />
                       <div
                         onMouseDown={onMouseDownOnHandle}
-                        className="absolute -right-3 -bottom-3 w-7 h-7 bg-white border-[3px] border-[#11ABC4] rounded-full cursor-ew-resize shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
+                        className="absolute -right-3 -bottom-3 w-7 h-7 bg-white border-[3px] border-primary rounded-full cursor-ew-resize shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
                         title="Redimensionar (también podés usar scroll sobre la imagen)"
                       >
-                        <div className="w-2 h-2 rounded-full bg-[#11ABC4]" />
+                        <div className="w-2 h-2 rounded-full bg-primary" />
                       </div>
                     </div>
                   </div>

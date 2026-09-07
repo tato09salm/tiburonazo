@@ -15,7 +15,7 @@ const config: Config = {
         "primary-dark": "#0d8fa6",
       },
       fontFamily: {
-        brand: ["Rajdhani", "sans-serif"],
+        display: ["Bebas Neue", "sans-serif"],
         heading: ["Rajdhani", "sans-serif"],
         sans: ["Nunito", "sans-serif"],
       },

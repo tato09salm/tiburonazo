@@ -14,7 +14,7 @@ export function AccountSidebar({ activeSubtab }: Props) {
             <Link
                 href="?tab=cuenta&subtab=datos"
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap flex-1 md:flex-initial ${activeSubtab === "datos"
-                        ? "bg-[#CCECFB] text-[#11ABC4]"
+                        ? "bg-light text-primary"
                         : "text-gray-500 hover:bg-gray-100 hover:text-gray-800"
                     }`}
             >
@@ -25,7 +25,7 @@ export function AccountSidebar({ activeSubtab }: Props) {
             <Link
                 href="?tab=cuenta&subtab=direcciones"
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap flex-1 md:flex-initial ${activeSubtab === "direcciones"
-                        ? "bg-[#CCECFB] text-[#11ABC4]"
+                        ? "bg-light text-primary"
                         : "text-gray-500 hover:bg-gray-100 hover:text-gray-800"
                     }`}
             >

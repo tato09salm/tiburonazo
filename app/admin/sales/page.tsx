@@ -75,13 +75,13 @@ export default async function SalesPage({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="font-heading text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <BarChart3 size={32} className="text-[#11ABC4]" /> Historial de Ventas
+            <BarChart3 size={32} className="text-primary" /> Historial de Ventas
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Hoy se han vendido: <span className="text-[#11ABC4] font-bold">{formatPrice(totalToday)}</span></p>
+          <p className="text-gray-500 text-sm mt-1">Hoy se han vendido: <span className="text-primary font-bold">{formatPrice(totalToday)}</span></p>
         </div>
         <Link 
           href="/admin/sales/new" 
-          className="btn-primary px-6 py-3 flex items-center justify-center gap-2 shadow-lg shadow-[#11ABC4]/20"
+          className="btn-primary px-6 py-3 flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
         >
           <Plus size={20} /> Registrar venta
         </Link>
@@ -95,7 +95,7 @@ export default async function SalesPage({
         {pages > 1 && (
           <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-              Página <span className="text-[#11ABC4]">{page}</span> de {pages}
+              Página <span className="text-primary">{page}</span> de {pages}
               <span className="mx-2 text-gray-200">|</span>
               Total: <span className="text-gray-600">{count} ventas</span>
             </div>
@@ -106,7 +106,7 @@ export default async function SalesPage({
                 className={`flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                   page <= 1 
                   ? "bg-gray-100 text-gray-300 pointer-events-none" 
-                  : "bg-white text-gray-600 hover:bg-[#CCECFB] hover:text-[#11ABC4] shadow-sm"
+                  : "bg-white text-gray-600 hover:bg-light hover:text-primary shadow-sm"
                 }`}
               >
                 <ChevronLeft size={14} /> Anterior
@@ -126,7 +126,7 @@ export default async function SalesPage({
                       href={getPageUrl(p)}
                       className={`w-9 h-9 flex items-center justify-center rounded-xl text-xs font-bold transition-all ${
                         page === p 
-                        ? "bg-[#11ABC4] text-white shadow-md shadow-[#11ABC4]/20" 
+                        ? "bg-primary text-white shadow-md shadow-primary/20" 
                         : "bg-white text-gray-600 hover:bg-gray-100 shadow-sm"
                       }`}
                     >
@@ -141,7 +141,7 @@ export default async function SalesPage({
                 className={`flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                   page >= pages 
                   ? "bg-gray-100 text-gray-300 pointer-events-none" 
-                  : "bg-white text-gray-600 hover:bg-[#CCECFB] hover:text-[#11ABC4] shadow-sm"
+                  : "bg-white text-gray-600 hover:bg-light hover:text-primary shadow-sm"
                 }`}
               >
                 Siguiente <ChevronRight size={14} />

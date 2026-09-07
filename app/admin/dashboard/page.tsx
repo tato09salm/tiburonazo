@@ -44,7 +44,7 @@ export default async function DashboardPage() {
         {/* Recent Sales */}
         <div className="card p-6">
           <h2 className="font-heading text-lg font-bold mb-4 flex items-center gap-2">
-            <TrendingUp size={18} className="text-[#11ABC4]" /> Ventas recientes
+            <TrendingUp size={18} className="text-primary" /> Ventas recientes
           </h2>
           {stats.recentSales.length === 0 ? (
             <p className="text-gray-400 text-sm text-center py-8">No hay ventas aún</p>
@@ -57,7 +57,7 @@ export default async function DashboardPage() {
                     <p className="text-xs text-gray-400">{sale.store.name} · {sale.vendedor ? `${sale.vendedor.firstName ?? ""} ${sale.vendedor.lastName ?? ""}`.trim() || "—" : "—"}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-[#11ABC4]">{formatPrice(sale.total)}</p>
+                    <p className="text-sm font-bold text-primary">{formatPrice(sale.total)}</p>
                     <p className="text-xs text-gray-400">{sale.paymentMethod}</p>
                   </div>
                 </div>

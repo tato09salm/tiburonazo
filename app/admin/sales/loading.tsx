@@ -6,7 +6,7 @@ export default function Loading() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="font-heading text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <BarChart3 size={32} className="text-[#11ABC4]" /> Historial de Ventas
+            <BarChart3 size={32} className="text-primary" /> Historial de Ventas
           </h1>
           <div className="h-4 w-48 bg-gray-100 animate-pulse rounded mt-1"></div>
         </div>
@@ -29,7 +29,7 @@ export default function Loading() {
           <div className="h-6 w-24 bg-white animate-pulse rounded-full border border-gray-200"></div>
         </div>
         <div className="p-12 flex flex-col items-center justify-center gap-4">
-          <Loader2 className="animate-spin text-[#11ABC4]" size={40} />
+          <Loader2 className="animate-spin text-primary" size={40} />
           <p className="text-gray-400 font-medium animate-pulse">Cargando ventas...</p>
         </div>
       </div>

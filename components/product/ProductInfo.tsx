@@ -77,7 +77,7 @@ export function ProductInfo({ product, selectedVariant, onVariantChange, resetGa
                   }}
                   className={cn(
                     "relative w-11 h-11 rounded-full border-2 transition-all flex items-center justify-center",
-                    isSelected ? "border-[#11ABC4] scale-110 shadow-md" : "border-transparent hover:border-gray-200"
+                    isSelected ? "border-primary scale-110 shadow-md" : "border-transparent hover:border-gray-200"
                   )}
                 >
                   {hasSwatch ? (
@@ -132,7 +132,7 @@ export function ProductInfo({ product, selectedVariant, onVariantChange, resetGa
                 onClick={() => v && onVariantChange(v)}
                 className={cn(
                   "min-w-[54px] h-12 px-4 rounded-lg border-2 text-xs font-bold transition-all uppercase",
-                  active ? "border-[#11ABC4] bg-[#11ABC4] text-white shadow-lg shadow-[#11ABC4]/20" : "border-gray-100 text-gray-700 hover:border-gray-900 disabled:opacity-30"
+                  active ? "border-primary bg-primary text-white shadow-lg shadow-[#11ABC4]/20" : "border-gray-100 text-gray-700 hover:border-gray-900 disabled:opacity-30"
                 )}
               >
                 {label}
@@ -142,7 +142,7 @@ export function ProductInfo({ product, selectedVariant, onVariantChange, resetGa
         </div>
         {stock > 0 && stock <= 5 && (
           <div className="flex items-center gap-2 pt-1">
-            <span className="text-[11px] font-black uppercase tracking-tight text-[#11ABC4] flex items-center gap-1">
+            <span className="text-[11px] font-black uppercase tracking-tight text-primary flex items-center gap-1">
               {stock === 1 ? "Solo queda 1 en nuestros almacenes" : "Últimas unidades"}
             </span>
           </div>
@@ -178,7 +178,7 @@ export function ProductInfo({ product, selectedVariant, onVariantChange, resetGa
             disabled={stock === 0}
             className={cn(
               "flex-1 h-14 flex items-center justify-center gap-3 rounded-lg font-black text-xs uppercase tracking-[0.1em] transition-all",
-              added ? "bg-green-600 text-white" : "bg-[#11ABC4] hover:bg-[#0d8fa6] text-white shadow-xl shadow-[#11ABC4]/20 active:scale-95 disabled:bg-gray-200"
+              added ? "bg-green-600 text-white" : "bg-primary hover:bg-primary-dark text-white shadow-xl shadow-[#11ABC4]/20 active:scale-95 disabled:bg-gray-200"
             )}
           >
             <ShoppingCart size={18} />

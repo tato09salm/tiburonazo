@@ -113,7 +113,7 @@ export function ShippingStep({ addresses, selectedAddressId, onSelectAddress, on
                     <button
                         type="button"
                         onClick={openCreateModal}
-                        className="flex items-center gap-1.5 text-xs font-bold text-[#11ABC4] hover:bg-[#11ABC4]/10 px-3 py-1.5 rounded-xl transition-all"
+                        className="flex items-center gap-1.5 text-xs font-bold text-primary hover:bg-primary/10 px-3 py-1.5 rounded-xl transition-all"
                     >
                         <Plus size={14} /> Nueva dirección
                     </button>
@@ -142,7 +142,7 @@ export function ShippingStep({ addresses, selectedAddressId, onSelectAddress, on
                                     onClick={() => onSelectAddress(addr.id)}
                                     className={cn(
                                         "p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between h-44 relative group",
-                                        isChecked ? "border-[#11ABC4] bg-[#11ABC4]/5 shadow-sm" : "border-gray-100 hover:border-gray-200 bg-white"
+                                        isChecked ? "border-primary bg-primary/5 shadow-sm" : "border-gray-100 hover:border-gray-200 bg-white"
                                     )}
                                 >
                                     <div className="space-y-1">
@@ -150,7 +150,7 @@ export function ShippingStep({ addresses, selectedAddressId, onSelectAddress, on
                                             <p className="text-xs font-black text-gray-900 truncate max-w-[80%]">
                                                 {addr.firstName} {addr.lastName}
                                             </p>
-                                            <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center shrink-0", isChecked ? "bg-[#11ABC4] border-[#11ABC4] text-white" : "border-gray-300")}>
+                                            <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center shrink-0", isChecked ? "bg-primary border-primary text-white" : "border-gray-300")}>
                                                 {isChecked && <Check size={10} />}
                                             </div>
                                         </div>

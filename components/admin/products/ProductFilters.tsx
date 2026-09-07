@@ -42,7 +42,7 @@ export function ProductFilters({ categories }: Props) {
         <input
           type="text"
           placeholder="Buscar por nombre o código..."
-          className="input pl-10 h-11 text-sm w-full border-gray-200 focus:border-[#11ABC4]"
+          className="input pl-10 h-11 text-sm w-full border-gray-200 focus:border-primary"
           onChange={(e) => handleSearch(e.target.value)}
           defaultValue={searchParams.get("search")?.toString()}
         />

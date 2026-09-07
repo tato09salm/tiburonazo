@@ -18,10 +18,10 @@ export function DeliverySelector({ selected, onChange }: Props) {
                     onClick={() => onChange("SHIPPING")}
                     className={cn(
                         "flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left",
-                        selected === "SHIPPING" ? "border-[#11ABC4] bg-[#11ABC4]/5 shadow-sm" : "border-gray-100 hover:border-gray-200"
+                        selected === "SHIPPING" ? "border-primary bg-[#11ABC4]/5 shadow-sm" : "border-gray-100 hover:border-gray-200"
                     )}
                 >
-                    <Truck className={selected === "SHIPPING" ? "text-[#11ABC4]" : "text-gray-400"} size={22} />
+                    <Truck className={selected === "SHIPPING" ? "text-primary" : "text-gray-400"} size={22} />
                     <div>
                         <p className="font-bold text-sm text-gray-900">Envío a Domicilio</p>
                     </div>
@@ -32,10 +32,10 @@ export function DeliverySelector({ selected, onChange }: Props) {
                     onClick={() => onChange("PICKUP")}
                     className={cn(
                         "flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left",
-                        selected === "PICKUP" ? "border-[#11ABC4] bg-[#11ABC4]/5 shadow-sm" : "border-gray-100 hover:border-gray-200"
+                        selected === "PICKUP" ? "border-primary bg-[#11ABC4]/5 shadow-sm" : "border-gray-100 hover:border-gray-200"
                     )}
                 >
-                    <Store className={selected === "PICKUP" ? "text-[#11ABC4]" : "text-gray-400"} size={22} />
+                    <Store className={selected === "PICKUP" ? "text-primary" : "text-gray-400"} size={22} />
                     <div>
                         <p className="font-bold text-sm text-gray-900">Recojo en Tienda</p>
                         <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wide">Gratis local Trujillo</p>

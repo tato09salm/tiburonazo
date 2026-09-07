@@ -147,13 +147,13 @@ export function AddressesView({ initialAddresses }: Props) {
                         const distObj = getDistricts(provCode).find(d => d.code === addr.ubigeo);
 
                         return (
-                            <div key={addr.id} className={`p-4 rounded-2xl border transition-all ${addr.isDefault ? "bg-[#CCECFB]/10 border-[#11ABC4]" : "bg-white border-gray-100 hover:border-gray-200"}`}>
+                            <div key={addr.id} className={`p-4 rounded-2xl border transition-all ${addr.isDefault ? "bg-light/10 border-primary" : "bg-white border-gray-100 hover:border-gray-200"}`}>
                                 <div className="flex justify-between items-start gap-4">
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2">
                                             <p className="font-bold text-sm text-gray-900">{addr.firstName} {addr.lastName}</p>
                                             {addr.isDefault && (
-                                                <span className="inline-flex items-center gap-1 bg-[#11ABC4] text-white px-2 py-0.5 text-[10px] font-black rounded-md tracking-wider">
+                                                <span className="inline-flex items-center gap-1 bg-primary text-white px-2 py-0.5 text-[10px] font-black rounded-md tracking-wider">
                                                     <Check size={10} /> Principal
                                                 </span>
                                             )}

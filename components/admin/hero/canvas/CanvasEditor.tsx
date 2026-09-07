@@ -163,7 +163,7 @@ export function CanvasEditor({ initialData, onChange }: Props) {
             type="button"
             onClick={() => setDevice(d.key)}
             className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-              device === d.key ? "bg-[#11ABC4] text-white shadow-sm" : "text-gray-500 hover:text-gray-700"
+              device === d.key ? "bg-primary text-white shadow-sm" : "text-gray-500 hover:text-gray-700"
             }`}
           >
             {d.label}
@@ -201,7 +201,7 @@ export function CanvasEditor({ initialData, onChange }: Props) {
                   onClick={() => handleSelectBgType(t)}
                   className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                     background.type === t
-                      ? "border-[#11ABC4] bg-[#11ABC4]/10 text-[#11ABC4]"
+                      ? "border-primary bg-primary/10 text-primary"
                       : "border-slate-200 text-gray-500"
                   }`}
                 >

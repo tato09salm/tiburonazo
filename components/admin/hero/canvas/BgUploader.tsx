@@ -41,7 +41,7 @@ export function BgUploader({ currentUrl, onUrl }: Props) {
           </div>
         </div>
       ) : (
-        <label className="flex items-center justify-center h-16 rounded-lg border-2 border-dashed border-slate-300 cursor-pointer hover:border-[#11ABC4] hover:bg-[#11ABC4]/5 transition-all text-xs text-gray-400">
+        <label className="flex items-center justify-center h-16 rounded-lg border-2 border-dashed border-slate-300 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all text-xs text-gray-400">
           {uploading ? "Subiendo..." : "Subir imagen de fondo"}
           <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} />
         </label>

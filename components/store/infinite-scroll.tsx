@@ -28,8 +28,8 @@ export function InfiniteScroll({ onLoadMore, hasMore, isLoading }: Props) {
   return (
     <div ref={ref} className="flex justify-center py-8">
       {isLoading && (
-        <div className="flex items-center gap-3 text-[#11ABC4]">
-          <div className="w-5 h-5 border-2 border-[#11ABC4] border-t-transparent rounded-full animate-spin" />
+        <div className="flex items-center gap-3 text-primary">
+          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           <span className="text-sm font-medium">Cargando más productos...</span>
         </div>
       )}

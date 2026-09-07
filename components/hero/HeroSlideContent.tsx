@@ -91,7 +91,7 @@ export function HeroSlideContent({
 
           {title && (
             <h1
-              className="font-brand text-4xl md:text-5xl lg:text-7xl font-bold leading-tight"
+              className="font-display text-4xl md:text-5xl lg:text-7xl font-bold leading-tight"
               style={{ color: textColor }}
             >
               {title}

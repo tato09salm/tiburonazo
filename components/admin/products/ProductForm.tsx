@@ -572,7 +572,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
           modelo: form.modelo || null,
           isFeatured: form.isFeatured,
           categoryId: form.categoryId,
-          brandId: form.brandId || null,
+          brandId: form.brandId || undefined,
           images: imagesToSave as any
         });
 
@@ -676,7 +676,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                 <button
                   type="button"
                   onClick={() => setGalleryOpenForVariant(null)}
-                  className="h-9 px-3 rounded-lg bg-[#11ABC4] text-white text-sm font-semibold hover:bg-[#0e98af] transition-colors shadow-sm flex items-center gap-1.5 flex-shrink-0"
+                  className="h-9 px-3 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition-colors shadow-sm flex items-center gap-1.5 flex-shrink-0"
                 >
                   Listo
                 </button>
@@ -708,15 +708,15 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                         className={cn(
                           "relative group border-2 rounded-2xl overflow-hidden bg-gray-50 flex flex-col text-left transition-all",
                           isSelected
-                            ? "border-[#11ABC4] ring-4 ring-[#11ABC4]/10"
-                            : "border-gray-100 hover:border-[#11ABC4]/50 hover:-translate-y-0.5 hover:shadow-lg"
+                            ? "border-primary ring-4 ring-primary/10"
+                            : "border-gray-100 hover:border-primary/50 hover:-translate-y-0.5 hover:shadow-lg"
                         )}
                       >
                         <div className="relative aspect-square w-full">
                           <Image src={img.url} alt={img.alt || `Imagen ${idx + 1}`} fill className="object-cover" />
                           {isSelected && (
-                            <div className="absolute inset-0 bg-[#11ABC4]/20 flex items-center justify-center">
-                              <div className="bg-[#11ABC4] text-white rounded-full p-2 shadow-lg">
+                            <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                              <div className="bg-primary text-white rounded-full p-2 shadow-lg">
                                 <Save size={18} />
                               </div>
                             </div>
@@ -816,8 +816,8 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                                 setShowBrandList(false);
                               }}
                               className={cn(
-                                "w-full text-left px-4 py-2 text-xs hover:bg-[#CCECFB] hover:text-[#11ABC4] transition-colors",
-                                form.brandId === b.id && "bg-[#CCECFB] text-[#11ABC4] font-bold"
+                                "w-full text-left px-4 py-2 text-xs hover:bg-light hover:text-primary transition-colors",
+                                form.brandId === b.id && "bg-light text-primary font-bold"
                               )}
                             >
                               {b.name}
@@ -1082,7 +1082,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                           <div className="flex items-center gap-1 flex-wrap">
                             {sections.filter(s => v.sectionIds.includes(s.id)).map(s => (
                               <button key={s.id} type="button" onClick={() => toggleVariantSection(i, s.id)}
-                                className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#11ABC4] text-white shadow-sm leading-tight">
+                                className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-primary text-white shadow-sm leading-tight">
                                 × {s.name}
                               </button>
                             ))}
@@ -1091,7 +1091,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                             )}
                           </div>
                           <details className="group/details relative inline-block w-fit">
-                            <summary className="list-none cursor-pointer px-2.5 py-1 rounded-md text-[11px] font-semibold border border-dashed border-gray-300 text-gray-500 hover:border-[#11ABC4] hover:text-[#11ABC4] leading-tight whitespace-nowrap w-fit">
+                            <summary className="list-none cursor-pointer px-2.5 py-1 rounded-md text-[11px] font-semibold border border-dashed border-gray-300 text-gray-500 hover:border-primary hover:text-primary leading-tight whitespace-nowrap w-fit">
                               + sección
                             </summary>
                             <div className="absolute z-[60] -top-1 left-0 translate-y-[-100%] mb-1 p-1.5 bg-white border border-gray-100 rounded-xl shadow-2xl grid grid-cols-2 gap-1 min-w-[180px] ring-1 ring-black/5">
@@ -1103,8 +1103,8 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                                     className={cn(
                                       "px-2 py-1 rounded-lg text-[11px] font-semibold border text-left truncate transition-colors",
                                       active
-                                        ? "bg-[#11ABC4] text-white border-[#11ABC4]"
-                                        : "bg-white text-gray-600 border-gray-200 hover:border-[#11ABC4] hover:text-[#11ABC4]"
+                                        ? "bg-primary text-white border-primary"
+                                        : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
                                     )}>
                                     {s.name}
                                   </button>
@@ -1143,11 +1143,11 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                           </div>
                           <div className="grid grid-cols-2 gap-1">
                             <button type="button" onClick={() => openUploadForVariant(i)} disabled={uploading}
-                              className="text-[11px] px-2 py-1.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-[#11ABC4]/40 hover:text-[#11ABC4] transition-colors flex items-center justify-center gap-1 font-medium">
+                              className="text-[11px] px-2 py-1.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-1 font-medium">
                               {uploading ? <Loader2 size={11} className="animate-spin" /> : <Upload size={11} />} Subir
                             </button>
                             <button type="button" onClick={() => setGalleryOpenForVariant(i)}
-                              className="text-[11px] px-2 py-1.5 rounded-lg bg-[#CCECFB]/30 border border-[#CCECFB] hover:bg-[#CCECFB]/60 text-[#11ABC4] transition-colors flex items-center justify-center gap-1 font-medium truncate">
+                              className="text-[11px] px-2 py-1.5 rounded-lg bg-light/30 border border-light hover:bg-light/60 text-primary transition-colors flex items-center justify-center gap-1 font-medium truncate">
                               <GalleryHorizontalEnd size={11} className="flex-shrink-0" />
                               <span className="truncate">{variantImages.length > 0 ? "Galería (" + variantImages.length + ")" : "Galería"}</span>
                             </button>
@@ -1268,7 +1268,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                             <div className="flex items-center gap-1 flex-wrap">
                               {sections.filter(s => v.sectionIds.includes(s.id)).map(s => (
                                 <button key={s.id} type="button" onClick={() => toggleVariantSection(i, s.id)}
-                                  className="px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-[#11ABC4] text-white shadow-sm leading-tight"
+                                  className="px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-primary text-white shadow-sm leading-tight"
                                   title={"Quitar " + s.name}>
                                   × {s.name}
                                 </button>
@@ -1278,7 +1278,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                               )}
                             </div>
                             <details className="group/details relative inline-block w-fit">
-                              <summary className="list-none cursor-pointer px-2 py-1 rounded-md text-[10px] font-semibold border border-dashed border-gray-300 text-gray-500 hover:border-[#11ABC4] hover:text-[#11ABC4] leading-tight whitespace-nowrap w-fit">
+                              <summary className="list-none cursor-pointer px-2 py-1 rounded-md text-[10px] font-semibold border border-dashed border-gray-300 text-gray-500 hover:border-primary hover:text-primary leading-tight whitespace-nowrap w-fit">
                                 + sección
                               </summary>
                               <div className="absolute z-[60] -top-1 left-0 translate-y-[-100%] mb-1 p-1.5 bg-white border border-gray-100 rounded-xl shadow-2xl grid grid-cols-2 gap-1 min-w-[180px] ring-1 ring-black/5">
@@ -1290,8 +1290,8 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                                       className={cn(
                                         "px-2 py-1 rounded-lg text-[10px] font-semibold border text-left truncate transition-colors",
                                         active
-                                          ? "bg-[#11ABC4] text-white border-[#11ABC4]"
-                                          : "bg-white text-gray-600 border-gray-200 hover:border-[#11ABC4] hover:text-[#11ABC4]"
+                                          ? "bg-primary text-white border-primary"
+                                          : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
                                       )}>
                                       {s.name}
                                     </button>
@@ -1326,11 +1326,11 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                             </div>
                             <div className="grid grid-cols-2 gap-1">
                               <button type="button" onClick={() => openUploadForVariant(i)} disabled={uploading}
-                                className="text-[11px] px-2 py-1.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-[#11ABC4]/40 hover:text-[#11ABC4] transition-colors flex items-center justify-center gap-1 font-medium">
+                                className="text-[11px] px-2 py-1.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-1 font-medium">
                                 {uploading ? <Loader2 size={11} className="animate-spin" /> : <Upload size={11} />} Subir
                               </button>
                               <button type="button" onClick={() => setGalleryOpenForVariant(i)}
-                                className="text-[11px] px-2 py-1.5 rounded-lg bg-[#CCECFB]/30 border border-[#CCECFB] hover:bg-[#CCECFB]/60 text-[#11ABC4] transition-colors flex items-center justify-center gap-1 font-medium truncate"
+                                className="text-[11px] px-2 py-1.5 rounded-lg bg-light/30 border border-light hover:bg-light/60 text-primary transition-colors flex items-center justify-center gap-1 font-medium truncate"
                                 title="Usar imagen existente (puedes seleccionar varias)">
                                 <GalleryHorizontalEnd size={11} className="flex-shrink-0" />
                                 <span className="truncate">{variantImages.length > 0 ? "Galería (" + variantImages.length + ")" : "Galería"}</span>

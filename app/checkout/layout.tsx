@@ -10,15 +10,15 @@ export default function CheckoutLayout({ children }: { children: React.ReactNode
         <div className="min-h-screen flex flex-col">
             {/* Header Estático: Fluye de forma natural con el scroll de la página */}
             <header className="w-full">
-                <div className="mx-auto flex h-20 max-w-6xl items-center px-4">
+                <div className="mx-auto flex h-12 max-w-6xl items-center px-4">
 
                     {/* Contenedor del Logo Simplificado */}
                     <Link href="/" className="flex items-center transition-opacity hover:opacity-90">
                         <Image
                             src="/logo.png"
                             alt="Tiburonazo Logo"
-                            width={150} // Subí ligeramente el tamaño para darle una presencia limpia al no haber menú
-                            height={45}
+                            width={130}
+                            height={38}
                             className="object-contain"
                             priority
                         />

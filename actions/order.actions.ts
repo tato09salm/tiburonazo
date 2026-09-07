@@ -16,6 +16,7 @@ interface CreateOrderInput {
   document: string; // DNI o RUC
   paymentMethod: PaymentMethod;
   culqiChargeId?: string;
+  mercadopagoPaymentId?: string;
   shippingCost: number; // 0 si es recojo en tienda
   total: number; // Suma total de productos + envío
   items: Array<{
@@ -79,8 +80,9 @@ export async function createOrder(data: CreateOrderInput) {
         shippingCost: data.shippingCost,
         total: data.total,
         culqiChargeId: data.culqiChargeId,
-        // Si hay un ID de cargo de Culqi, la orden nace como PAGADA
-        status: data.culqiChargeId ? OrderStatus.PAGADO : OrderStatus.PENDIENTE,
+        mercadopagoPaymentId: data.mercadopagoPaymentId,
+        // Si hay un ID de cargo de Culqi o Mercado Pago, la orden nace como PAGADA
+        status: (data.culqiChargeId || data.mercadopagoPaymentId) ? OrderStatus.PAGADO : OrderStatus.PENDIENTE,
         items: {
           create: data.items.map((item) => ({
             variantId: item.variantId,

@@ -17,11 +17,11 @@ export default async function NewSalePage() {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-6">
-        <Link href="/admin/sales" className="text-gray-500 hover:text-[#11ABC4] flex items-center gap-2 text-sm font-medium transition-colors mb-2">
+        <Link href="/admin/sales" className="text-gray-500 hover:text-primary flex items-center gap-2 text-sm font-medium transition-colors mb-2">
           <ArrowLeft size={16} /> Volver al historial
         </Link>
         <h1 className="font-heading text-3xl font-bold text-gray-900 flex items-center gap-2">
-          <BarChart3 size={28} className="text-[#11ABC4]" /> Registrar Venta
+          <BarChart3 size={28} className="text-primary" /> Registrar Venta
         </h1>
         <p className="text-gray-500 text-sm mt-1">Completa los datos para registrar una nueva venta.</p>
       </div>
