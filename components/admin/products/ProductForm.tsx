@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createProduct, updateProduct, upsertVariant, deleteVariant, getNextProductCode } from "@/actions/product.actions";
 import { getBrands } from "@/actions/brand.actions";
-import { Plus, Trash2, Save, Loader2, Search, X, Upload, Image as ImageIcon, GalleryHorizontalEnd, Palette } from "lucide-react";
+import { Plus, Trash2, Save, Loader2, Search, X, Upload, Image as ImageIcon, GalleryHorizontalEnd, Palette, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BrandManager } from "./BrandManager";
 import { CustomColorModal } from "./CustomColorModal";
@@ -22,11 +22,10 @@ interface Variant {
   sku: string;
   colorId: string | null;
   sizeId: string | null;
-  diseno: string | null;
+  estampado: string | null;
   price: number;
   oldPrice: number | null;
   stock: number;
-  isOutlet: boolean;
   sectionIds: string[];
   imageKeys: string[];
   color?: { id?: string; name: string };
@@ -75,11 +74,10 @@ const emptyVariant = (code: string = "", defaultSectionIds: string[] = []): Vari
   sku: code.trim().toUpperCase().replace(/\s+/g, "-"),
   colorId: null,
   sizeId: null,
-  diseno: null,
+  estampado: null,
   price: 0,
   oldPrice: null,
   stock: 0,
-  isOutlet: false,
   sectionIds: [...defaultSectionIds],
   imageKeys: [],
   isAutoSku: true,
@@ -126,10 +124,9 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
           ...v,
           colorId: v.colorId ?? null,
           sizeId: v.sizeId ?? null,
-          diseno: v.diseno ?? "",
-          oldPrice: v.oldPrice,
-          isOutlet: v.isOutlet ?? false,
-          sectionIds: v.sections?.map((s) => s.id) ?? [],
+          estampado: (v as any).estampado ?? (v as any).diseno ?? "",
+  oldPrice: v.oldPrice,
+  sectionIds: v.sections?.map((s) => s.id) ?? [],
           imageKeys: merged,
           isAutoSku: false,
         };
@@ -150,6 +147,19 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
   const [imageDeleteUsingCount, setImageDeleteUsingCount] = useState(0);
   const [isVariantImageDeleteModalOpen, setIsVariantImageDeleteModalOpen] = useState(false);
   const [variantImageToDelete, setVariantImageToDelete] = useState<{ variantIdx: number; imageKey: string; usingCount: number; isShared: boolean } | null>(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setPreviewImageUrl(null);
+      }
+    };
+    if (previewImageUrl) {
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [previewImageUrl]);
 
   const [stockDraft, setStockDraft] = useState<Record<number, string>>(() => {
     const init: Record<number, string> = {};
@@ -271,8 +281,8 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
       if (size) parts.push(size.label);
     }
 
-    if (variant.diseno) {
-      parts.push(variant.diseno);
+    if (variant.estampado) {
+      parts.push(variant.estampado);
     }
 
     return parts
@@ -292,7 +302,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
       if (key === "sku") {
         newVariant.isAutoSku = false;
         newVariant.sku = String(val || "").toUpperCase().replace(/\s+/g, "-");
-      } else if (["colorId", "sizeId", "diseno"].includes(key)) {
+      } else if (["colorId", "sizeId", "estampado", "diseno"].includes(key)) {
         if (newVariant.isAutoSku) {
           newVariant.sku = generateSKU(newVariant, form.code);
         }
@@ -492,8 +502,8 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
         if (!matched) return null;
         const color = v.colorId ? colors.find(c => c.id === v.colorId)?.name : null;
         const size = v.sizeId ? sizes.find(s => s.id === v.sizeId)?.label : null;
-        const diseno = v.diseno;
-        const parts = [color, size, diseno].filter(Boolean);
+        const estampado = v.estampado;
+        const parts = [color, size, estampado].filter(Boolean);
         return `#${idx + 1}${parts.length ? " (" + parts.join(" · ") + ")" : ""}`;
       })
       .filter((s): s is string => !!s);
@@ -515,11 +525,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
   }
 
   function tryAssignFirstMatch(v: Variant): string[] {
-    if (v.imageKeys.length > 0) return v.imageKeys;
-    const color = v.colorId;
-    if (!color) return [];
-    const found = images.find(im => im.colorId === color);
-    return found ? [(found.id || found._key)!].filter(Boolean) : [];
+    return v.imageKeys;
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -591,11 +597,10 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
             sku: v.sku,
             colorId: v.colorId || undefined,
             sizeId: v.sizeId || undefined,
-            diseno: v.diseno || undefined,
+            estampado: v.estampado || undefined,
             price: Number(v.price),
             oldPrice: v.oldPrice ? Number(v.oldPrice) : undefined,
             stock: Number(v.stock),
-            isOutlet: v.isOutlet,
             sectionIds: v.sectionIds,
             productImageId: imageIds[0],
             imageIds,
@@ -629,11 +634,10 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
             sku: v.sku,
             colorId: v.colorId || undefined,
             sizeId: v.sizeId || undefined,
-            diseno: v.diseno || undefined,
+            estampado: v.estampado || undefined,
             price: Number(v.price),
             oldPrice: v.oldPrice ? Number(v.oldPrice) : undefined,
             stock: Number(v.stock),
-            isOutlet: v.isOutlet,
             sectionIds: v.sectionIds,
             productImageId: imageIds[0],
             imageIds,
@@ -693,10 +697,9 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                   <p className="text-xs mt-1">Cierra y usa "Subir imagen" desde la variante para agregar una.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                   {images.map((img, idx) => {
                     const key = img.id || img._key || String(idx);
-                    const colorName = img.colorId ? colors.find(c => c.id === img.colorId)?.name : null;
                     const usingVars = variantLabelsForImage(key);
                     const variant = variants[galleryOpenForVariant];
                     const isSelected = !!variant?.imageKeys.some(k => k === img.id || k === img._key);
@@ -706,34 +709,25 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                         type="button"
                         onClick={() => selectExistingImage(galleryOpenForVariant, key)}
                         className={cn(
-                          "relative group border-2 rounded-2xl overflow-hidden bg-gray-50 flex flex-col text-left transition-all",
+                          "relative group border-2 rounded-xl overflow-hidden bg-gray-50 flex flex-col text-left transition-all",
                           isSelected
-                            ? "border-primary ring-4 ring-primary/10"
-                            : "border-gray-100 hover:border-primary/50 hover:-translate-y-0.5 hover:shadow-lg"
+                            ? "border-primary ring-2 ring-primary/20 shadow-sm"
+                            : "border-gray-100 hover:border-primary/50 hover:-translate-y-0.5"
                         )}
                       >
                         <div className="relative aspect-square w-full">
-                          <Image src={img.url} alt={img.alt || `Imagen ${idx + 1}`} fill className="object-cover" />
+                          <Image src={img.url} alt={img.alt || `Imagen ${idx + 1}`} fill className="object-cover" sizes="140px" />
                           {isSelected && (
-                            <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                              <div className="bg-primary text-white rounded-full p-2 shadow-lg">
-                                <Save size={18} />
+                            <div className="absolute inset-0 bg-primary/25 flex items-center justify-center">
+                              <div className="bg-primary text-white rounded-full p-1.5 shadow-md">
+                                <Save size={14} />
                               </div>
                             </div>
                           )}
-                        </div>
-                        <div className="p-2.5 bg-white border-t border-gray-50 space-y-1">
-                          <div className="flex flex-wrap gap-1">
-                            {colorName && (
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
-                                {colorName}
-                              </span>
-                            )}
-                          </div>
                           {usingVars.length > 0 && (
-                            <p className="text-[10px] text-gray-400 leading-tight">
-                              Usada en: {usingVars.join(", ")}
-                            </p>
+                            <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/65 backdrop-blur-xs text-white rounded text-[9px] font-medium leading-none truncate max-w-[calc(100%-8px)]" title={`Usada en: ${usingVars.join(", ")}`}>
+                              {usingVars.length} var.
+                            </div>
                           )}
                         </div>
                       </button>
@@ -748,38 +742,64 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
 
       <form onSubmit={handleSubmit} className="space-y-6 pb-20">
         <div className="space-y-6 pb-6">
-          <div className="card p-6 space-y-4">
-            <h2 className="font-heading text-lg font-bold">Información general del producto</h2>
+          <div className="card p-5 sm:p-6 space-y-4">
+            <h2 className="font-heading text-lg font-bold text-gray-900 border-b border-gray-100 pb-3">
+              Información general del producto
+            </h2>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/* Fila 1: 3 columnas (-  -  -) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Código *</label>
-                <input value={form.code} onChange={update("code")} required className="input" placeholder="P001" />
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Código *</label>
+                <input
+                  value={form.code}
+                  onChange={update("code")}
+                  required
+                  className="input h-10 text-xs font-mono w-full"
+                  placeholder="Ej: P001"
+                />
               </div>
+
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Categoría *</label>
-                <select value={form.categoryId} onChange={update("categoryId")} required className="input">
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Nombre *</label>
+                <input
+                  value={form.title}
+                  onChange={update("title")}
+                  required
+                  className="input h-10 text-xs w-full font-medium"
+                  placeholder="Nombre del producto"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Categoría *</label>
+                <select
+                  value={form.categoryId}
+                  onChange={update("categoryId")}
+                  required
+                  className="input h-10 text-xs w-full"
+                >
                   <option value="">Seleccionar...</option>
-                  {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
                 </select>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre *</label>
-                <input value={form.title} onChange={update("title")} required className="input" placeholder="Nombre del producto" />
-              </div>
+            {/* Fila 2: 3 columnas (-  -  -) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+              {/* Columna 1: Marca */}
               <div className="relative">
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Marca</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Marca</label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <div
-                      className="input flex items-center justify-between cursor-pointer h-10 overflow-hidden"
+                      className="input flex items-center justify-between cursor-pointer h-10 text-xs px-3 overflow-hidden"
                       onClick={() => setShowBrandList(!showBrandList)}
                     >
                       <span className={cn("truncate", !selectedBrand && "text-gray-400")}>
-                        {selectedBrand ? selectedBrand.name : "Sin marca..."}
+                        {selectedBrand ? selectedBrand.name : "Sin marca"}
                       </span>
                       <Search size={14} className="text-gray-400 flex-shrink-0" />
                     </div>
@@ -803,7 +823,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                               setForm(f => ({ ...f, brandId: "" }));
                               setShowBrandList(false);
                             }}
-                            className="w-full text-left px-4 py-2 text-xs hover:bg-gray-100 text-gray-500 italic"
+                            className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 text-gray-500 italic"
                           >
                             Sin marca
                           </button>
@@ -816,7 +836,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                                 setShowBrandList(false);
                               }}
                               className={cn(
-                                "w-full text-left px-4 py-2 text-xs hover:bg-light hover:text-primary transition-colors",
+                                "w-full text-left px-3 py-2 text-xs hover:bg-light hover:text-primary transition-colors",
                                 form.brandId === b.id && "bg-light text-primary font-bold"
                               )}
                             >
@@ -824,7 +844,7 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                             </button>
                           ))}
                           {filteredBrands.length === 0 && (
-                            <p className="p-4 text-center text-xs text-gray-400">No hay marcas</p>
+                            <p className="p-3 text-center text-xs text-gray-400">No hay marcas</p>
                           )}
                         </div>
                       </div>
@@ -833,28 +853,29 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                   <button
                     type="button"
                     onClick={() => setShowBrandManager(true)}
-                    className="btn-secondary p-2.5 h-10 flex items-center justify-center aspect-square"
+                    className="btn-secondary h-10 w-10 p-0 flex items-center justify-center flex-shrink-0"
                     title="Nueva marca"
                   >
-                    <Plus size={18} />
+                    <Plus size={16} />
                   </button>
                 </div>
                 {showBrandList && <div className="fixed inset-0 z-40" onClick={() => setShowBrandList(false)} />}
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Descripción</label>
-              <textarea value={form.description} onChange={update("description")} className="input min-h-[80px] resize-none" placeholder="Descripción del producto..." />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+              {/* Columna 2: Modelo */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Modelo</label>
-                <input value={form.modelo} onChange={update("modelo")} className="input" placeholder="Ej: M123, Modelo X..." />
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Modelo</label>
+                <input
+                  value={form.modelo}
+                  onChange={update("modelo")}
+                  className="input h-10 text-xs w-full"
+                  placeholder="Ej: M123, Modelo X..."
+                />
               </div>
+
+              {/* Columna 3: Peso (kg) */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Peso (kg)</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Peso (kg)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -862,16 +883,38 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                   onChange={update("weight")}
                   onWheel={(e) => e.currentTarget.blur()}
                   onKeyDown={(e) => { if (e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault(); }}
-                  className="input"
+                  className="input h-10 text-xs w-full"
                   placeholder="0.150"
                 />
               </div>
             </div>
 
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm((f) => ({ ...f, isFeatured: e.target.checked }))} className="accent-[#11ABC4] w-4 h-4" />
-              <span className="text-sm font-medium">Producto destacado (aparece en el home)</span>
-            </label>
+            {/* Fila 3: Descripción */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">Descripción</label>
+              <textarea
+                value={form.description}
+                onChange={update("description")}
+                rows={3}
+                className="input text-xs py-2.5 min-h-[75px] resize-y w-full leading-relaxed"
+                placeholder="Descripción detallada del producto..."
+              />
+            </div>
+
+            {/* Fila 4: Checkbox destacado */}
+            <div className="pt-1">
+              <label className="inline-flex items-center gap-2.5 cursor-pointer select-none group">
+                <input
+                  type="checkbox"
+                  checked={form.isFeatured}
+                  onChange={(e) => setForm((f) => ({ ...f, isFeatured: e.target.checked }))}
+                  className="accent-[#11ABC4] w-4 h-4 rounded cursor-pointer"
+                />
+                <span className="text-xs font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
+                  Agregar a destacado en Home
+                </span>
+              </label>
+            </div>
           </div>
 
           <div className="card p-6">
@@ -881,31 +924,6 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                 <p className="text-xs text-gray-500 mt-0.5">Cada variante puede tener varias imágenes (frontal, lateral, espalda, etc.), reutilizables entre variantes del mismo color/modelo.</p>
               </div>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const last = variants[variants.length - 1];
-                    const idx = variants.length;
-                    const newVariant = {
-                      ...emptyVariant(form.code, last?.sectionIds ?? defaultSectionIds),
-                      colorId: last?.colorId ?? null,
-                      sizeId: last?.sizeId ?? null,
-                      diseno: last?.diseno ?? null,
-                      price: last?.price ?? 0,
-                      oldPrice: last?.oldPrice ?? null,
-                      imageKeys: [...(last?.imageKeys ?? [])],
-                    };
-                    setVariants(vs => [...vs, newVariant]);
-                    setStockDraft(prev => ({
-                      ...prev,
-                      [idx]: Number.isFinite(Number(last?.stock ?? 0)) ? String(Number(last?.stock ?? 0)) : "0"
-                    }));
-                  }}
-                  className="btn-secondary text-sm px-3 py-1.5 flex items-center gap-1"
-                  title="Agregar variante con valores duplicados"
-                >
-                  <Plus size={14} /> Duplicar último
-                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -1031,47 +1049,34 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                         </div>
                       </div>
 
-                      {/* Diseño */}
+                      {/* Estampado */}
                       <div className="flex items-center gap-2">
-                        <div className="w-20 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">Diseño</div>
+                        <div className="w-20 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">Estampado</div>
                         <div className="flex-1 min-w-0">
-                          <input value={v.diseno ?? ""} onChange={(e) => updateVariant(i, "diseno", e.target.value || null)} placeholder="Diseño" className="input text-[11px] h-9 px-2 w-full" title="Diseño" />
+                          <input value={v.estampado ?? ""} onChange={(e) => updateVariant(i, "estampado", e.target.value || null)} placeholder="Estampado" className="input text-[11px] h-9 px-2 w-full" title="Estampado" />
                         </div>
                       </div>
 
-                      {/* Stock + Outlet (misma fila) */}
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">Stock</div>
-                          <div className="flex-1 min-w-0">
-                            <input
-                              type="text" inputMode="numeric" pattern="[0-9]*"
-                              value={stockDraft[i] ?? "0"}
-                              onChange={(e) => setStockDraft(prev => ({ ...prev, [i]: e.target.value.replace(/[^0-9-]/g, "") }))}
-                              onBlur={() => {
-                                const raw = stockDraft[i] ?? "";
-                                let parsed = parseInt(raw.replace(/^0+(\d)/, "$1"), 10);
-                                if (raw.length === 0 || raw === "-" || Number.isNaN(parsed)) parsed = 0;
-                                if (parsed < 0) parsed = 0;
-                                const normalized = String(parsed);
-                                setStockDraft(prev => ({ ...prev, [i]: normalized }));
-                                updateVariant(i, "stock", parsed);
-                              }}
-                              className="input text-[11px] h-9 px-2 tracking-wide font-semibold w-full"
-                              placeholder="Stock" title="Stock" min={0}
-                            />
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">Outlet</div>
-                          <div className="flex-1 min-w-0 flex items-center h-9">
-                            <input
-                              type="checkbox"
-                              checked={v.isOutlet}
-                              onChange={(e) => updateVariant(i, "isOutlet", e.target.checked)}
-                              className="accent-[#11ABC4] w-4 h-4"
-                            />
-                          </div>
+                      {/* Stock */}
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 flex-shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1">Stock</div>
+                        <div className="flex-1 min-w-0">
+                          <input
+                            type="text" inputMode="numeric" pattern="[0-9]*"
+                            value={stockDraft[i] ?? "0"}
+                            onChange={(e) => setStockDraft(prev => ({ ...prev, [i]: e.target.value.replace(/[^0-9-]/g, "") }))}
+                            onBlur={() => {
+                              const raw = stockDraft[i] ?? "";
+                              let parsed = parseInt(raw.replace(/^0+(\d)/, "$1"), 10);
+                              if (raw.length === 0 || raw === "-" || Number.isNaN(parsed)) parsed = 0;
+                              if (parsed < 0) parsed = 0;
+                              const normalized = String(parsed);
+                              setStockDraft(prev => ({ ...prev, [i]: normalized }));
+                              updateVariant(i, "stock", parsed);
+                            }}
+                            className="input text-[11px] h-9 px-2 tracking-wide font-semibold w-full"
+                            placeholder="Stock" title="Stock" min={0}
+                          />
                         </div>
                       </div>
 
@@ -1119,23 +1124,33 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                       <div className="border-t border-gray-200/70 pt-2">
                         <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider pl-1 mb-1.5">Imágenes</div>
                         <div className="flex flex-col gap-1.5">
-                          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
+                          <div className="flex items-center gap-2 overflow-x-auto pb-1">
                             {variantImages.length === 0 && (
-                              <div className="relative w-11 h-11 flex-shrink-0 rounded-lg overflow-hidden border border-dashed border-gray-200 bg-white/60 flex items-center justify-center text-gray-300">
-                                <ImageIcon size={16} />
+                              <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border border-dashed border-gray-200 bg-white/60 flex items-center justify-center text-gray-300">
+                                <ImageIcon size={22} />
                               </div>
                             )}
                             {variantImages.map((img, idx) => {
                               const ik = img.id || img._key || String(idx);
                               const k = img.id || img._key;
                               return (
-                                <div key={ik} className="relative w-11 h-11 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 bg-white group/vimg">
-                                  <Image src={img.url} alt={v.sku || `img-${idx}`} fill className="object-cover" />
+                                <div key={ik} className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 bg-white group/vimg shadow-2xs">
+                                  <Image
+                                    src={img.url}
+                                    alt={v.sku || `img-${idx}`}
+                                    fill
+                                    className="object-cover cursor-pointer hover:scale-105 transition-transform"
+                                    onClick={() => setPreviewImageUrl(img.url)}
+                                  />
                                   <button
-                                    type="button" onClick={() => k && openRemoveImageFromVariant(i, k)}
-                                    className="absolute inset-0 bg-red-500/0 text-white/0 group-hover/vimg:bg-red-500/80 group-hover/vimg:text-white transition-colors flex items-center justify-center"
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (k) openRemoveImageFromVariant(i, k);
+                                    }}
+                                    className="absolute top-1 right-1 p-1 bg-red-500/90 hover:bg-red-600 text-white rounded opacity-0 group-hover/vimg:opacity-100 transition-opacity shadow z-10"
                                     title="Quitar imagen">
-                                    <X size={12} />
+                                    <X size={11} />
                                   </button>
                                 </div>
                               );
@@ -1147,194 +1162,215 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
                               {uploading ? <Loader2 size={11} className="animate-spin" /> : <Upload size={11} />} Subir
                             </button>
                             <button type="button" onClick={() => setGalleryOpenForVariant(i)}
-                              className="text-[11px] px-2 py-1.5 rounded-lg bg-light/30 border border-light hover:bg-light/60 text-primary transition-colors flex items-center justify-center gap-1 font-medium truncate">
+                              className="text-[11px] px-2 py-1.5 rounded-lg bg-light/30 border border-light hover:bg-light/60 text-primary transition-colors flex items-center justify-center gap-1 font-medium whitespace-nowrap">
                               <GalleryHorizontalEnd size={11} className="flex-shrink-0" />
-                              <span className="truncate">{variantImages.length > 0 ? "Galería (" + variantImages.length + ")" : "Galería"}</span>
+                              <span>Galería</span>
+                              {variantImages.length > 0 && (
+                                <span className="text-[10px] font-bold bg-primary text-white rounded-full px-1.5 py-0.2 leading-tight flex-shrink-0">
+                                  {variantImages.length}
+                                </span>
+                              )}
                             </button>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* ====== LAYOUT DESKTOP (md+) grid simétrico de 10 cols ====== */}
-                    <div className="hidden md:block">
-                      <div className="grid grid-cols-10 gap-2 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">
-                        <div className="pl-1">SKU</div>
-                        <div className="pl-1">Color</div>
-                        <div className="pl-1">Talla</div>
-                        <div className="pl-1">Precio</div>
-                        <div className="pl-1 text-red-500">Oferta</div>
-                        <div className="pl-1">Diseño</div>
-                        <div className="pl-1">Stock</div>
-                        <div className="text-center">Outlet</div>
-                        <div className="pl-1">Secciones</div>
-                        <div className="pl-1">Imágenes</div>
-                      </div>
-                      <div className="grid grid-cols-10 gap-2 items-start">
-                        <div>
-                          <input value={v.sku} onChange={(e) => updateVariant(i, "sku", e.target.value)} placeholder="SKU *" className="input text-[11px] h-9 px-2 w-full" title="SKU" />
+                    {/* ====== LAYOUT DESKTOP (md+) ====== */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <div className="min-w-[980px]">
+                        <div className="grid grid-cols-[minmax(90px,1fr)_minmax(110px,1.2fr)_minmax(70px,0.75fr)_minmax(75px,0.75fr)_minmax(75px,0.75fr)_minmax(85px,0.85fr)_minmax(65px,0.65fr)_minmax(120px,1.2fr)_minmax(180px,1.8fr)] gap-2 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">
+                          <div className="pl-1">SKU</div>
+                          <div className="pl-1">Color</div>
+                          <div className="pl-1">Talla</div>
+                          <div className="pl-1">Precio</div>
+                          <div className="pl-1 text-red-500">Oferta</div>
+                          <div className="pl-1">Estampado</div>
+                          <div className="pl-1">Stock</div>
+                          <div className="pl-1">Secciones</div>
+                          <div className="pl-1">Imágenes</div>
                         </div>
-                        <div>
-                          <div className="flex gap-1 h-9 w-full">
-                            <div className="flex-1 relative min-w-0">
-                              {selectedColor && (
-                                <div className="absolute left-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border border-gray-300 shadow-sm z-10 bg-cover bg-center"
-                                  style={selectedColor.swatchUrl
-                                    ? { backgroundImage: "url(" + selectedColor.swatchUrl + ")" }
-                                    : (selectedColor.name.toLowerCase() === "transparente"
-                                      ? { backgroundImage: "url('https://www.transparenttextures.com/patterns/carbon-fibre.png')", backgroundColor: "#f3f4f6" }
-                                      : { backgroundColor: selectedColor.hex || "#ffffff" })}
-                                  title={selectedColor.name}
-                                />
-                              )}
-                              <select value={v.colorId ?? ""} onChange={(e) => updateVariant(i, "colorId", e.target.value || null)}
-                                className="input text-[11px] h-9 flex-1 w-full"
-                                style={{ paddingLeft: selectedColor ? "30px" : "8px" }} title="Color">
-                                <option value="">Sin color</option>
-                                {colors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                              </select>
-                            </div>
-                            <button type="button" onClick={() => { setCustomColorForVariant(i); setIsCustomColorModalOpen(true); }}
-                              className="btn-secondary h-9 px-2 flex items-center justify-center flex-shrink-0 border-dashed"
-                              title="Crear color personalizado (estampado, mezcla, cebra, flores, etc.)">
-                              <Palette size={13} />
-                            </button>
+                        <div className="grid grid-cols-[minmax(90px,1fr)_minmax(110px,1.2fr)_minmax(70px,0.75fr)_minmax(75px,0.75fr)_minmax(75px,0.75fr)_minmax(85px,0.85fr)_minmax(65px,0.65fr)_minmax(120px,1.2fr)_minmax(180px,1.8fr)] gap-2 items-start">
+                          <div className="min-w-0">
+                            <input value={v.sku} onChange={(e) => updateVariant(i, "sku", e.target.value)} placeholder="SKU *" className="input text-[11px] h-9 px-2 w-full" title="SKU" />
                           </div>
-                        </div>
-                        <div>
-                          <select value={v.sizeId ?? ""} onChange={(e) => updateVariant(i, "sizeId", e.target.value || null)}
-                            className="input text-[11px] h-9 px-2 w-full" title="Talla">
-                            <option value="">Sin talla</option>
-                            {filteredSizes.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                          </select>
-                        </div>
-                        <div>
-                          <input
-                            type="number"
-                            value={v.price || ""}
-                            onChange={(e) => updateVariant(i, "price", e.target.value ? Number(e.target.value) : 0)}
-                            onWheel={(e) => e.currentTarget.blur()}
-                            onKeyDown={(e) => { if (e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault(); }}
-                            className="input text-[11px] h-9 px-2 w-full"
-                            min={0}
-                            step={0.01}
-                            placeholder="Precio"
-                            title="Precio"
-                          />
-                        </div>
-                        <div>
-                          <input
-                            type="number"
-                            value={v.oldPrice ?? ""}
-                            onChange={(e) => updateVariant(i, "oldPrice", e.target.value || null)}
-                            onWheel={(e) => e.currentTarget.blur()}
-                            onKeyDown={(e) => { if (e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault(); }}
-                            className="input text-[11px] h-9 px-2 text-red-600 placeholder:text-red-300 w-full"
-                            min={0}
-                            step={0.01}
-                            placeholder="Oferta"
-                            title="Oferta"
-                          />
-                        </div>
-                        <div>
-                          <input value={v.diseno ?? ""} onChange={(e) => updateVariant(i, "diseno", e.target.value || null)}
-                            placeholder="Diseño" className="input text-[11px] h-9 px-2 w-full" title="Diseño" />
-                        </div>
-                        <div>
-                          <input type="text" inputMode="numeric" pattern="[0-9]*"
-                            value={stockDraft[i] ?? "0"}
-                            onChange={(e) => {
-                              const raw = e.target.value.replace(/[^0-9-]/g, "");
-                              setStockDraft(prev => ({ ...prev, [i]: raw }));
-                            }}
-                            onBlur={() => {
-                              const raw = stockDraft[i] ?? "";
-                              let parsed = parseInt(raw.replace(/^0+(\d)/, "$1"), 10);
-                              if (raw.length === 0 || raw === "-" || Number.isNaN(parsed)) parsed = 0;
-                              if (parsed < 0) parsed = 0;
-                              const normalized = String(parsed);
-                              setStockDraft(prev => ({ ...prev, [i]: normalized }));
-                              updateVariant(i, "stock", parsed);
-                            }}
-                            className="input text-[11px] h-9 px-2 tracking-wide font-semibold w-full"
-                            placeholder="Stock" title="Stock" min={0} />
-                        </div>
-                        <div className="flex items-center justify-center h-9 gap-2">
-                          <input type="checkbox" checked={v.isOutlet} onChange={(e) => updateVariant(i, "isOutlet", e.target.checked)}
-                            className="accent-[#11ABC4] w-4 h-4" />
-                        </div>
-                        <div>
-                          <div className="flex flex-col gap-1.5 min-h-[36px]">
-                            <div className="flex items-center gap-1 flex-wrap">
-                              {sections.filter(s => v.sectionIds.includes(s.id)).map(s => (
-                                <button key={s.id} type="button" onClick={() => toggleVariantSection(i, s.id)}
-                                  className="px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-primary text-white shadow-sm leading-tight"
-                                  title={"Quitar " + s.name}>
-                                  × {s.name}
-                                </button>
-                              ))}
-                              {v.sectionIds.length === 0 && (
-                                <span className="text-[10px] text-red-400 font-semibold">⚠ sin sección</span>
-                              )}
+                          <div className="min-w-0">
+                            <div className="flex gap-1 h-9 w-full">
+                              <div className="flex-1 relative min-w-0">
+                                {selectedColor && (
+                                  <div className="absolute left-2 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border border-gray-300 shadow-sm z-10 bg-cover bg-center"
+                                    style={selectedColor.swatchUrl
+                                      ? { backgroundImage: "url(" + selectedColor.swatchUrl + ")" }
+                                      : (selectedColor.name.toLowerCase() === "transparente"
+                                        ? { backgroundImage: "url('https://www.transparenttextures.com/patterns/carbon-fibre.png')", backgroundColor: "#f3f4f6" }
+                                        : { backgroundColor: selectedColor.hex || "#ffffff" })}
+                                    title={selectedColor.name}
+                                  />
+                                )}
+                                <select value={v.colorId ?? ""} onChange={(e) => updateVariant(i, "colorId", e.target.value || null)}
+                                  className="input text-[11px] h-9 flex-1 w-full"
+                                  style={{ paddingLeft: selectedColor ? "30px" : "8px" }} title="Color">
+                                  <option value="">Sin color</option>
+                                  {colors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                </select>
+                              </div>
+                              <button type="button" onClick={() => { setCustomColorForVariant(i); setIsCustomColorModalOpen(true); }}
+                                className="btn-secondary h-9 px-2 flex items-center justify-center flex-shrink-0 border-dashed"
+                                title="Crear color personalizado (estampado, mezcla, cebra, flores, etc.)">
+                                <Palette size={13} />
+                              </button>
                             </div>
-                            <details className="group/details relative inline-block w-fit">
-                              <summary className="list-none cursor-pointer px-2 py-1 rounded-md text-[10px] font-semibold border border-dashed border-gray-300 text-gray-500 hover:border-primary hover:text-primary leading-tight whitespace-nowrap w-fit">
-                                + sección
-                              </summary>
-                              <div className="absolute z-[60] -top-1 left-0 translate-y-[-100%] mb-1 p-1.5 bg-white border border-gray-100 rounded-xl shadow-2xl grid grid-cols-2 gap-1 min-w-[180px] ring-1 ring-black/5">
-                                {sections.map(s => {
-                                  const active = v.sectionIds.includes(s.id);
+                          </div>
+                          <div className="min-w-0">
+                            <select value={v.sizeId ?? ""} onChange={(e) => updateVariant(i, "sizeId", e.target.value || null)}
+                              className="input text-[11px] h-9 px-2 w-full" title="Talla">
+                              <option value="">Sin talla</option>
+                              {filteredSizes.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                            </select>
+                          </div>
+                          <div className="min-w-0">
+                            <input
+                              type="number"
+                              value={v.price || ""}
+                              onChange={(e) => updateVariant(i, "price", e.target.value ? Number(e.target.value) : 0)}
+                              onWheel={(e) => e.currentTarget.blur()}
+                              onKeyDown={(e) => { if (e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault(); }}
+                              className="input text-[11px] h-9 px-2 w-full"
+                              min={0}
+                              step={0.01}
+                              placeholder="Precio"
+                              title="Precio"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <input
+                              type="number"
+                              value={v.oldPrice ?? ""}
+                              onChange={(e) => updateVariant(i, "oldPrice", e.target.value || null)}
+                              onWheel={(e) => e.currentTarget.blur()}
+                              onKeyDown={(e) => { if (e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault(); }}
+                              className="input text-[11px] h-9 px-2 text-red-600 placeholder:text-red-300 w-full"
+                              min={0}
+                              step={0.01}
+                              placeholder="Oferta"
+                              title="Oferta"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <input value={v.estampado ?? ""} onChange={(e) => updateVariant(i, "estampado", e.target.value || null)}
+                              placeholder="Estampado" className="input text-[11px] h-9 px-2 w-full" title="Estampado" />
+                          </div>
+                          <div className="min-w-0">
+                            <input type="text" inputMode="numeric" pattern="[0-9]*"
+                              value={stockDraft[i] ?? "0"}
+                              onChange={(e) => {
+                                const raw = e.target.value.replace(/[^0-9-]/g, "");
+                                setStockDraft(prev => ({ ...prev, [i]: raw }));
+                              }}
+                              onBlur={() => {
+                                const raw = stockDraft[i] ?? "";
+                                let parsed = parseInt(raw.replace(/^0+(\d)/, "$1"), 10);
+                                if (raw.length === 0 || raw === "-" || Number.isNaN(parsed)) parsed = 0;
+                                if (parsed < 0) parsed = 0;
+                                const normalized = String(parsed);
+                                setStockDraft(prev => ({ ...prev, [i]: normalized }));
+                                updateVariant(i, "stock", parsed);
+                              }}
+                              className="input text-[11px] h-9 px-2 tracking-wide font-semibold w-full"
+                              placeholder="Stock" title="Stock" min={0} />
+                          </div>
+                          {/* Columna 8: Secciones */}
+                          <div className="min-w-0">
+                            <div className="flex flex-col gap-1.5 min-h-[36px]">
+                              <div className="flex items-center gap-1 flex-wrap">
+                                {sections.filter(s => v.sectionIds.includes(s.id)).map(s => (
+                                  <button key={s.id} type="button" onClick={() => toggleVariantSection(i, s.id)}
+                                    className="px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-primary text-white shadow-sm leading-tight"
+                                    title={"Quitar " + s.name}>
+                                    × {s.name}
+                                  </button>
+                                ))}
+                                {v.sectionIds.length === 0 && (
+                                  <span className="text-[10px] text-red-400 font-semibold">⚠ sin sección</span>
+                                )}
+                              </div>
+                              <details className="group/details relative inline-block w-fit">
+                                <summary className="list-none cursor-pointer px-2 py-1 rounded-md text-[10px] font-semibold border border-dashed border-gray-300 text-gray-500 hover:border-primary hover:text-primary leading-tight whitespace-nowrap w-fit">
+                                  + sección
+                                </summary>
+                                <div className="absolute z-[60] -top-1 left-0 translate-y-[-100%] mb-1 p-1.5 bg-white border border-gray-100 rounded-xl shadow-2xl grid grid-cols-2 gap-1 min-w-[180px] ring-1 ring-black/5">
+                                  {sections.map(s => {
+                                    const active = v.sectionIds.includes(s.id);
+                                    return (
+                                      <button key={s.id} type="button"
+                                        onClick={(e) => { (e.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open"); toggleVariantSection(i, s.id); }}
+                                        className={cn(
+                                          "px-2 py-1 rounded-lg text-[10px] font-semibold border text-left truncate transition-colors",
+                                          active
+                                            ? "bg-primary text-white border-primary"
+                                            : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
+                                        )}>
+                                        {s.name}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </details>
+                            </div>
+                          </div>
+                          {/* Columna 9: Imágenes */}
+                          <div className="min-w-0 w-full">
+                            <div className="flex flex-col gap-1.5 w-full min-w-0">
+                              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 w-full min-w-0 [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-gray-200/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-400/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500">
+                                {variantImages.length === 0 && (
+                                  <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border border-dashed border-gray-200 bg-white/60 flex items-center justify-center text-gray-300">
+                                    <ImageIcon size={22} />
+                                  </div>
+                                )}
+                                {variantImages.map((img, idx) => {
+                                  const ik = img.id || img._key || String(idx);
+                                  const k = img.id || img._key;
                                   return (
-                                    <button key={s.id} type="button"
-                                      onClick={(e) => { (e.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open"); toggleVariantSection(i, s.id); }}
-                                      className={cn(
-                                        "px-2 py-1 rounded-lg text-[10px] font-semibold border text-left truncate transition-colors",
-                                        active
-                                          ? "bg-primary text-white border-primary"
-                                          : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
-                                      )}>
-                                      {s.name}
-                                    </button>
+                                    <div key={ik} className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 bg-white group/vimg shadow-2xs">
+                                      <Image
+                                        src={img.url}
+                                        alt={v.sku || `img-${idx}`}
+                                        fill
+                                        className="object-cover cursor-pointer hover:scale-105 transition-transform"
+                                        onClick={() => setPreviewImageUrl(img.url)}
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (k) openRemoveImageFromVariant(i, k);
+                                        }}
+                                        className="absolute top-1 right-1 p-1 bg-red-500/90 hover:bg-red-600 text-white rounded opacity-0 group-hover/vimg:opacity-100 transition-opacity shadow z-10"
+                                        title="Quitar imagen"
+                                      >
+                                        <X size={11} />
+                                      </button>
+                                    </div>
                                   );
                                 })}
                               </div>
-                            </details>
-                          </div>
-                        </div>
-                        <div>
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
-                              {variantImages.length === 0 && (
-                                <div className="relative w-11 h-11 flex-shrink-0 rounded-lg overflow-hidden border border-dashed border-gray-200 bg-white/60 flex items-center justify-center text-gray-300">
-                                  <ImageIcon size={16} />
-                                </div>
-                              )}
-                              {variantImages.map((img, idx) => {
-                                const ik = img.id || img._key || String(idx);
-                                const k = img.id || img._key;
-                                return (
-                                  <div key={ik} className="relative w-11 h-11 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 bg-white group/vimg">
-                                    <Image src={img.url} alt={v.sku || `img-${idx}`} fill className="object-cover" />
-                                    <button type="button" onClick={() => k && openRemoveImageFromVariant(i, k)}
-                                      className="absolute inset-0 bg-red-500/0 text-white/0 group-hover/vimg:bg-red-500/80 group-hover/vimg:text-white transition-colors flex items-center justify-center"
-                                      title="Quitar imagen">
-                                      <X size={12} />
-                                    </button>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                            <div className="grid grid-cols-2 gap-1">
-                              <button type="button" onClick={() => openUploadForVariant(i)} disabled={uploading}
-                                className="text-[11px] px-2 py-1.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-1 font-medium">
-                                {uploading ? <Loader2 size={11} className="animate-spin" /> : <Upload size={11} />} Subir
-                              </button>
-                              <button type="button" onClick={() => setGalleryOpenForVariant(i)}
-                                className="text-[11px] px-2 py-1.5 rounded-lg bg-light/30 border border-light hover:bg-light/60 text-primary transition-colors flex items-center justify-center gap-1 font-medium truncate"
-                                title="Usar imagen existente (puedes seleccionar varias)">
-                                <GalleryHorizontalEnd size={11} className="flex-shrink-0" />
-                                <span className="truncate">{variantImages.length > 0 ? "Galería (" + variantImages.length + ")" : "Galería"}</span>
-                              </button>
+                              <div className="grid grid-cols-2 gap-1.5 w-full min-w-0">
+                                <button type="button" onClick={() => openUploadForVariant(i)} disabled={uploading}
+                                  className="text-[11px] px-2 py-1.5 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-1 font-medium whitespace-nowrap min-w-0">
+                                  {uploading ? <Loader2 size={11} className="animate-spin" /> : <Upload size={11} />} Subir
+                                </button>
+                                <button type="button" onClick={() => setGalleryOpenForVariant(i)}
+                                  className="text-[11px] px-2 py-1.5 rounded-lg bg-light/30 border border-light hover:bg-light/60 text-primary transition-colors flex items-center justify-center gap-1 font-medium whitespace-nowrap min-w-0"
+                                  title="Usar imagen existente (puedes seleccionar varias)">
+                                  <GalleryHorizontalEnd size={11} className="flex-shrink-0" />
+                                  <span>Galería</span>
+                                  {variantImages.length > 0 && (
+                                    <span className="text-[10px] font-bold bg-primary text-white rounded-full px-1.5 py-0.2 leading-tight flex-shrink-0">
+                                      {variantImages.length}
+                                    </span>
+                                  )}
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1373,51 +1409,58 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
               />
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2.5">
               {images.map((img, i) => {
                 const key = img.id || img._key || String(i);
-                const colorName = img.colorId ? colors.find(c => c.id === img.colorId)?.name : null;
                 const usingVars = variantLabelsForImage(key);
                 return (
-                  <div key={key} className="relative group border border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex flex-col">
+                  <div
+                    key={key}
+                    onClick={() => setPreviewImageUrl(img.url)}
+                    className="relative group border border-gray-200 rounded-lg overflow-hidden bg-gray-50 flex flex-col hover:border-primary/50 hover:shadow-md transition-all shadow-2xs cursor-pointer"
+                    title="Clic para ver en tamaño completo"
+                  >
                     <div className="relative aspect-square w-full">
-                      <Image src={img.url} alt={`Imagen ${i + 1}`} fill className="object-cover" quality={100} />
+                      <Image
+                        src={img.url}
+                        alt={`Imagen ${i + 1}`}
+                        fill
+                        className="object-cover transition-transform duration-200 group-hover:scale-105"
+                        quality={80}
+                        sizes="120px"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center pointer-events-none">
+                        <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white rounded-full p-1.5 backdrop-blur-xs shadow-sm">
+                          <Eye size={13} />
+                        </span>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => openRemoveImageFromPool(key)}
-                        className="absolute top-1.5 right-1.5 p-1.5 bg-red-500 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openRemoveImageFromPool(key);
+                        }}
+                        className="absolute top-1 right-1 p-1 bg-red-500/90 hover:bg-red-600 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity shadow z-10"
                         title={usingVars.length ? "Quitar de todas las variantes y eliminar" : "Eliminar imagen"}
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size={11} />
                       </button>
-                    </div>
-                    <div className="p-2 bg-white border-t border-gray-50 space-y-1">
-                      <div className="flex flex-wrap gap-1">
-                        <select
-                          value={img.colorId ?? ""}
-                          onChange={(e) => setImages(prev => prev.map((im, idx) => idx === i ? { ...im, colorId: e.target.value || null } : im))}
-                          className="w-full text-[10px] py-1 border-none bg-gray-50 rounded font-medium focus:ring-0"
-                        >
-                          <option value="">Sin color</option>
-                          {colors.map(c => (
-                            <option key={c.id} value={c.id}>Color: {c.name}</option>
-                          ))}
-                        </select>
-                        {!colorName && <span className="w-full" />}
-                      </div>
                       {usingVars.length > 0 && (
-                        <p className="text-[9px] text-gray-400 leading-tight truncate" title={usingVars.join(", ")}>
-                          Usada en {usingVars.length} variante(s)
-                        </p>
+                        <div
+                          className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/65 backdrop-blur-xs text-white rounded text-[9px] font-medium leading-none truncate max-w-[calc(100%-8px)] z-10"
+                          title={`Usada en: ${usingVars.join(", ")}`}
+                        >
+                          {usingVars.length} var.
+                        </div>
                       )}
                     </div>
                   </div>
                 );
               })}
               {images.length === 0 && (
-                <div className="col-span-full py-10 border-2 border-dashed border-gray-100 rounded-2xl flex flex-col items-center justify-center text-gray-400">
-                  <ImageIcon size={28} className="mb-2 opacity-20" />
-                  <p className="text-xs">No hay imágenes. Sube fotos desde aquí o desde cada variante.</p>
+                <div className="col-span-full py-8 border-2 border-dashed border-gray-100 rounded-xl flex flex-col items-center justify-center text-gray-400">
+                  <ImageIcon size={24} className="mb-1.5 opacity-20" />
+                  <p className="text-xs">No hay imágenes en el banco. Sube fotos desde aquí o desde cada variante.</p>
                 </div>
               )}
             </div>
@@ -1584,6 +1627,36 @@ export function ProductForm({ categories, colors: initialColors, sizes, brands: 
         productImages={images}
         defaultNamePrefix={form.code}
       />
+
+      {/* Modal de Vista Previa Completa de Imagen */}
+      {previewImageUrl && (
+        <div
+          className="fixed inset-0 z-[130] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          onClick={() => setPreviewImageUrl(null)}
+        >
+          <div
+            className="relative max-w-5xl max-h-[90vh] flex flex-col items-center animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setPreviewImageUrl(null)}
+              className="absolute -top-3.5 -right-3.5 z-20 w-9 h-9 rounded-full bg-white hover:bg-gray-100 text-gray-800 flex items-center justify-center shadow-xl transition-transform hover:scale-110 active:scale-95 border border-gray-200 cursor-pointer"
+              title="Cerrar vista previa"
+            >
+              <X size={18} />
+            </button>
+            <div className="relative max-w-full max-h-[85vh] flex items-center justify-center overflow-hidden rounded-2xl bg-black/40 p-1 shadow-2xl border border-white/10">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={previewImageUrl}
+                alt="Vista previa completa"
+                className="max-h-[82vh] max-w-full w-auto h-auto object-contain rounded-xl select-none"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

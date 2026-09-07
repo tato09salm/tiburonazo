@@ -62,7 +62,7 @@ export async function createInventoryMove(data: {
         : variant.stock - item.quantity;
 
       if (newStock < 0) {
-        throw new Error(`Stock insuficiente para: ${variant.sku || variant.diseno}`);
+        throw new Error(`Stock insuficiente para: ${variant.sku || variant.estampado}`);
       }
 
       // --- LA SOLUCIÓN AQUÍ ---
@@ -548,7 +548,7 @@ export async function searchProductVariants(query: string) {
       product: { isActive: true },
       OR: [
         { sku: { contains: query, mode: "insensitive" } },
-        { diseno: { contains: query, mode: "insensitive" } },
+        { estampado: { contains: query, mode: "insensitive" } },
         {
           product: {
             OR: [

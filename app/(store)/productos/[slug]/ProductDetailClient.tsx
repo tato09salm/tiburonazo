@@ -20,10 +20,23 @@ export function ProductDetailClient({ product, relatedProducts }: Props) {
   const [openSection, setOpenSection] = useState<"description" | "specs" | null>(null);
 
   const filteredImages = useMemo(() => {
-    return product.images
-      .filter(img => !img.colorId || img.colorId === selectedVariant?.colorId)
-      .sort((a, b) => a.order - b.order);
-  }, [product.images, selectedVariant?.colorId]);
+    if (selectedVariant) {
+      // 1. Obtener imágenes asignadas específicamente a esta variante
+      const vImages = selectedVariant.images
+        ?.map((link) => link.productImage)
+        .filter(Boolean) || [];
+
+      if (vImages.length > 0) {
+        return vImages as typeof product.images;
+      }
+
+      if (selectedVariant.productImage) {
+        return [selectedVariant.productImage] as typeof product.images;
+      }
+    }
+    // Fallback general si la variante no tiene imágenes asignadas
+    return product.images;
+  }, [selectedVariant, product.images]);
 
   const discountBadge = selectedVariant?.oldPrice && selectedVariant.oldPrice > selectedVariant.price
     ? Math.round(((selectedVariant.oldPrice - selectedVariant.price) / selectedVariant.oldPrice) * 100)
@@ -115,7 +128,12 @@ export function ProductDetailClient({ product, relatedProducts }: Props) {
                         : "Unisex"
                     } 
                   />
-                  {selectedVariant?.isOutlet && <SpecItem label="Colección" value="Outlet" />}
+                  {((selectedVariant as any)?.estampado || (selectedVariant as any)?.diseno) && (
+                    <SpecItem label="Estampado" value={(selectedVariant as any)?.estampado || (selectedVariant as any)?.diseno} />
+                  )}
+                  {selectedVariant?.sections?.some(s => s.slug?.toLowerCase().includes("outlet") || s.name?.toLowerCase().includes("outlet")) && (
+                    <SpecItem label="Colección" value="Outlet" />
+                  )}
                 </div>
               </div>
             </div>

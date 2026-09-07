@@ -13,7 +13,8 @@ interface Variant {
   oldPrice: number | null;
   stock: number;
   isActive: boolean;
-  diseno: string | null;
+  estampado?: string | null;
+  diseno?: string | null;
   color?: { name: string; hex: string | null } | null;
   size?: { label: string } | null;
   productImage?: { url: string } | null;
@@ -66,11 +67,11 @@ export function ProductVariantsModal({ product, onClose }: ModalProps) {
       const sizeMatch = (v.size?.label || "")
         .toLowerCase()
         .includes(search.toLowerCase());
-      const disenoMatch = (v.diseno || "")
+      const estampadoMatch = ((v.estampado || v.diseno) || "")
         .toLowerCase()
         .includes(search.toLowerCase());
       const matchesSearch =
-        skuMatch || colorMatch || sizeMatch || disenoMatch;
+        skuMatch || colorMatch || sizeMatch || estampadoMatch;
 
       const matchesSize = selectedSize === "all" || v.size?.label === selectedSize;
       const matchesColor = selectedColor === "all" || v.color?.name === selectedColor;

@@ -76,7 +76,14 @@ export async function getProducts(params: GetProductsParams = {}) {
   }
 
   if (outlet) {
-    variantFilters.isOutlet = true;
+    variantFilters.sections = {
+      some: {
+        OR: [
+          { slug: { equals: "outlet", mode: "insensitive" } },
+          { name: { equals: "outlet", mode: "insensitive" } },
+        ],
+      },
+    };
   }
 
   if (minPrice !== undefined || maxPrice !== undefined) {
@@ -192,6 +199,7 @@ interface VariantInput {
   sku: string;
   colorId?: string;
   sizeId?: string;
+  estampado?: string;
   diseno?: string;
   price: number;
   oldPrice?: number;
@@ -306,11 +314,10 @@ export async function createProduct(data: {
             sku: v.sku,
             colorId: v.colorId || null,
             sizeId: v.sizeId || null,
-            diseno: v.diseno || null,
+            estampado: v.estampado || v.diseno || null,
             price: v.price,
             oldPrice: v.oldPrice ?? null,
             stock: v.stock,
-            isOutlet: v.isOutlet ?? false,
             productImageId: primaryId,
             productId: created.id,
             sections: v.sectionIds?.length
@@ -509,6 +516,7 @@ export async function upsertVariant(
     sku: string;
     colorId?: string;
     sizeId?: string;
+    estampado?: string;
     diseno?: string;
     price: number;
     oldPrice?: number;
@@ -519,12 +527,13 @@ export async function upsertVariant(
     imageIds?: string[];
   }
 ) {
-  const { id, sectionIds, productImageId, imageIds: imageIdsIn, ...rest } = data;
+  const { id, sectionIds, productImageId, imageIds: imageIdsIn, isOutlet, diseno, estampado, ...rest } = data;
   const uniqueImageIds = Array.from(new Set([
     ...(imageIdsIn || []),
     ...(productImageId ? [productImageId] : []),
   ])).filter(Boolean);
   const primaryId = uniqueImageIds[0] || productImageId || null;
+  const finalEstampado = estampado !== undefined ? estampado : (diseno !== undefined ? diseno : undefined);
 
   if (id) {
     return prisma.$transaction(async (tx) => {
@@ -532,6 +541,7 @@ export async function upsertVariant(
         where: { id },
         data: {
           ...rest,
+          ...(finalEstampado !== undefined && { estampado: finalEstampado || null }),
           productImageId: primaryId,
           sections: sectionIds
             ? { set: sectionIds.map((s) => ({ id: s })) }
@@ -558,6 +568,7 @@ export async function upsertVariant(
     const created = await tx.productVariant.create({
       data: {
         ...rest,
+        estampado: finalEstampado || null,
         productImageId: primaryId,
         productId,
         sections: sectionIds?.length

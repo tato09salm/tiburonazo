@@ -25,13 +25,15 @@ export interface ProductVariant {
   sizeId: string | null;  
   color: { id: string; name: string; hex: string | null; swatchUrl?: string | null; sourceImageUrl?: string | null; cropX?: number | null; cropY?: number | null; cropRadius?: number | null } | null;
   size: { id: string; label: string; category?: string | null; sortOrder?: number } | null;
-  diseno: string | null;
+  estampado: string | null;
+  diseno?: string | null;
   price: number;
   oldPrice: number | null;
   stock: number;
   isActive: boolean;
-  isOutlet: boolean;
   sections: Section[];
+  productImage?: { id: string; url: string } | null;
+  images?: { productImage: { id: string; url: string } }[];
 }
 
 export interface ProductCard {
@@ -68,7 +70,8 @@ export interface CartItem {
   image: string;
   color: string | null;
   size: string | null;
-  diseno: string | null;
+  estampado?: string | null;
+  diseno?: string | null;
   price: number;
   quantity: number;
   stock: number;
