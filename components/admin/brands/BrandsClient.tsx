@@ -166,7 +166,7 @@ export function BrandsClient({ initialBrands }: Props) {
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => handleOpenModal(brand)}
-                          className="inline-flex items-center gap-1.5 text-xs text-[#11ABC4] hover:bg-[#CCECFB] px-3 py-1.5 rounded-lg transition-colors font-semibold"
+                          className="inline-flex items-center gap-1.5 text-xs text-primary hover:bg-light px-3 py-1.5 rounded-lg transition-colors font-semibold"
                         >
                           <Pencil size={14} /> Editar
                         </button>

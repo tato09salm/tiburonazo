@@ -65,18 +65,18 @@ export function DetailModal({ title, items, onClose }: DetailModalProps) {
             items.map((item) => (
               <div 
                 key={item.id} 
-                className="group flex items-center justify-between p-4 rounded-3xl border border-white bg-white shadow-sm hover:shadow-md hover:border-[#11ABC4]/30 transition-all duration-300"
+                className="group flex items-center justify-between p-4 rounded-3xl border border-white bg-white shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300"
               >
                 {/* Info Izquierda */}
                 <div className="flex items-center gap-4">
                   <div className={cn(
                     "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors shadow-inner",
-                    item.stock === 0 ? "bg-red-50 text-red-400" : "bg-cyan-50 text-[#11ABC4]"
+                    item.stock === 0 ? "bg-red-50 text-red-400" : "bg-cyan-50 text-primary"
                   )}>
                     <Package size={20} />
                   </div>
                   <div className="space-y-0.5">
-                    <p className="font-black text-gray-800 text-[13px] group-hover:text-[#11ABC4] transition-colors leading-tight">
+                    <p className="font-black text-gray-800 text-[13px] group-hover:text-primary transition-colors leading-tight">
                       {item.product.title}
                     </p>
                     <div className="flex items-center gap-2">
@@ -118,7 +118,7 @@ export function DetailModal({ title, items, onClose }: DetailModalProps) {
         <div className="p-5 bg-white border-t border-gray-50 flex justify-center">
           <button 
             onClick={onClose}
-            className="px-10 py-3 rounded-2xl bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#11ABC4] transition-all active:scale-95 shadow-lg shadow-gray-200"
+            className="px-10 py-3 rounded-2xl bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all active:scale-95 shadow-lg shadow-gray-200"
           >
             Cerrar
           </button>

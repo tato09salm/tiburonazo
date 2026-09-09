@@ -50,7 +50,7 @@ export function SalesTable({ sales, totalCount }: { sales: any[], totalCount: nu
                   </td>
                   <td className="px-6 py-4 text-gray-500">{s.vendedor ? `${s.vendedor.firstName ?? ""} ${s.vendedor.lastName ?? ""}`.trim() || "—" : "—"}</td>
                   <td className="px-6 py-4">
-                    <span className="badge bg-[#CCECFB] text-[#11ABC4] font-bold text-[10px] uppercase">{s.paymentMethod}</span>
+                    <span className="badge bg-light text-primary font-bold text-[10px] uppercase">{s.paymentMethod}</span>
                   </td>
                   <td className="px-6 py-4">
                     <span className={cn(
@@ -60,12 +60,12 @@ export function SalesTable({ sales, totalCount }: { sales: any[], totalCount: nu
                       {s.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right font-bold text-[#11ABC4] text-base">{formatPrice(s.total)}</td>
+                  <td className="px-6 py-4 text-right font-bold text-primary text-base">{formatPrice(s.total)}</td>
                   <td className="px-6 py-4">
                     <div className="flex justify-center gap-2">
                       <button 
                         onClick={() => setSelectedSale(s)}
-                        className="p-2 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-[#11ABC4] hover:bg-[#CCECFB] hover:border-[#11ABC4] transition-all shadow-sm group/btn"
+                        className="p-2 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-primary hover:bg-light hover:border-[#11ABC4] transition-all shadow-sm group/btn"
                         title="Ver detalle"
                       >
                         <Eye size={16} />

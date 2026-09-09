@@ -105,6 +105,7 @@ model Product {
   categoryId  String
   brandId     String?
   linea       String?
+  modelo      String?
   images      ProductImage[]
   variants    ProductVariant[]
   brand       Brand?           @relation(fields: [brandId], references: [id])
@@ -116,12 +117,11 @@ model Product {
 model ProductVariant {
   id             String          @id @default(cuid())
   sku            String          @unique
-  model          String?
+  estampado      String?
   price          Float
   oldPrice       Float?
   stock          Int             @default(0)
   isActive       Boolean         @default(true)
-  isOutlet       Boolean         @default(false)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   productId      String
@@ -238,8 +238,9 @@ model Order {
   ubigeo         String // Guardamos el código de 6 dígitos
   country        String         @default("Perú")
   document       String // DNI o RUC
-  culqiChargeId  String?
-  createdAt      DateTime       @default(now())
+  culqiChargeId       String?
+  mercadopagoPaymentId String?
+  createdAt           DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   userId         String
   items          OrderItem[]
@@ -348,6 +349,7 @@ enum OrderStatus {
 
 enum PaymentMethod {
   CULQI
+  MERCADO_PAGO
   YAPE
   PLIN
   EFECTIVO

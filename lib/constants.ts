@@ -40,7 +40,8 @@ export const PAYMENT_METHODS = [
   { value: "EFECTIVO", label: "Efectivo" },
   { value: "YAPE", label: "Yape" },
   { value: "PLIN", label: "Plin" },
-  { value: "CULQI", label: "Tarjeta" },
+  { value: "MERCADO_PAGO", label: "Tarjeta (Mercado Pago)" },
+  { value: "CULQI", label: "Tarjeta (Culqi)" },
 ] as const;
 
 export const PRODUCTS_PER_PAGE = 12;

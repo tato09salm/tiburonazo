@@ -66,7 +66,7 @@ export function AdminSidebar({ role, userName }: Props) {
         )}
       >
         {(!collapsed || mobile) && (
-          <Link href="/" className="font-brand text-xl text-[#11ABC4] truncate">
+          <Link href="/" className="font-display text-xl text-primary truncate">
             TIBURONAZO
           </Link>
         )}
@@ -117,7 +117,7 @@ export function AdminSidebar({ role, userName }: Props) {
                   ? "justify-center px-0 py-2.5 mx-1"
                   : "px-3 py-2.5",
                 active
-                  ? "bg-[#11ABC4] text-white"
+                  ? "bg-primary text-white"
                   : "hover:bg-white/10 text-gray-400 hover:text-white"
               )}
             >
@@ -134,7 +134,7 @@ export function AdminSidebar({ role, userName }: Props) {
               {collapsed && !mobile && (
                 <span className="
                   fixed left-[68px] ml-2 px-2 py-1 rounded-md
-                  bg-[#11ABC4] text-white text-xs whitespace-nowrap
+                  bg-primary text-white text-xs whitespace-nowrap
                   opacity-0 pointer-events-none
                   group-hover:opacity-100 transition-opacity z-[999]
                 ">
@@ -207,11 +207,11 @@ export function AdminSidebar({ role, userName }: Props) {
           className="absolute left-4 p-2"
           aria-label="Abrir menú"
         >
-          <Menu size={20} className="text-[#11ABC4]" />
+          <Menu size={20} className="text-primary" />
         </button>
 
         {/* Nombre centrado */}
-        <span className="text-[#11ABC4] font-brand text-lg">
+        <span className="text-primary font-display text-lg">
           TIBURONAZO
         </span>
       </div>

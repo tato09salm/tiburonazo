@@ -165,7 +165,7 @@ function EditingTextarea({
         if (e.key === "Escape") { onFinishEditing?.(); }
       }}
       autoFocus
-      className="absolute z-[100] resize-none overflow-hidden bg-transparent border-2 border-[#11ABC4] rounded outline-none"
+      className="absolute z-[100] resize-none overflow-hidden bg-transparent border-2 border-primary rounded outline-none"
       style={{
         left: pct(el.x, BASE_W), top: pct(el.y, BASE_H),
         width: pct(el.width, BASE_W), height: pct(el.height, BASE_H),

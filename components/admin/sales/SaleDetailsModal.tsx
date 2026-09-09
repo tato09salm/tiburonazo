@@ -501,7 +501,7 @@ export function SaleDetailsModal({ sale, onClose }: Props) {
         <div className="px-8 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50">
           <button
             onClick={() => exportToPdf(sale)}
-            className="flex items-center gap-2 text-[13px] font-medium text-[#11ABC4] hover:text-[#0e8da2] px-5 py-2.5 rounded-xl border border-[#CCECFB] bg-[#CCECFB]/30 hover:bg-[#CCECFB]/50 transition-all shadow-sm"
+            className="flex items-center gap-2 text-[13px] font-medium text-primary hover:text-[#0e8da2] px-5 py-2.5 rounded-xl border border-[#CCECFB] bg-light/30 hover:bg-light/50 transition-all shadow-sm"
           >
             <FileDown size={16} /> Descargar comprobante
           </button>

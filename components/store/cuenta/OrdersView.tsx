@@ -48,7 +48,7 @@ export function OrdersView({ orders }: Props) {
                                 <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide ${status.color}`}>
                                     {status.label}
                                 </span>
-                                <span className="font-bold text-[#11ABC4] text-base">{formatPrice(order.total)}</span>
+                                <span className="font-bold text-primary text-base">{formatPrice(order.total)}</span>
                             </div>
                         </div>
 
@@ -57,7 +57,7 @@ export function OrdersView({ orders }: Props) {
                                 <Link
                                     key={item.id}
                                     href={`/productos/${item.variant.product.images[0] ? item.variant.product.images[0].url : "#"}`}
-                                    className="flex items-center gap-2 bg-gray-50/80 rounded-xl p-2 hover:bg-[#CCECFB]/40 border border-gray-100 transition-colors"
+                                    className="flex items-center gap-2 bg-gray-50/80 rounded-xl p-2 hover:bg-light/40 border border-gray-100 transition-colors"
                                 >
                                     {item.variant.product.images[0] && (
                                         <div className="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-white shadow-sm">

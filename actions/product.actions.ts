@@ -76,7 +76,14 @@ export async function getProducts(params: GetProductsParams = {}) {
   }
 
   if (outlet) {
-    variantFilters.isOutlet = true;
+    variantFilters.sections = {
+      some: {
+        OR: [
+          { slug: { equals: "outlet", mode: "insensitive" } },
+          { name: { equals: "outlet", mode: "insensitive" } },
+        ],
+      },
+    };
   }
 
   if (minPrice !== undefined || maxPrice !== undefined) {
@@ -192,7 +199,8 @@ interface VariantInput {
   sku: string;
   colorId?: string;
   sizeId?: string;
-  model?: string;
+  estampado?: string;
+  diseno?: string;
   price: number;
   oldPrice?: number;
   stock: number;
@@ -264,6 +272,7 @@ export async function createProduct(data: {
   description?: string;
   material?: string;
   linea?: string;
+  modelo?: string;
   weight?: number;
   categoryId: string;
   brandId?: string | null;
@@ -283,6 +292,7 @@ export async function createProduct(data: {
           description: data.description,
           material: data.material,
           linea: data.linea || null,
+          modelo: data.modelo || null,
           weight: data.weight,
           category: { connect: { id: data.categoryId } },
           brand: data.brandId ? { connect: { id: data.brandId } } : undefined,
@@ -304,11 +314,10 @@ export async function createProduct(data: {
             sku: v.sku,
             colorId: v.colorId || null,
             sizeId: v.sizeId || null,
-            model: v.model || null,
+            estampado: v.estampado || v.diseno || null,
             price: v.price,
             oldPrice: v.oldPrice ?? null,
             stock: v.stock,
-            isOutlet: v.isOutlet ?? false,
             productImageId: primaryId,
             productId: created.id,
             sections: v.sectionIds?.length
@@ -352,8 +361,9 @@ export async function updateProduct(
   data: Partial<{
     title: string;
     description: string;
-    material: string;
-    linea: string;
+    material: string | null;
+    linea: string | null;
+    modelo: string | null;
     isActive: boolean;
     isFeatured: boolean;
     categoryId: string;
@@ -368,6 +378,7 @@ export async function updateProduct(
       const updateData: any = {
         ...rest,
         linea: rest.linea || null,
+        modelo: rest.modelo || null,
       };
 
       if (categoryId) {
@@ -505,7 +516,8 @@ export async function upsertVariant(
     sku: string;
     colorId?: string;
     sizeId?: string;
-    model?: string;
+    estampado?: string;
+    diseno?: string;
     price: number;
     oldPrice?: number;
     stock: number;
@@ -515,12 +527,13 @@ export async function upsertVariant(
     imageIds?: string[];
   }
 ) {
-  const { id, sectionIds, productImageId, imageIds: imageIdsIn, ...rest } = data;
+  const { id, sectionIds, productImageId, imageIds: imageIdsIn, isOutlet, diseno, estampado, ...rest } = data;
   const uniqueImageIds = Array.from(new Set([
     ...(imageIdsIn || []),
     ...(productImageId ? [productImageId] : []),
   ])).filter(Boolean);
   const primaryId = uniqueImageIds[0] || productImageId || null;
+  const finalEstampado = estampado !== undefined ? estampado : (diseno !== undefined ? diseno : undefined);
 
   if (id) {
     return prisma.$transaction(async (tx) => {
@@ -528,6 +541,7 @@ export async function upsertVariant(
         where: { id },
         data: {
           ...rest,
+          ...(finalEstampado !== undefined && { estampado: finalEstampado || null }),
           productImageId: primaryId,
           sections: sectionIds
             ? { set: sectionIds.map((s) => ({ id: s })) }
@@ -554,6 +568,7 @@ export async function upsertVariant(
     const created = await tx.productVariant.create({
       data: {
         ...rest,
+        estampado: finalEstampado || null,
         productImageId: primaryId,
         productId,
         sections: sectionIds?.length
@@ -616,9 +631,9 @@ export async function getAdminProducts(page = 1, search = "", categoryId = "", s
         category: { select: { name: true } },
         brand: { select: { name: true } },
         variants: {
-          select: {
-            stock: true,
-            price: true,
+          include: {
+            color: { select: { id: true, name: true } },
+            size: { select: { id: true, label: true } },
             productImage: { select: { id: true, url: true } },
             images: {
               orderBy: { order: "asc" },

@@ -33,7 +33,7 @@ export function UserFilters() {
         <input
           type="text"
           placeholder="Buscar usuario o email..."
-          className="input pl-10 h-10 text-sm w-full border-gray-200 focus:border-[#11ABC4]"
+          className="input pl-10 h-10 text-sm w-full border-gray-200 focus:border-primary"
           onChange={(e) => {
             const val = e.target.value.toLowerCase();
             e.target.value = val;

@@ -17,10 +17,25 @@ export function ProductCardComponent({ product }: Props) {
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
 
-  const mainImage = product.images[0]?.url ?? "/placeholder4.png";
-  const hoverImage = product.images[1]?.url;
-  const defaultVariant = product.variants[0];
-  const hasDiscount = defaultVariant?.oldPrice && defaultVariant.oldPrice > defaultVariant.price;
+  const defaultVariant = product.variants.find(v => v.stock > 0) || product.variants[0];
+  const [activeVariant, setActiveVariant] = useState(defaultVariant);
+
+  const currentVariant = activeVariant || defaultVariant;
+
+  // Helper para obtener las URLs de las imágenes de una variante
+  function getVariantImageUrls(variant?: ProductVariant): string[] {
+    if (!variant) return [];
+    const fromImages = (variant as any).images?.map((link: any) => link.productImage?.url).filter(Boolean) || [];
+    if (fromImages.length > 0) return fromImages;
+    if ((variant as any).productImage?.url) return [(variant as any).productImage.url];
+    return [];
+  }
+
+  const variantImages = getVariantImageUrls(currentVariant);
+  const mainImage = variantImages[0] ?? product.images[0]?.url ?? "/placeholder4.png";
+  const hoverImage = variantImages[1] ?? (variantImages.length === 0 ? product.images[1]?.url : undefined);
+
+  const hasDiscount = currentVariant?.oldPrice && currentVariant.oldPrice > currentVariant.price;
   const inStock = product.variants.some((v) => v.stock > 0);
 
   const colorSwatches = Array.from(
@@ -28,29 +43,30 @@ export function ProductCardComponent({ product }: Props) {
       product.variants
         .map(v => v.color)
         .filter((c): c is NonNullable<typeof product.variants[number]["color"]> => c !== null)
-        .map(c => [c.id, { hex: c.hex, swatchUrl: c.swatchUrl }])
+        .map(c => [c.id, { id: c.id, name: c.name, hex: c.hex, swatchUrl: c.swatchUrl }])
     ).values()
   );
-  const firstColorName = defaultVariant?.color?.name || "Único";
-  const firstSizeLabel = defaultVariant?.size?.label || "Único";
+  const currentColorName = currentVariant?.color?.name || "Único";
+  const currentSizeLabel = currentVariant?.size?.label || "Único";
 
   function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation(); // Evita que el clic active el enlace de la tarjeta
-    if (!defaultVariant || !inStock) return;
+    if (!currentVariant || !inStock) return;
     
     addItem({
-      variantId: defaultVariant.id,
+      variantId: currentVariant.id,
       productId: product.id,
       title: product.title,
       slug: product.slug,
       image: mainImage,
-      color: firstColorName as string,
-      size: firstSizeLabel as string,
-      model: defaultVariant.model,
-      price: defaultVariant.price,
+      color: currentColorName as string,
+      size: currentSizeLabel as string,
+      estampado: (currentVariant as any).estampado ?? currentVariant.diseno ?? null,
+      diseno: (currentVariant as any).estampado ?? currentVariant.diseno ?? null,
+      price: currentVariant.price,
       quantity: 1,
-      stock: defaultVariant.stock,
+      stock: currentVariant.stock,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
@@ -112,7 +128,7 @@ export function ProductCardComponent({ product }: Props) {
             disabled={!inStock}
             className={cn(
               "p-2 rounded-xl shadow-md transition-all duration-200 text-white",
-              added ? "bg-green-500" : "bg-[#11ABC4] hover:bg-[#0d8fa6]",
+              added ? "bg-green-500" : "bg-primary hover:bg-primary-dark",
               !inStock && "opacity-50 cursor-not-allowed"
             )}
             title="Agregar al carrito"
@@ -120,7 +136,7 @@ export function ProductCardComponent({ product }: Props) {
             <ShoppingCart size={16} />
           </button>
           <div
-            className="p-2 rounded-xl bg-white shadow-md text-[#11ABC4] hover:bg-[#CCECFB] transition-all duration-200"
+            className="p-2 rounded-xl bg-white shadow-md text-primary hover:bg-light transition-all duration-200"
             title="Ver producto"
           >
             <Eye size={16} />
@@ -130,7 +146,7 @@ export function ProductCardComponent({ product }: Props) {
 
       {/* Info */}
       <div className="p-3 flex flex-col flex-1 gap-1 z-10 pointer-events-none">
-        <p className="text-xs text-[#11ABC4] font-semibold uppercase tracking-wide">
+        <p className="text-xs text-primary font-semibold uppercase tracking-wide">
           {product.category.name}
         </p>
         <h3 className="font-semibold text-sm leading-tight line-clamp-2 text-gray-800">
@@ -143,31 +159,52 @@ export function ProductCardComponent({ product }: Props) {
         )}
 
         {colorSwatches.length > 0 && (
-          <div className="flex gap-1 mt-1">
-            {colorSwatches.slice(0, 4).map((c, i) => (
-              c.swatchUrl ? (
-                <div
-                  key={i}
-                  className="w-2.5 h-2.5 rounded-full border border-gray-200 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${c.swatchUrl})` }}
-                />
-              ) : (
-                <div
-                  key={i}
-                  className="w-2.5 h-2.5 rounded-full border border-gray-200"
-                  style={{ backgroundColor: (c.hex ?? "#EEE") as string }}
-                />
-              )
-            ))}
-            {colorSwatches.length > 4 && (
-              <span className="text-[10px] text-gray-400">+{colorSwatches.length - 4}</span>
+          <div className="flex gap-1.5 mt-1.5 z-20 pointer-events-auto items-center">
+            {colorSwatches.slice(0, 5).map((c, i) => {
+              const isCurrent = currentVariant?.color?.id === c.id;
+              return (
+                <button
+                  key={c.id || i}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const match = product.variants.find(v => v.color?.id === c.id);
+                    if (match) setActiveVariant(match);
+                  }}
+                  onMouseEnter={() => {
+                    const match = product.variants.find(v => v.color?.id === c.id);
+                    if (match) setActiveVariant(match);
+                  }}
+                  className={cn(
+                    "rounded-full transition-all p-0.5",
+                    isCurrent ? "ring-2 ring-primary ring-offset-1 scale-110" : "hover:scale-110 opacity-80 hover:opacity-100"
+                  )}
+                  title={c.name}
+                >
+                  {c.swatchUrl ? (
+                    <div
+                      className="w-3 h-3 rounded-full border border-gray-200 bg-cover bg-center shadow-xs"
+                      style={{ backgroundImage: `url(${c.swatchUrl})` }}
+                    />
+                  ) : (
+                    <div
+                      className="w-3 h-3 rounded-full border border-gray-200 shadow-xs"
+                      style={{ backgroundColor: (c.hex ?? "#EEE") as string }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+            {colorSwatches.length > 5 && (
+              <span className="text-[10px] text-gray-400 font-medium">+{colorSwatches.length - 5}</span>
             )}
           </div>
         )}
 
         <div className="mt-auto pt-2">
-          {defaultVariant ? (
-            <PriceDisplay price={defaultVariant.price} oldPrice={defaultVariant.oldPrice} size="sm" />
+          {currentVariant ? (
+            <PriceDisplay price={currentVariant.price} oldPrice={currentVariant.oldPrice} size="sm" />
           ) : (
             <span className="text-sm text-gray-400">Sin precio</span>
           )}

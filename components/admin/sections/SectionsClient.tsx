@@ -199,7 +199,7 @@ export function SectionsClient({ initialSections }: Props) {
               {filteredSections.map((section) => (
                 <tr key={section.id} className="hover:bg-gray-50/50 transition-colors group">
                   <td className="px-6 py-4">
-                    <span className="font-mono text-xs font-bold text-[#11ABC4] bg-[#CCECFB] px-2 py-1 rounded-md">
+                    <span className="font-mono text-xs font-bold text-primary bg-light px-2 py-1 rounded-md">
                       {section.order}
                     </span>
                   </td>
@@ -229,7 +229,7 @@ export function SectionsClient({ initialSections }: Props) {
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleOpenModal(section)}
-                        className="p-2 text-gray-400 hover:text-[#11ABC4] hover:bg-[#CCECFB] rounded-lg transition-all"
+                        className="p-2 text-gray-400 hover:text-primary hover:bg-light rounded-lg transition-all"
                         title="Editar"
                       >
                         <Pencil size={18} />
@@ -321,7 +321,7 @@ export function SectionsClient({ initialSections }: Props) {
                         checked={isActive}
                         onChange={(e) => setIsActive(e.target.checked)}
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#11ABC4]"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                       <span className="ml-3 text-sm font-medium text-gray-600">{isActive ? "Activo" : "Inactivo"}</span>
                     </label>
                   </div>

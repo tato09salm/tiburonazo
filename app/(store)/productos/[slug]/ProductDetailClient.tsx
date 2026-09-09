@@ -20,10 +20,23 @@ export function ProductDetailClient({ product, relatedProducts }: Props) {
   const [openSection, setOpenSection] = useState<"description" | "specs" | null>(null);
 
   const filteredImages = useMemo(() => {
-    return product.images
-      .filter(img => !img.colorId || img.colorId === selectedVariant?.colorId)
-      .sort((a, b) => a.order - b.order);
-  }, [product.images, selectedVariant?.colorId]);
+    if (selectedVariant) {
+      // 1. Obtener imágenes asignadas específicamente a esta variante
+      const vImages = selectedVariant.images
+        ?.map((link) => link.productImage)
+        .filter(Boolean) || [];
+
+      if (vImages.length > 0) {
+        return vImages as typeof product.images;
+      }
+
+      if (selectedVariant.productImage) {
+        return [selectedVariant.productImage] as typeof product.images;
+      }
+    }
+    // Fallback general si la variante no tiene imágenes asignadas
+    return product.images;
+  }, [selectedVariant, product.images]);
 
   const discountBadge = selectedVariant?.oldPrice && selectedVariant.oldPrice > selectedVariant.price
     ? Math.round(((selectedVariant.oldPrice - selectedVariant.price) / selectedVariant.oldPrice) * 100)
@@ -33,9 +46,9 @@ export function ProductDetailClient({ product, relatedProducts }: Props) {
     <div className="w-full pb-20">
       {/* Breadcrumbs - Siempre arriba */}
       <nav className="flex items-center gap-2 text-xs text-gray-400 py-4 uppercase font-bold tracking-widest overflow-x-auto whitespace-nowrap">
-        <Link href="/" className="hover:text-[#11ABC4] shrink-0">Inicio</Link>
+        <Link href="/" className="hover:text-primary shrink-0">Inicio</Link>
         <ChevronRight size={12} />
-        <Link href="/productos" className="hover:text-[#11ABC4] shrink-0">Productos</Link>
+        <Link href="/productos" className="hover:text-primary shrink-0">Productos</Link>
         <ChevronRight size={12} />
         <span className="text-gray-600 truncate">{product.title}</span>
       </nav>
@@ -85,11 +98,11 @@ export function ProductDetailClient({ product, relatedProducts }: Props) {
                 onClick={() => setOpenSection(openSection === "description" ? null : "description")} 
                 className="w-full py-5 flex items-center justify-between group"
               >
-                <span className="text-sm font-black uppercase tracking-widest text-gray-900 group-hover:text-[#11ABC4] transition-colors">Descripción</span>
+                <span className="text-sm font-black uppercase tracking-widest text-gray-900 group-hover:text-primary transition-colors">Descripción</span>
                 {openSection === "description" ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               </button>
               <div className={cn("overflow-hidden transition-all duration-300", openSection === "description" ? "max-h-96 pb-6" : "max-h-0")}>
-                <p className="text-sm text-gray-500 leading-relaxed italic border-l-2 border-[#CCECFB] pl-4">
+                <p className="text-sm text-gray-500 leading-relaxed italic border-l-2 border-light pl-4">
                   {product.description || "No hay descripción disponible."}
                 </p>
               </div>
@@ -100,7 +113,7 @@ export function ProductDetailClient({ product, relatedProducts }: Props) {
                 onClick={() => setOpenSection(openSection === "specs" ? null : "specs")} 
                 className="w-full py-5 flex items-center justify-between group"
               >
-                <span className="text-sm font-black uppercase tracking-widest text-gray-900 group-hover:text-[#11ABC4] transition-colors">Características</span>
+                <span className="text-sm font-black uppercase tracking-widest text-gray-900 group-hover:text-primary transition-colors">Características</span>
                 {openSection === "specs" ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               </button>
               <div className={cn("overflow-hidden transition-all duration-300", openSection === "specs" ? "max-h-96 pb-6" : "max-h-0")}>
@@ -115,7 +128,12 @@ export function ProductDetailClient({ product, relatedProducts }: Props) {
                         : "Unisex"
                     } 
                   />
-                  {selectedVariant?.isOutlet && <SpecItem label="Colección" value="Outlet" />}
+                  {((selectedVariant as any)?.estampado || (selectedVariant as any)?.diseno) && (
+                    <SpecItem label="Estampado" value={(selectedVariant as any)?.estampado || (selectedVariant as any)?.diseno} />
+                  )}
+                  {selectedVariant?.sections?.some(s => s.slug?.toLowerCase().includes("outlet") || s.name?.toLowerCase().includes("outlet")) && (
+                    <SpecItem label="Colección" value="Outlet" />
+                  )}
                 </div>
               </div>
             </div>

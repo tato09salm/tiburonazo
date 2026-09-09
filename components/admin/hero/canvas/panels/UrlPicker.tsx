@@ -44,7 +44,7 @@ export function UrlPicker({ value, onChange }: Props) {
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="px-3 py-2 rounded-xl border border-slate-200 text-xs text-gray-500 hover:border-[#11ABC4] hover:text-[#11ABC4] transition-colors shrink-0"
+          className="px-3 py-2 rounded-xl border border-slate-200 text-xs text-gray-500 hover:border-primary hover:text-primary transition-colors shrink-0"
         >
           Páginas
         </button>
@@ -75,8 +75,8 @@ export function UrlPicker({ value, onChange }: Props) {
                     setOpen(false);
                     setSearch("");
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-[#11ABC4]/5 transition-colors ${
-                    value === page.url ? "text-[#11ABC4] font-semibold bg-[#11ABC4]/5" : "text-gray-700"
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-primary/5 transition-colors ${
+                    value === page.url ? "text-primary font-semibold bg-primary/5" : "text-gray-700"
                   }`}
                 >
                   <span className="text-xs text-gray-400 mr-2 font-mono">{page.url}</span>

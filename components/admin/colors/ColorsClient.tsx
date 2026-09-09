@@ -103,9 +103,9 @@ export function ColorsClient({ initialColors }: Props) {
     setColors((prev) => [...prev, color].sort((a, b) => a.name.localeCompare(b.name)));
   };
 
-  const confirmDelete = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const confirmDelete = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     if (!colorToDelete) return;
 
     setDeleting(true);
@@ -236,7 +236,7 @@ export function ColorsClient({ initialColors }: Props) {
                         <div className="flex justify-end gap-2">
                           <button
                             onClick={() => handleOpenModal(color)}
-                            className="inline-flex items-center gap-1.5 text-xs text-[#11ABC4] hover:bg-[#CCECFB] px-3 py-1.5 rounded-lg transition-colors font-semibold"
+                            className="inline-flex items-center gap-1.5 text-xs text-primary hover:bg-light px-3 py-1.5 rounded-lg transition-colors font-semibold"
                           >
                             <Pencil size={14} /> Editar
                           </button>
@@ -337,7 +337,7 @@ export function ColorsClient({ initialColors }: Props) {
       <ConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
-        onConfirm={confirmDelete}
+        onConfirm={() => confirmDelete()}
         title="Eliminar Color"
         message={`¿Estás seguro de eliminar el color "${colorToDelete?.name}"?`}
         confirmText="Eliminar"

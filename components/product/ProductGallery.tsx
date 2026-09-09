@@ -100,7 +100,7 @@ export function ProductGallery({
         <div className="px-4 mt-2">
           <div className="h-[2px] w-full bg-gray-100 relative overflow-hidden">
             <div 
-              className="absolute top-0 left-0 h-full bg-[#11ABC4] transition-transform duration-100 ease-out"
+              className="absolute top-0 left-0 h-full bg-primary transition-transform duration-100 ease-out"
               style={{ 
                 width: `${100 / images.length}%`,
                 transform: `translateX(${(scrollProgress * (images.length - 1)) / (100 / 100)}%)` 
@@ -141,7 +141,7 @@ export function ProductGallery({
         <button
           ref={buttonRef}
           onClick={onToggleShowAll}
-          className="hidden md:flex w-full py-4 items-center justify-center gap-2 text-[10px] font-black text-gray-400 hover:text-[#11ABC4] transition-colors bg-gray-50 mt-1 uppercase tracking-[0.2em]"
+          className="hidden md:flex w-full py-4 items-center justify-center gap-2 text-[10px] font-black text-gray-400 hover:text-primary transition-colors bg-gray-50 mt-1 uppercase tracking-[0.2em]"
         >
           {showAll ? (
             <><ChevronUp size={14} /> Mostrar menos</>

@@ -43,7 +43,7 @@ export function ProductSearch({ onSelect }: { onSelect: (v: Variant) => void }) 
       <div className="relative flex items-center">
         <Search className="absolute left-3 text-gray-400" size={16} />
         <input
-          className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#11ABC4] focus:bg-white outline-none transition-all"
+          className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:bg-white outline-none transition-all"
           placeholder="Buscar por nombre o SKU..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -75,7 +75,7 @@ export function ProductSearch({ onSelect }: { onSelect: (v: Variant) => void }) 
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-xs font-black text-[#11ABC4]">{v.stock} uds.</p>
+                <p className="text-xs font-black text-primary">{v.stock} uds.</p>
               </div>
             </button>
           ))}

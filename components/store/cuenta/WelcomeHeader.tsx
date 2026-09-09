@@ -17,7 +17,7 @@ export function WelcomeHeader({ initialUserData }: Props) {
     return (
         <div className="text-center mb-8">
             <h1 className="font-heading text-3xl md:text-4xl font-extrabold text-gray-950 tracking-tight">
-                Hola, <span className="text-[#11ABC4]">{displayName}</span>
+                Hola, <span className="text-primary">{displayName}</span>
             </h1>
         </div>
     );

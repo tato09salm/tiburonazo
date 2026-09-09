@@ -81,8 +81,8 @@ export default function CartPage() {
                 className={cn(
                   "w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all",
                   selectedItems.length === items.length && items.length > 0
-                    ? "bg-[#11ABC4] border-[#11ABC4]"
-                    : "border-gray-300 group-hover:border-[#11ABC4]"
+                    ? "bg-primary border-primary"
+                    : "border-gray-300 group-hover:border-primary"
                 )}
               >
                 {selectedItems.length === items.length && items.length > 0 && <Check size={16} className="text-white" />}
@@ -117,7 +117,7 @@ export default function CartPage() {
                     transition={{ type: "spring", stiffness: 500, damping: 40, mass: 1 }}
                     className={cn(
                       "relative bg-white p-5 rounded-3xl border transition-all flex gap-5 items-center",
-                      isSelected ? "border-[#11ABC4]/30 shadow-md" : "border-gray-100 shadow-sm opacity-70"
+                      isSelected ? "border-primary/30 shadow-md" : "border-gray-100 shadow-sm opacity-70"
                     )}
                   >
                     <div
@@ -125,8 +125,8 @@ export default function CartPage() {
                       className={cn(
                         "w-6 h-6 rounded-md border-2 flex items-center justify-center cursor-pointer shrink-0 transition-all",
                         isSelected
-                          ? "bg-[#11ABC4] border-[#11ABC4]"
-                          : "border-gray-200 hover:border-[#11ABC4]"
+                          ? "bg-primary border-primary"
+                          : "border-gray-200 hover:border-primary"
                       )}
                     >
                       {isSelected && <Check size={16} className="text-white" />}
@@ -138,7 +138,7 @@ export default function CartPage() {
 
                     <div className="flex-1 flex flex-col self-stretch py-1">
                       <div className="flex justify-between items-start">
-                        <Link href={`/productos/${item.slug}`} className="font-bold text-lg hover:text-[#11ABC4] leading-tight line-clamp-1 pr-10 transition-colors">
+                        <Link href={`/productos/${item.slug}`} className="font-bold text-lg hover:text-primary leading-tight line-clamp-1 pr-10 transition-colors">
                           {item.title}
                         </Link>
                         <button
@@ -177,7 +177,7 @@ export default function CartPage() {
                         </div>
 
                         <div className="text-right">
-                          <span className="text-xl font-black text-[#11ABC4]">
+                          <span className="text-xl font-black text-primary">
                             {formatPrice(item.price * item.quantity)}
                           </span>
                         </div>
@@ -201,7 +201,7 @@ export default function CartPage() {
               {items.filter(i => selectedItems.includes(i.variantId)).map((item) => (
                 <div key={item.variantId} className="flex justify-between items-center text-sm">
                   <span className="text-gray-500 font-medium truncate max-w-[180px]">
-                    {item.title} <b className="text-[#11ABC4]">x{item.quantity}</b>
+                    {item.title} <b className="text-primary">x{item.quantity}</b>
                   </span>
                   <span className="text-gray-800 text-right min-w-[80px]">
                     {formatPrice(item.price * item.quantity)}
@@ -227,7 +227,7 @@ export default function CartPage() {
                   className={cn(
                     "w-full h-16 flex items-center justify-center gap-3 rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-xl",
                     selectedItems.length > 0
-                      ? "bg-[#11ABC4] text-white hover:bg-[#0d8fa6] active:scale-[0.98] shadow-[#11ABC4]/20"
+                      ? "bg-primary text-white hover:bg-primary-dark active:scale-[0.98] shadow-primary/20"
                       : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
                   )}
                 >

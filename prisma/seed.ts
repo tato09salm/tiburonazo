@@ -213,7 +213,6 @@ async function main() {
           code: prod.code,
           title: prod.name,
           slug,
-          gender: prod.gender,
           categoryId: catId,
           isFeatured: ["P001", "P002", "P010", "P012", "P027"].includes(prod.code),
           variants: {

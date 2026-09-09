@@ -123,37 +123,37 @@ export function SalesFilters({ vendedores, salesForReports }: Props) {
               onClick={() => setActiveTab('general')}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all",
-                activeTab === 'general' ? "bg-white text-[#11ABC4] shadow-sm border border-gray-100" : "text-gray-500 hover:bg-gray-100"
+                activeTab === 'general' ? "bg-white text-primary shadow-sm border border-gray-100" : "text-gray-500 hover:bg-gray-100"
               )}
             >
-              <Search size={14} /> Busqueda {activeCount.general > 0 && <span className="w-1.5 h-1.5 rounded-full bg-[#11ABC4]" />}
+              <Search size={14} /> Busqueda {activeCount.general > 0 && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
             </button>
             <button
               onClick={() => setActiveTab('date')}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all",
-                activeTab === 'date' ? "bg-white text-[#11ABC4] shadow-sm border border-gray-100" : "text-gray-500 hover:bg-gray-100"
+                activeTab === 'date' ? "bg-white text-primary shadow-sm border border-gray-100" : "text-gray-500 hover:bg-gray-100"
               )}
             >
-              <Calendar size={14} /> Fechas {activeCount.date > 0 && <span className="w-4 h-4 rounded-full bg-[#11ABC4] text-white text-[10px] flex items-center justify-center">{activeCount.date}</span>}
+              <Calendar size={14} /> Fechas {activeCount.date > 0 && <span className="w-4 h-4 rounded-full bg-primary text-white text-[10px] flex items-center justify-center">{activeCount.date}</span>}
             </button>
             <button
               onClick={() => setActiveTab('details')}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all",
-                activeTab === 'details' ? "bg-white text-[#11ABC4] shadow-sm border border-gray-100" : "text-gray-500 hover:bg-gray-100"
+                activeTab === 'details' ? "bg-white text-primary shadow-sm border border-gray-100" : "text-gray-500 hover:bg-gray-100"
               )}
             >
-              <Filter size={14} /> Detalles {activeCount.details > 0 && <span className="w-4 h-4 rounded-full bg-[#11ABC4] text-white text-[10px] flex items-center justify-center">{activeCount.details}</span>}
+              <Filter size={14} /> Detalles {activeCount.details > 0 && <span className="w-4 h-4 rounded-full bg-primary text-white text-[10px] flex items-center justify-center">{activeCount.details}</span>}
             </button>
             <button
               onClick={() => setActiveTab('amount')}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all",
-                activeTab === 'amount' ? "bg-white text-[#11ABC4] shadow-sm border border-gray-100" : "text-gray-500 hover:bg-gray-100"
+                activeTab === 'amount' ? "bg-white text-primary shadow-sm border border-gray-100" : "text-gray-500 hover:bg-gray-100"
               )}
             >
-              <DollarSign size={14} /> Montos {activeCount.amount > 0 && <span className="w-4 h-4 rounded-full bg-[#11ABC4] text-white text-[10px] flex items-center justify-center">{activeCount.amount}</span>}
+              <DollarSign size={14} /> Montos {activeCount.amount > 0 && <span className="w-4 h-4 rounded-full bg-primary text-white text-[10px] flex items-center justify-center">{activeCount.amount}</span>}
             </button>
           </div>
 
@@ -170,7 +170,7 @@ export function SalesFilters({ vendedores, salesForReports }: Props) {
             <button
               type="button"
               onClick={handleReport}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] text-white rounded-xl text-[10px] font-black tracking-widest hover:bg-[#11ABC4] transition-all shadow-md active:scale-95"
+              className="flex items-center gap-2 px-4 py-2 bg-[#1a1a2e] text-white rounded-xl text-[10px] font-black tracking-widest hover:bg-primary transition-all shadow-md active:scale-95"
             >
               <FileDown size={14} />
               REPORTE

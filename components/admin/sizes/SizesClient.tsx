@@ -224,7 +224,7 @@ export function SizesClient({ initialSizes, productCategories }: Props) {
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => handleOpenModal(size)}
-                          className="inline-flex items-center gap-1.5 text-xs text-[#11ABC4] hover:bg-[#CCECFB] px-3 py-1.5 rounded-lg transition-colors font-semibold"
+                          className="inline-flex items-center gap-1.5 text-xs text-primary hover:bg-light px-3 py-1.5 rounded-lg transition-colors font-semibold"
                         >
                           <Pencil size={14} /> Editar
                         </button>
@@ -276,13 +276,13 @@ export function SizesClient({ initialSizes, productCategories }: Props) {
                   {selectedCategories.map((cat) => (
                     <span 
                       key={cat} 
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-[#CCECFB] text-[#11ABC4] text-xs font-bold rounded-lg border border-[#11ABC4]/20"
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-light text-primary text-xs font-bold rounded-lg border border-[#11ABC4]/20"
                     >
                       {cat}
                       <button 
                         type="button" 
                         onClick={() => removeCategory(cat)}
-                        className="hover:bg-[#11ABC4] hover:text-white rounded-full p-0.5 transition-colors"
+                        className="hover:bg-primary hover:text-white rounded-full p-0.5 transition-colors"
                       >
                         <X size={10} />
                       </button>
