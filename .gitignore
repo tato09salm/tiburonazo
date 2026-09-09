@@ -17,6 +17,10 @@
 /.next/
 /out/
 
+# uploaded slide media
+/public/uploads/slides/**
+!/public/uploads/slides/.gitkeep
+
 # production
 /build
 
