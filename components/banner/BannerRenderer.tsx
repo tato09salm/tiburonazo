@@ -319,7 +319,28 @@ export function BannerRenderer({
       }}
     >
       {background.type === "image" && background.imageUrl && (
-        <Image src={background.imageUrl} alt="" fill className="object-cover" priority sizes="100vw" />
+        <>
+          {/* Capa de fondo: misma imagen, ampliada y desenfocada, rellena las franjas */}
+          <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+            <Image
+              src={background.imageUrl}
+              alt=""
+              fill
+              className="object-cover scale-110 blur-2xl opacity-60"
+              priority
+              sizes="100vw"
+            />
+          </div>
+          {/* Capa nítida: la imagen real, completa, sin recortes */}
+          <Image
+            src={background.imageUrl}
+            alt=""
+            fill
+            className="object-contain relative"
+            priority
+            sizes="100vw"
+          />
+        </>
       )}
 
       {visibleElements.map((el) => (

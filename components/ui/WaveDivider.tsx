@@ -4,6 +4,7 @@ interface WaveDividerProps {
   color?: string;
   flipped?: boolean;
   className?: string;
+  opacity?: number; // 0 a 1, nuevo
 }
 
 const WAVES: Record<string, string> = {
@@ -12,11 +13,12 @@ const WAVES: Record<string, string> = {
 
 export function WaveDivider({ color = "#f8fbff", flipped = false, className }: WaveDividerProps) {
   return (
-    <div className={cn("pointer-events-none overflow-hidden leading-none", className)}>
+    <div className={cn("pointer-events-none overflow-hidden leading-none h-6 sm:h-8 md:h-10 lg:h-12", className)}>
       <svg
         viewBox="0 0 1440 60"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full"
+        preserveAspectRatio="none"
+        className="w-full h-full"
         style={{ transform: flipped ? "rotateX(180deg)" : undefined, display: "block" }}
       >
         <path d={WAVES.default} fill={color} />

@@ -124,111 +124,110 @@ export function HeroSlider({ slides }: HeroSliderProps) {
     );
   }
 
-  return (
-    <section
-      className="relative w-full overflow-hidden"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      role="region"
-      aria-roledescription="carousel"
-      aria-label="Hero slider - promociones y colecciones"
-    >
-      {/* Carousel viewport */}
-      <div
-        ref={emblaRef}
-        className="overflow-hidden"
+    return (
+    <>
+      <section
+        className="relative w-full overflow-hidden"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        role="region"
+        aria-roledescription="carousel"
+        aria-label="Hero slider - promociones y colecciones"
       >
-        <div className="flex">
-          {slides.map((slide, idx) => (
-            <div
-              key={slide.id}
-              className="relative min-w-0 flex-[0_0_100%]"
-              role="group"
-              aria-roledescription="slide"
-              aria-label={`Slide ${idx + 1} de ${slides.length}`}
-            >
-              <div className="w-full aspect-[2/1] max-h-[720px]">
-                {slide.canvasData ? (
-                  <BannerRenderer data={slide.canvasData} />
-                ) : (
-                  <HeroSlideContent
-                    title={slide.title}
-                    subtitle={slide.subtitle}
-                    description={slide.description}
-                    badge={slide.badge}
-                    button1Text={slide.button1Text}
-                    button1Url={slide.button1Url}
-                    button2Text={slide.button2Text}
-                    button2Url={slide.button2Url}
-                    imageUrl={slide.imageUrl}
-                    gifUrl={slide.gifUrl}
-                    backgroundImageUrl={slide.backgroundImageUrl}
-                    backgroundColor={slide.backgroundColor}
-                    textColor={slide.textColor}
-                    buttonColor={slide.buttonColor}
-                    contentPosition={slide.contentPosition}
-                  />
-                )}
+        {/* Carousel viewport */}
+        <div ref={emblaRef} className="overflow-hidden">
+          <div className="flex">
+            {slides.map((slide, idx) => (
+              <div
+                key={slide.id}
+                className="relative min-w-0 flex-[0_0_100%]"
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`Slide ${idx + 1} de ${slides.length}`}
+              >
+                <div className="w-full h-[50vh] bg-slate-100">
+                  {slide.canvasData ? (
+                    <BannerRenderer data={slide.canvasData} />
+                  ) : (
+                    <HeroSlideContent
+                      title={slide.title}
+                      subtitle={slide.subtitle}
+                      description={slide.description}
+                      badge={slide.badge}
+                      button1Text={slide.button1Text}
+                      button1Url={slide.button1Url}
+                      button2Text={slide.button2Text}
+                      button2Url={slide.button2Url}
+                      imageUrl={slide.imageUrl}
+                      gifUrl={slide.gifUrl}
+                      backgroundImageUrl={slide.backgroundImageUrl}
+                      backgroundColor={slide.backgroundColor}
+                      textColor={slide.textColor}
+                      buttonColor={slide.buttonColor}
+                      contentPosition={slide.contentPosition}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Gradient overlays for arrows */}
-      <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-black/20 to-transparent pointer-events-none z-10" />
-      <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-black/20 to-transparent pointer-events-none z-10" />
+        {/* Gradient overlays for arrows */}
+        <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-black/20 to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-black/20 to-transparent pointer-events-none z-10" />
 
-      {/* Navigation arrows */}
-      {slides.length > 1 && (
-        <>
-          <button
-            onClick={scrollPrev}
-            className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/30 transition-all focus:outline-none focus:ring-2 focus:ring-white/50"
-            aria-label="Slide anterior"
-          >
-            <ChevronLeft size={20} className="md:w-6 md:h-6" />
-          </button>
-          <button
-            onClick={scrollNext}
-            className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/30 transition-all focus:outline-none focus:ring-2 focus:ring-white/50"
-            aria-label="Slide siguiente"
-          >
-            <ChevronRight size={20} className="md:w-6 md:h-6" />
-          </button>
-        </>
-      )}
-
-      {/* Dots */}
-      {slides.length > 1 && (
-        <div
-          className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2"
-          role="tablist"
-          aria-label="Navegación de slides"
-        >
-          {scrollSnaps.map((_, idx) => (
+        {/* Navigation arrows */}
+        {slides.length > 1 && (
+          <>
             <button
-              key={idx}
-              onClick={() => scrollTo(idx)}
-              className={cn(
-                "rounded-full transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-white/50",
-                idx === selectedIndex
-                  ? "w-8 h-2.5 bg-white"
-                  : "w-2.5 h-2.5 bg-white/40 hover:bg-white/70"
-              )}
-              role="tab"
-              aria-selected={idx === selectedIndex}
-              aria-label={`Ir al slide ${idx + 1}`}
-            />
-          ))}
-        </div>
-      )}
+              onClick={scrollPrev}
+              className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/30 transition-all focus:outline-none focus:ring-2 focus:ring-white/50"
+              aria-label="Slide anterior"
+            >
+              <ChevronLeft size={20} className="md:w-6 md:h-6" />
+            </button>
+            <button
+              onClick={scrollNext}
+              className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/30 transition-all focus:outline-none focus:ring-2 focus:ring-white/50"
+              aria-label="Slide siguiente"
+            >
+              <ChevronRight size={20} className="md:w-6 md:h-6" />
+            </button>
+          </>
+        )}
 
-      {/* Water effect: gradient, bubbles, animated waves */}
-      <WaterEffect />
+        {/* Dots */}
+        {slides.length > 1 && (
+          <div
+            className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2"
+            role="tablist"
+            aria-label="Navegación de slides"
+          >
+            {scrollSnaps.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => scrollTo(idx)}
+                className={cn(
+                  "rounded-full transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-white/50",
+                  idx === selectedIndex
+                    ? "w-8 h-2.5 bg-white"
+                    : "w-2.5 h-2.5 bg-white/40 hover:bg-white/70"
+                )}
+                role="tab"
+                aria-selected={idx === selectedIndex}
+                aria-label={`Ir al slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
 
-      {/* Wave divider */}
-      <WaveDivider className="absolute bottom-0 left-0 right-0 z-10" />
-    </section>
+        {/* Water effect: gradient, bubbles, animated waves */}
+        <WaterEffect />
+      </section>
+
+      {/* Wave divider: ahora fuera del hero, ya no se superpone a la imagen ni a los botones */}
+      <WaveDivider className="w-full" />
+    </>
   );
 }

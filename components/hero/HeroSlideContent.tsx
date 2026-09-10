@@ -52,33 +52,40 @@ export function HeroSlideContent({
   return (
     <div className={cn("relative w-full h-full overflow-hidden", className)}>
       {/* Background */}
-      {backgroundImageUrl && (
-        <Image
-          src={backgroundImageUrl}
-          alt=""
-          fill
-          className="object-cover"
-          priority
-          sizes={backgroundSizes}
-        />
-      )}
+      <div className="absolute inset-0 overflow-hidden">
+        {backgroundColor && (
+          <div className="absolute inset-0" style={{ backgroundColor }} />
+        )}
+        {backgroundImageUrl && (
+          <div className="absolute inset-x-0 top-0 bottom-6 sm:bottom-8 md:bottom-10 lg:bottom-12">
+            <Image
+              src={backgroundImageUrl}
+              alt=""
+              fill
+              className="object-contain"
+              priority
+              sizes={backgroundSizes}
+            />
+          </div>
+        )}
+      </div>
       {!backgroundImageUrl && backgroundColor && (
         <div className="absolute inset-0" style={{ backgroundColor }} />
       )}
 
       {/* Gradient overlay for readability when there's content */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-black/10" />
 
       {/* Content */}
       <div
         className={cn(
-          "relative z-10 h-full flex items-center px-6 md:px-12 lg:px-16",
+          "relative z-10 h-full flex items-center px-6 pt-12 pb-10 md:px-12 md:pt-16 md:pb-12 lg:px-16 lg:pt-20 lg:pb-14",
           isCentered ? "justify-center text-center" : contentPosition === "RIGHT" ? "justify-end text-right" : "justify-start text-left"
         )}
       >
         <div className={cn(
           "flex flex-col gap-3 md:gap-4",
-          isCentered ? "items-center max-w-2xl" : hasMedia ? "max-w-lg" : "max-w-2xl"
+          isCentered ? "items-center max-w-2xl" : hasMedia ? "max-w-[55%] lg:max-w-[48%]" : "max-w-2xl"
         )}>
           {badge && (
             <span
@@ -154,15 +161,15 @@ export function HeroSlideContent({
       {/* Media (image/GIF) */}
       {mediaUrl && (
         <div className={cn(
-          "absolute top-0 bottom-0 w-1/2 md:w-[45%] flex items-center justify-center p-4 md:p-8",
+          "absolute top-[10%] bottom-[8%] right-0 w-[30%] sm:w-[26%] md:w-[20%] lg:w-[17%] xl:w-[15%] flex items-center justify-center pr-1 md:pr-2",
           isCentered ? "hidden" : contentPosition === "RIGHT" ? "left-0" : "right-0"
         )}>
-          <div className="relative w-full h-full max-h-full">
+          <div className="relative w-full h-full max-h-[80%]">
             <Image
               src={mediaUrl}
               alt={title || "Slide image"}
               fill
-              className="object-contain drop-shadow-2xl"
+              className="object-contain object-right drop-shadow-2xl"
               priority
               sizes={mediaSizes}
             />

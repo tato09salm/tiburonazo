@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface Props {
   currentUrl?: string;
@@ -11,16 +12,31 @@ export function BgUploader({ currentUrl, onUrl }: Props) {
   const [uploading, setUploading] = useState(false);
 
   const handleUpload = async (file: File) => {
-    setUploading(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("folder", "slides");
-    try {
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (res.ok) onUrl(data.url);
-    } catch {}
-    setUploading(false);
+    const objectUrl = URL.createObjectURL(file);
+    const img = new window.Image();
+    img.onload = async () => {
+      URL.revokeObjectURL(objectUrl);
+
+      setUploading(true);
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "slides");
+      try {
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        const data = await res.json();
+        if (res.ok) onUrl(data.url);
+        else toast.error(data.error || "No se pudo subir la imagen.");
+      } catch {
+        toast.error("Error al subir la imagen.");
+      } finally {
+        setUploading(false);
+      }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      toast.error("No se pudo leer la imagen.");
+    };
+    img.src = objectUrl;
   };
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { toast } from "sonner";
 import { Type, Image as ImageIcon, MousePointer2, SquareStack, Trash2, Copy } from "lucide-react";
 import { createDefaultText, createDefaultButton } from "../types";
 import type { CanvasElement } from "../types";
@@ -18,37 +19,52 @@ export function CanvasToolbar({ onAddElement, onDeleteSelected, onDuplicateSelec
   const gifInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = async (file: File, isGif: boolean) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("folder", "slides");
-    try {
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (res.ok) {
-        const img = new window.Image();
-        img.onload = () => {
-          const aspect = img.width / img.height;
-          const w = 400;
-          const h = w / aspect;
-          onAddElement({
-            id: `el_${Date.now()}`,
-            type: isGif ? "gif" : "image",
-            x: 500,
-            y: 100,
-            width: w,
-            height: h,
-            rotation: 0,
-            zIndex: 1,
-            opacity: 1,
-            visible: true,
-            locked: false,
-            src: data.url,
-            fit: "contain",
-          } as CanvasElement);
-        };
-        img.src = data.url;
+    const objectUrl = URL.createObjectURL(file);
+    const img = new window.Image();
+    img.onload = async () => {
+      URL.revokeObjectURL(objectUrl);
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "slides");
+      try {
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
+        const data = await res.json();
+        if (res.ok) {
+          const img = new window.Image();
+          img.onload = () => {
+            const aspect = img.width / img.height;
+            const w = 400;
+            const h = w / aspect;
+            onAddElement({
+              id: `el_${Date.now()}`,
+              type: isGif ? "gif" : "image",
+              x: 500,
+              y: 100,
+              width: w,
+              height: h,
+              rotation: 0,
+              zIndex: 1,
+              opacity: 1,
+              visible: true,
+              locked: false,
+              src: data.url,
+              fit: "contain",
+            } as CanvasElement);
+          };
+          img.src = data.url;
+        } else {
+          toast.error(data.error || "No se pudo subir la imagen.");
+        }
+      } catch {
+        toast.error("Error al subir la imagen.");
       }
-    } catch {}
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      toast.error("No se pudo leer la imagen.");
+    };
+    img.src = objectUrl;
   };
 
   return (
